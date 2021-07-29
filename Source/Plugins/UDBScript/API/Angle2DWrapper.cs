@@ -91,7 +91,7 @@ namespace CodeImp.DoomBuilder.UDBScript.API
 		/// </summary>
 		/// <param name="deg">Angle in degrees</param>
 		/// <returns>Angle in radians</returns>
-		public static double DegToRad(double deg)
+		public static double degToRad(double deg)
 		{
 			return Angle2D.DegToRad(deg);
 		}

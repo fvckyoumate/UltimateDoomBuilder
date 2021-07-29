@@ -83,7 +83,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 		{
 			List<TreeNode> newnodes = new List<TreeNode>();
 
-			foreach (ScriptDirectoryStructure subsds in sds.Directories)
+			foreach (ScriptDirectoryStructure subsds in sds.Directories.OrderBy(s => s.Name))
 			{
 				TreeNode tn = new TreeNode(subsds.Name, AddToTree(subsds));
 				tn.SelectedImageKey = tn.ImageKey = "Folder";
@@ -91,7 +91,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 				newnodes.Add(tn);
 			}
 
-			foreach(ScriptInfo si in sds.Scripts)
+			foreach(ScriptInfo si in sds.Scripts.OrderBy(s => s.Name))
 			{
 				TreeNode tn = new TreeNode(si.Name);
 				tn.Tag = si;

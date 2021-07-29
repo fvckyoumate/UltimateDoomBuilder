@@ -30,6 +30,19 @@ using System.Windows.Forms;
 
 namespace CodeImp.DoomBuilder.UDBScript
 {
+	/// <summary>
+	/// The `QueryOptions` class is used to query the user for their input. It effectively works the same as specifying script options in the script's metadata, except that the `QueryOptions` class works at run-time.
+	/// 
+	/// Example:
+	/// ```js
+	/// let qo = new QueryOptions();
+	/// qo.addOption('length', 'Length of the sides', 0, 128);
+	/// qo.addOption('numsides', 'Number of sides', 0, 5);
+	/// qo.query();
+	/// 
+	/// showMessage('You want ' + qo.options.numsides + ' sides with a length of ' + qo.options.length);
+	/// ```
+	/// </summary>
 	class QueryOptions
 	{
 		#region ================== Variables
@@ -40,12 +53,24 @@ namespace CodeImp.DoomBuilder.UDBScript
 
 		#region ================== Properties
 
-		public ExpandoObject options { get { return form.GetScriptOptions(); } }
+		/// <summary>
+		/// Object containing all the added options as properties.
+		/// </summary>
+		public ExpandoObject options
+		{
+			get
+			{
+				return form.GetScriptOptions();
+			}
+		}
 
 		#endregion
 
 		#region ================== Constructor
 
+		/// <summary>
+		/// Initializes a new `QueryOptions` object.
+		/// </summary>
 		public QueryOptions()
 		{
 			form = new QueryOptionsForm();
@@ -116,7 +141,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 		}
 
 		/// <summary>
-		/// Queries all parameters
+		/// Queries all parameters. Options a window where the user can enter values for the options added through `addOption()`.
 		/// </summary>
 		/// <returns>True if OK was pressed, otherwise false</returns>
 		public bool query()

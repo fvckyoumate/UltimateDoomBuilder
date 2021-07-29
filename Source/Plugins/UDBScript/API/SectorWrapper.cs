@@ -536,7 +536,21 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// <returns>`true` when the tag was removed successfully, `false` when the tag did not exist</returns>
 		public bool removeTag(int tag)
 		{
-			return sector.Tags.Remove(tag);
+			// Make sure changes are recorded for the undo/redo system
+			sector.Fields.BeforeFieldsChange();
+
+			if(sector.Tags.Contains(tag))
+			{
+				// If it's the only tag just set it to 0, otherwise remove the tag completely
+				if (sector.Tags.Count == 1)
+					sector.Tag = 0;
+				else
+					sector.Tags.Remove(tag);
+
+				return true;
+			}
+
+			return false;
 		}
 
 		#endregion

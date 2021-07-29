@@ -48,4 +48,28 @@ namespace CodeImp.DoomBuilder.UDBScript
 		{
 		}
 	}
+
+	[Serializable]
+	public class ExitScriptException : Exception
+	{
+		public ExitScriptException()
+		{
+		}
+
+		public ExitScriptException(string message) : base(message)
+		{
+		}
+	}
+
+	[Serializable]
+	public class DieScriptException : Exception
+	{
+		public DieScriptException()
+		{
+		}
+
+		public DieScriptException(string message) : base(message)
+		{
+		}
+	}
 }

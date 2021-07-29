@@ -1,34 +1,12 @@
 # Sector
 
 ## Properties
-### index
-The `Sector`'s index. Read-only.
-### floorHeight
-Floor height of the `Sector`.
-### ceilingHeight
-Ceiling height of the `Sector`.
-### floorTexture
-Floor texture of the `Sector`.
-### ceilingTexture
-Ceiling texture of the `Sector`.
-### selected
-If the `Sector` is selected or not.
-### marked
-If the `Sector` is marked or not. It is used to mark map elements that were created or changed (for example after drawing new geometry).
-### flags
-`Sector` flags. It's an object with the flags as properties. Only available in UDMF.
-
-
-```js
-s.flags['noattack'] = true; // Monsters in this sector don't attack
-s.flags.noattack = true; // Also works
-```
-### special
-The `Sector`'s special type.
-### tag
-The `Sector`'s tag.
 ### brightness
 The `Sector`'s brightness.
+### ceilingHeight
+Ceiling height of the `Sector`.
+### ceilingTexture
+Ceiling texture of the `Sector`.
 ### fields
 UDMF fields. It's an object with the fields as properties.
 
@@ -52,17 +30,51 @@ There are some restrictions, though:
 ```js
 s.fields.user_myintfield = new UniValue(0, 25); // Sets the 'user_myintfield' field to an integer value of 25
 ```
+### flags
+`Sector` flags. It's an object with the flags as properties. Only available in UDMF.
+
+
+```js
+s.flags['noattack'] = true; // Monsters in this sector don't attack
+s.flags.noattack = true; // Also works
+```
+### floorHeight
+Floor height of the `Sector`.
+### floorTexture
+Floor texture of the `Sector`.
+### index
+The `Sector`'s index. Read-only.
+### marked
+If the `Sector` is marked or not. It is used to mark map elements that were created or changed (for example after drawing new geometry).
+### selected
+If the `Sector` is selected or not.
+### special
+The `Sector`'s special type.
+### tag
+The `Sector`'s tag.
 ## Methods
-### getSidedefs()
-Returns an `Array` of all `Sidedef`s of the `Sector`.
+### addTag(tag)
+Adds a tag to the `Sector`. UDMF only. Supported game configurations only.
+#### Parameters
+* tag: Tag to add
 #### Return value
-`Array` of the `Sector`'s `Sidedef`s
+`true` when the tag was added, `false` when the tag already exists
 ### clearFlags()
 Clears all flags.
 ### copyPropertiesTo(s)
 Copies the properties from this `Sector` to another.
 #### Parameters
 * s: the `Sector` to copy the properties to
+### delete()
+Deletes the `Sector` and its `Sidedef`s.
+### getSidedefs()
+Returns an `Array` of all `Sidedef`s of the `Sector`.
+#### Return value
+`Array` of the `Sector`'s `Sidedef`s
+### getTags()
+Returns an `Array` of the `Sector`'s tags. UDMF only. Supported game configurations only.
+#### Return value
+`Array` of tags
 ### intersect(p)
 Checks if the given point is in this `Sector` or not. The given point can be a `Vector2D` or an `Array` of two numbers.
 
@@ -81,18 +93,6 @@ if(s.intersect([ 32, 64 ]))
 Joins this `Sector` with another `Sector`. Lines shared between the sectors will not be removed.
 #### Parameters
 * other: Sector to join with
-### delete()
-Deletes the `Sector` and its `Sidedef`s.
-### getTags()
-Returns an `Array` of the `Sector`'s tags. UDMF only. Supported game configurations only.
-#### Return value
-`Array` of tags
-### addTag(tag)
-Adds a tag to the `Sector`. UDMF only. Supported game configurations only.
-#### Parameters
-* tag: Tag to add
-#### Return value
-`true` when the tag was added, `false` when the tag already exists
 ### removeTag(tag)
 Removes a tag from the `Sector`. UDMF only. Supported game configurations only.
 #### Parameters

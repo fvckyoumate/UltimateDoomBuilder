@@ -105,15 +105,19 @@ namespace CodeImp.DoomBuilder.UDBScript
 			scriptinfo = new List<ScriptInfo>();
 		}
 
-		public override void OnMapNewBegin()
+		public override void OnMapNewEnd()
 		{
+			base.OnMapNewEnd();
+
 			scriptinfo = new List<ScriptInfo>();
 			scriptdirectorystructure = LoadScriptDirectoryStructure(Path.Combine(General.AppPath, SCRIPT_FOLDER, "scripts"));
 			panel.FillTree();
 		}
 
-		public override void OnMapOpenBegin()
+		public override void OnMapOpenEnd()
 		{
+			base.OnMapOpenEnd();
+
 			scriptinfo = new List<ScriptInfo>();
 			scriptdirectorystructure = LoadScriptDirectoryStructure(Path.Combine(General.AppPath, SCRIPT_FOLDER, "scripts"));
 			panel.FillTree();

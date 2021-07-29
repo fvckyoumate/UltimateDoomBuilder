@@ -115,6 +115,30 @@ namespace CodeImp.DoomBuilder.UDBScript
 			return result == DialogResult.OK ? true : false;
 		}
 
+		/// <summary>
+		/// Exist the script prematurely without undoing its changes.
+		/// </summary>
+		/// <param name="s"></param>
+		public void ExitScript(string s = null)
+		{
+			if (string.IsNullOrEmpty(s))
+				throw new ExitScriptException();
+
+			throw new ExitScriptException(s);
+		}
+
+		/// <summary>
+		/// Exist the script prematurely with undoing its changes.
+		/// </summary>
+		/// <param name="s"></param>
+		public void DieScript(string s = null)
+		{
+			if (string.IsNullOrEmpty(s))
+				throw new DieScriptException();
+
+			throw new DieScriptException(s);
+		}
+
 		public JavaScriptException CreateRuntimeException(string message)
 		{
 			return new JavaScriptException(ErrorConstructor.CreateErrorConstructor(engine, new JsString("UDBScriptRuntimeException")), message);
@@ -190,6 +214,8 @@ namespace CodeImp.DoomBuilder.UDBScript
 			});
 			engine.SetValue("log", new Action<object>(Console.WriteLine));
 			engine.SetValue("showMessage", new Action<string>(ShowMessage));
+			engine.SetValue("exit", new Action<string>(ExitScript));
+			engine.SetValue("die", new Action<string>(DieScript));
 			engine.SetValue("showMessageYesNo", new Func<string, bool>(ShowMessageYesNo));
 			engine.SetValue("QueryOptions", TypeReference.CreateTypeReference(engine, typeof(QueryOptions)));
 			engine.SetValue("ScriptOptions", scriptinfo.GetScriptOptionsObject());
@@ -245,7 +271,19 @@ namespace CodeImp.DoomBuilder.UDBScript
 
 				abort = true;
 			}
-			catch(Exception e) // Catch anything else we didn't think about
+			catch(ExitScriptException e)
+			{
+				if (!string.IsNullOrEmpty(e.Message))
+					General.Interface.DisplayStatus(StatusType.Ready, e.Message);
+			}
+			catch(DieScriptException e)
+			{
+				if (!string.IsNullOrEmpty(e.Message))
+					General.Interface.DisplayStatus(StatusType.Warning, e.Message);
+
+				abort = true;
+			}
+			catch (Exception e) // Catch anything else we didn't think about
 			{
 				UDBScriptErrorForm sef = new UDBScriptErrorForm(e.Message, e.StackTrace);
 				sef.ShowDialog();

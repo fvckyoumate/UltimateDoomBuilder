@@ -817,7 +817,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// ```
 		/// var t1 = Map.createThing(new Vector2D(32, 64));
 		/// var t2 = Map.createThing([ 32, 64 ]);
-		/// var t3= Map.createThing(new Vector2D(32, 64), 3001); // Create an Imp
+		/// var t3 = Map.createThing(new Vector2D(32, 64), 3001); // Create an Imp
 		/// var t4 = Map.createThing([ 32, 64 ], 3001); // Create an Imp
 		/// ```
 		/// </summary>

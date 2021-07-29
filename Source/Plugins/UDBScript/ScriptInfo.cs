@@ -103,7 +103,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 
 					switch (command)
 					{
-						case "scriptconfiguration":
+						case "scriptoptions":
 							configstring = payload;
 							break;
 						case "name":

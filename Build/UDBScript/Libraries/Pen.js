@@ -1,4 +1,4 @@
-class Pen2
+class Pen
 {
     constructor(pos)
     {
@@ -7,7 +7,7 @@ class Pen2
         this.vertices = [];
         
         if(typeof pos !== 'undefined')
-            this.curpos = pos;
+            this.curpos = new Vector2D(pos);
         else
             this.curpos = new Vector2D(0, 0);
     }
@@ -87,14 +87,6 @@ class Pen2
     finishDrawing()
     {
         this.vertices.push(this.vertices[0]);
-
-        let s = '';
-
-        this.vertices.forEach(v => {
-            s += v + '\n';
-        });
-
-        showMessage(s);
 
         var result = Map.drawLines(this.vertices);
 

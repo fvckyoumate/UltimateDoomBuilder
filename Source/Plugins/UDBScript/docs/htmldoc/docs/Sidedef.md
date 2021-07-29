@@ -1,38 +1,10 @@
 # Sidedef
 
 ## Properties
-### index
-The `Sidedef`'s index. Read-only.
-### isFront
-`true` if this `Sidedef` is the front of its `Linedef`, otherwise `false`. Read-only.
-### sector
-The `Sector` the `Sidedef` belongs to. Read-only.
-### line
-The `Linedef` the `Sidedef` belongs to. Read-only.
-### other
-The `Sidedef` on the other side of this `Sidedef`'s `Linedef`. Returns `null` if there is no other. Read-only.
 ### angle
 The `Sidedef`'s angle in degrees. Read-only.
 ### angleRad
 The `Sidedef`'s angle in radians. Read-only.
-### offsetX
-The x offset of the `Sidedef`'s textures.
-### offsetY
-The y offset of the `Sidedef`'s textures.
-### flags
-`Sidedef` flags. It's an object with the flags as properties. Only available in UDMF.
-
-
-```js
-s.flags['noattack'] = true; // Monsters in this sector don't attack
-s.flags.noattack = true; // Also works
-```
-### upperTexture
-The `Sidedef`'s upper texture.
-### middleTexture
-The `Sidedef`'s middle texture.
-### lowerTexture
-The `Sidedef`'s lower texture.
 ### fields
 UDMF fields. It's an object with the fields as properties.
 
@@ -56,3 +28,31 @@ There are some restrictions, though:
 ```js
 s.fields.user_myintfield = new UniValue(0, 25); // Sets the 'user_myintfield' field to an integer value of 25
 ```
+### flags
+`Sidedef` flags. It's an object with the flags as properties. Only available in UDMF.
+
+
+```js
+s.flags['noattack'] = true; // Monsters in this sector don't attack
+s.flags.noattack = true; // Also works
+```
+### index
+The `Sidedef`'s index. Read-only.
+### isFront
+`true` if this `Sidedef` is the front of its `Linedef`, otherwise `false`. Read-only.
+### line
+The `Linedef` the `Sidedef` belongs to. Read-only.
+### lowerTexture
+The `Sidedef`'s lower texture.
+### middleTexture
+The `Sidedef`'s middle texture.
+### offsetX
+The x offset of the `Sidedef`'s textures.
+### offsetY
+The y offset of the `Sidedef`'s textures.
+### other
+The `Sidedef` on the other side of this `Sidedef`'s `Linedef`. Returns `null` if there is no other. Read-only.
+### sector
+The `Sector` the `Sidedef` belongs to. Read-only.
+### upperTexture
+The `Sidedef`'s upper texture.
