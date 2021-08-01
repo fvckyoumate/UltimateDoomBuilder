@@ -119,7 +119,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 		/// Exist the script prematurely without undoing its changes.
 		/// </summary>
 		/// <param name="s"></param>
-		public void ExitScript(string s = null)
+		private void ExitScript(string s = null)
 		{
 			if (string.IsNullOrEmpty(s))
 				throw new ExitScriptException();
@@ -131,7 +131,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 		/// Exist the script prematurely with undoing its changes.
 		/// </summary>
 		/// <param name="s"></param>
-		public void DieScript(string s = null)
+		private void DieScript(string s = null)
 		{
 			if (string.IsNullOrEmpty(s))
 				throw new DieScriptException();
@@ -214,9 +214,9 @@ namespace CodeImp.DoomBuilder.UDBScript
 			});
 			engine.SetValue("log", new Action<object>(Console.WriteLine));
 			engine.SetValue("showMessage", new Action<string>(ShowMessage));
+			engine.SetValue("showMessageYesNo", new Func<string, bool>(ShowMessageYesNo));
 			engine.SetValue("exit", new Action<string>(ExitScript));
 			engine.SetValue("die", new Action<string>(DieScript));
-			engine.SetValue("showMessageYesNo", new Func<string, bool>(ShowMessageYesNo));
 			engine.SetValue("QueryOptions", TypeReference.CreateTypeReference(engine, typeof(QueryOptions)));
 			engine.SetValue("ScriptOptions", scriptinfo.GetScriptOptionsObject());
 			engine.SetValue("Map", new MapWrapper());

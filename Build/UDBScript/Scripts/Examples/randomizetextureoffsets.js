@@ -2,7 +2,7 @@
 
 `#description Randomized texture offsets. Distinct upper, middle, and lower offsets only work if the game configuration supports those local offsets.`;
 
-`#scriptconfiguration
+`#scriptoptions
 
 global_x
 {

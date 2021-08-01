@@ -34,6 +34,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using CodeImp.DoomBuilder.Controls;
 using CodeImp.DoomBuilder.IO;
 using Esprima;
 
@@ -72,11 +73,56 @@ namespace CodeImp.DoomBuilder.UDBScript
 
 		#region ================== Methods
 
+		/// <summary>
+		/// Fills the tree of all available scripts. Tries to re-select a previously selected script
+		/// </summary>
 		public void FillTree()
 		{
+			string previousscriptfile = string.Empty;
+			NodesCollection nc = filetree.SelectedNodes;
+
+			scriptoptions.ParametersView.Rows.Clear();
+			scriptoptions.ParametersView.Refresh();
+
+			if(nc.Count > 0 && nc[0].Tag is ScriptInfo)
+				previousscriptfile = ((ScriptInfo)nc[0].Tag).ScriptFile;
+
 			filetree.Nodes.Clear();
 			filetree.Nodes.AddRange(AddToTree(BuilderPlug.Me.ScriptDirectoryStructure));
 			filetree.ExpandAll();
+
+			foreach(TreeNode node in filetree.Nodes)
+			{
+				TreeNode result = FindScriptTreeNode(previousscriptfile, node);
+
+				if(result != null)
+				{
+					filetree.SelectedNodes.Add(result);
+					break;
+				}
+			}
+		}
+
+		/// <summary>
+		/// Recursively tries to find a tree node by the script file name. Based on https://stackoverflow.com/a/19227024 by user "King King"
+		/// </summary>
+		/// <param name="name">Script file name to look for</param>
+		/// <param name="root">TreeNode node to start looking at</param>
+		/// <returns>Found TreeNode or null</returns>
+		private TreeNode FindScriptTreeNode(string name, TreeNode root)
+		{
+			foreach (TreeNode node in root.Nodes)
+			{
+				if (node.Tag is ScriptInfo && ((ScriptInfo)node.Tag).ScriptFile == name)
+					return node;
+
+				TreeNode next = FindScriptTreeNode(name, node);
+
+				if (next != null)
+					return next;
+			}
+
+			return null;
 		}
 
 		private TreeNode[] AddToTree(ScriptDirectoryStructure sds)
@@ -124,7 +170,11 @@ namespace CodeImp.DoomBuilder.UDBScript
 		private void filetree_AfterSelect(object sender, TreeViewEventArgs e)
 		{
 			if (e.Node.Tag == null)
+			{
+				tbDescription.Text = string.Empty;
+				scriptoptions.ParametersView.Rows.Clear();
 				return;
+			}
 
 			if(e.Node.Tag is ScriptInfo)
 			{

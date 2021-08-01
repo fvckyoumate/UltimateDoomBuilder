@@ -2,7 +2,7 @@
 
 `#description Jitters the selected vertices. If no vertices are selected all vertices in the map are jittered. Does not make sure that the resulting geometry is still valid.`;
 
-`#scriptconfiguration
+`#scriptoptions
 
 min
 {

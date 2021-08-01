@@ -67,6 +67,8 @@ namespace CodeImp.DoomBuilder.UDBScript
 
 		#endregion
 
+		private delegate void CallVoidMethodDeletage();
+
 		#region ================== Variables
 
 		private static BuilderPlug me;
@@ -77,6 +79,8 @@ namespace CodeImp.DoomBuilder.UDBScript
 		private ScriptRunner scriptrunner;
 		private List<ScriptInfo> scriptinfo;
 		private ScriptDirectoryStructure scriptdirectorystructure;
+		private FileSystemWatcher watcher;
+		private object lockobj;
 
 		#endregion
 
@@ -96,6 +100,8 @@ namespace CodeImp.DoomBuilder.UDBScript
 
 			me = this;
 
+			lockobj = new object();
+
 			panel = new ScriptDockerControl(SCRIPT_FOLDER);
 			docker = new Docker("udbscript", "Scripts", panel);
 			General.Interface.AddDocker(docker);
@@ -103,35 +109,57 @@ namespace CodeImp.DoomBuilder.UDBScript
 			General.Actions.BindMethods(this);
 
 			scriptinfo = new List<ScriptInfo>();
+
+			watcher = new FileSystemWatcher(Path.Combine(General.AppPath, SCRIPT_FOLDER, "scripts"));
+			watcher.NotifyFilter = NotifyFilters.CreationTime | NotifyFilters.DirectoryName | NotifyFilters.FileName | NotifyFilters.LastWrite | NotifyFilters.Size;
+			watcher.IncludeSubdirectories = true;
+			watcher.Changed += OnWatcherEvent;
+			watcher.Created += OnWatcherEvent;
+			watcher.Deleted += OnWatcherEvent;
+			watcher.Renamed += OnWatcherEvent;
 		}
 
 		public override void OnMapNewEnd()
 		{
 			base.OnMapNewEnd();
 
-			scriptinfo = new List<ScriptInfo>();
-			scriptdirectorystructure = LoadScriptDirectoryStructure(Path.Combine(General.AppPath, SCRIPT_FOLDER, "scripts"));
-			panel.FillTree();
+			LoadScripts();
+
+			watcher.EnableRaisingEvents = true;
 		}
 
 		public override void OnMapOpenEnd()
 		{
 			base.OnMapOpenEnd();
 
-			scriptinfo = new List<ScriptInfo>();
-			scriptdirectorystructure = LoadScriptDirectoryStructure(Path.Combine(General.AppPath, SCRIPT_FOLDER, "scripts"));
-			panel.FillTree();
+			LoadScripts();
+
+			watcher.EnableRaisingEvents = true;
 		}
 
 		public override void OnMapCloseBegin()
 		{
 			List<string> hashes = new List<string>();
 
+			watcher.EnableRaisingEvents = false;
+
 			foreach (ScriptInfo si in scriptinfo)
 			{
 				si.SaveOptionValues();
 				hashes.Add(si.GetScriptPathHash());
 			}
+		}
+
+		private void OnWatcherEvent(object sender, FileSystemEventArgs e)
+		{
+			// We can't use the filter on the watcher, since for whatever reason that filter also applies to
+			// directory names. So we have to do some filtering ourselves.
+			bool load = false;
+			if (e.ChangeType == WatcherChangeTypes.Deleted || (Directory.Exists(e.FullPath) && e.ChangeType != WatcherChangeTypes.Changed) || Path.GetExtension(e.FullPath).ToLowerInvariant() == ".js")
+				load = true;
+
+			if(load)
+				LoadScripts();
 		}
 
 		// This is called when the plugin is terminated
@@ -141,6 +169,30 @@ namespace CodeImp.DoomBuilder.UDBScript
 
 			// This must be called to remove bound methods for actions.
 			General.Actions.UnbindMethods(this);
+		}
+
+		/// <summary>
+		/// Loads all scripts and fills the docker panel.
+		/// </summary>
+		public void LoadScripts()
+		{
+			lock (lockobj)
+			{
+				scriptinfo = new List<ScriptInfo>();
+				scriptdirectorystructure = LoadScriptDirectoryStructure(Path.Combine(General.AppPath, SCRIPT_FOLDER, "scripts"));
+
+				// This might not be called from the main thread when called by the file system watcher, so use a delegate
+				// to run it cleanly
+				if (panel.InvokeRequired)
+				{
+					CallVoidMethodDeletage d = panel.FillTree;
+					panel.Invoke(d);
+				}
+				else
+				{
+					panel.FillTree();
+				}
+			}
 		}
 
 		/// <summary>

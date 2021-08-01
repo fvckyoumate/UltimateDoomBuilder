@@ -2,7 +2,7 @@
 
 `#description Draws a voodoo doll closet from the mouse cursor's position. Requires Boom actions. If linedefs are selected when the script is run, those linedefs will have actions assigned that unblock the voodoo doll (if applicable).`;
 
-`#scriptconfiguration
+`#scriptoptions
 
 length
 {

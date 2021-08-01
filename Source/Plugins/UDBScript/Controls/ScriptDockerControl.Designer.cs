@@ -33,11 +33,11 @@
 			this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
 			this.splitContainer1 = new System.Windows.Forms.SplitContainer();
 			this.filetree = new CodeImp.DoomBuilder.Controls.MultiSelectTreeview();
-			this.label1 = new System.Windows.Forms.Label();
-			this.label2 = new System.Windows.Forms.Label();
+			this.tbDescription = new System.Windows.Forms.TextBox();
 			this.label3 = new System.Windows.Forms.Label();
 			this.label4 = new System.Windows.Forms.Label();
-			this.tbDescription = new System.Windows.Forms.TextBox();
+			this.label1 = new System.Windows.Forms.Label();
+			this.label2 = new System.Windows.Forms.Label();
 			this.scriptoptions = new CodeImp.DoomBuilder.UDBScript.ScriptOptionsControl();
 			this.tableLayoutPanel1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
@@ -125,25 +125,19 @@
 			this.filetree.TabIndex = 24;
 			this.filetree.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.filetree_AfterSelect);
 			// 
-			// label1
+			// tbDescription
 			// 
-			this.label1.AutoSize = true;
-			this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.label1.Location = new System.Drawing.Point(3, 123);
-			this.label1.Name = "label1";
-			this.label1.Size = new System.Drawing.Size(71, 13);
-			this.label1.TabIndex = 27;
-			this.label1.Text = "Script options";
-			// 
-			// label2
-			// 
-			this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+			this.tbDescription.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-			this.label2.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-			this.label2.Location = new System.Drawing.Point(0, 130);
-			this.label2.Name = "label2";
-			this.label2.Size = new System.Drawing.Size(313, 2);
-			this.label2.TabIndex = 2;
+			this.tbDescription.BorderStyle = System.Windows.Forms.BorderStyle.None;
+			this.tbDescription.Location = new System.Drawing.Point(3, 19);
+			this.tbDescription.Margin = new System.Windows.Forms.Padding(0, 0, 3, 3);
+			this.tbDescription.Multiline = true;
+			this.tbDescription.Name = "tbDescription";
+			this.tbDescription.ReadOnly = true;
+			this.tbDescription.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+			this.tbDescription.Size = new System.Drawing.Size(306, 101);
+			this.tbDescription.TabIndex = 30;
 			// 
 			// label3
 			// 
@@ -165,19 +159,25 @@
 			this.label4.Size = new System.Drawing.Size(313, 2);
 			this.label4.TabIndex = 28;
 			// 
-			// tbDescription
+			// label1
 			// 
-			this.tbDescription.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+			this.label1.AutoSize = true;
+			this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.label1.Location = new System.Drawing.Point(3, 123);
+			this.label1.Name = "label1";
+			this.label1.Size = new System.Drawing.Size(71, 13);
+			this.label1.TabIndex = 27;
+			this.label1.Text = "Script options";
+			// 
+			// label2
+			// 
+			this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-			this.tbDescription.BorderStyle = System.Windows.Forms.BorderStyle.None;
-			this.tbDescription.Location = new System.Drawing.Point(3, 19);
-			this.tbDescription.Margin = new System.Windows.Forms.Padding(0, 0, 3, 3);
-			this.tbDescription.Multiline = true;
-			this.tbDescription.Name = "tbDescription";
-			this.tbDescription.ReadOnly = true;
-			this.tbDescription.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-			this.tbDescription.Size = new System.Drawing.Size(306, 101);
-			this.tbDescription.TabIndex = 30;
+			this.label2.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+			this.label2.Location = new System.Drawing.Point(0, 130);
+			this.label2.Name = "label2";
+			this.label2.Size = new System.Drawing.Size(313, 2);
+			this.label2.TabIndex = 2;
 			// 
 			// scriptoptions
 			// 

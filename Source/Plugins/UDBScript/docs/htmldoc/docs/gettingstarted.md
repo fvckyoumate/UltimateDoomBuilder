@@ -161,7 +161,7 @@ showMessage('The given length is ' + ScriptOptions.length);
 
 ### Working with map elements
 
-Map elements (things, sectors, sidedefs etc.) can be accessed through the global `Map` object. This object has methods that return an array of map elements, for example `Map.getSectors()` returns an array of `Sector` objects, which are are all sectors in the map. There are also methods to get all selected (for example `Map.getSelectedSectors()` )and marked (for example `Map.getMarkedSectors()`) map elements. These map elements can then be modified, see the documentation for the particular map element type in the API section.
+Map elements (things, sectors, sidedefs etc.) can be accessed through the global `Map` object. This object has methods that return an array of map elements, for example `Map.getSectors()` returns an array of `Sector` objects, which are are all sectors in the map. There are also methods to get all selected (for example `Map.getSelectedSectors()`) and marked (for example `Map.getMarkedSectors()`) map elements. These map elements can then be modified, see the documentation for the particular map element type in the API section.
 
 !!! note
     "Marking" a map element is a way to denote that something happened to this map element. For example when using the `Map.drawLines()` method all new geometry will be marked.
@@ -196,7 +196,7 @@ Map.drawLines([
 
 Both examples are equivalent. The advantage of using `Vector2D` or `Vector3D` is that they have many math related methods built-in.
 
-Another method to draw geometry is using the `Pen` class - which iself is implemented as a library written in JavaScript. It's inspired by the DoomBuilder X class of the same name. It provides some quality of life features, since it creates coordinates relative to the current position - just like moving a pen around a sheet of paper, or [Turtle graphics](https://en.wikipedia.org/wiki/Turtle_graphics).
+Another method to draw geometry is using the `Pen` class - which itself is implemented as a library written in JavaScript. It's inspired by the DoomBuilder X class of the same name. It provides some quality of life features, since it creates coordinates relative to the current position - just like moving a pen around a sheet of paper, or [Turtle graphics](https://en.wikipedia.org/wiki/Turtle_graphics).
 
 Naive implementation of the above example using the `Pen` class:
 
@@ -226,4 +226,28 @@ for(let i=0; i < 4; i++)
 }
 
 p.finishDrawing();
+```
+
+### Ending scripts prematurely
+
+Normally a script ends when the last instruction is executed. But there can be situations where you want to end a script early.
+
+- `exit()`: this global function ends the script with success. It can optionally take a string argument that is shown in the status bar upon ending the script
+- `die()`: this global function ends the script with a failure. This means that it will undo any changes the script has made. It can optionally take a string argument that is shown in the status bar upon ending the script
+- `throw`: throws an exception. Only ends the script if it's not caught in a `try`/`catch` block. If not caught it'll end the script with a failure. This means that it will undo any changes the script has made. The string given as a parameter is shown in the status bar upon ending the script
+
+### Communicating with the user
+
+Sometimes you might want to let the script directly communicate with the user. To do that there are two global functions, `showMessage()` and `showMessageYesNo()`.
+
+- `showMessage()`: shows a message box with an "OK" button and the text given as the parameter<br>
+```js
+showMessage('Hello, world!');
+```
+- `showMessageYesNo()`: shows a message box with an "Yes" and "No" button and the text given as the parameter. Returns `true` if the "Yes" button was clicked, and `false` if the "No" button was clicked
+```js
+if(showMessageYesNo('Are you sure you want to replace all imps with Arch-Viles? That\'s not remotely fair!'))
+{
+	Map.getThings().filter(t => t.type == 3001).forEach(t => t.type=64);
+}
 ```
