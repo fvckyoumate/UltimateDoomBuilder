@@ -678,6 +678,26 @@ namespace CodeImp.DoomBuilder.Map
 			return t;
 		}
 
+		/// <summary>
+		/// This creates a temporary thing. The difference to normal thing creation is that the creation will not be recorded by the undo manager.
+		/// This should only be used in very specific cases, like creating a temporary player start for the "test from current position" action
+		/// </summary>
+		/// <returns>The new thing</returns>
+		internal Thing CreateTempThing()
+		{
+			if (numthings == General.Map.FormatInterface.MaxThings)
+			{
+				General.Interface.DisplayStatus(StatusType.Warning, "Failed to complete operation: maximum number of things reached.");
+				return null;
+			}
+
+			// Make the thing
+			Thing t = new Thing(this, numthings, false);
+			AddItem(t, ref things, numthings, ref numthings);
+			return t;
+
+		}
+
 		// This increases the size of the array to add an item
 		private void AddItem<T>(T item, ref T[] array, int index, ref int counter) where T: MapElement
 		{
@@ -2109,22 +2129,36 @@ namespace CodeImp.DoomBuilder.Map
 			
 			// Split moving lines with unselected vertices
 			ICollection<Vertex> nearbyfixedverts = FilterByArea(fixedverts, ref editarea);
-			if(!SplitLinesByVertices(movinglines, nearbyfixedverts, STITCH_DISTANCE, movinglines, mergemode))
+			if (!SplitLinesByVertices(movinglines, nearbyfixedverts, STITCH_DISTANCE, movinglines, mergemode))
+			{
+				EndAddRemove(); // Unfreeze arrays before returning
 				return false;
+			}
 
             // Split non-moving lines with selected vertices
             fixedlines = new HashSet<Linedef>(fixedlines.Where(fixedline => !fixedline.IsDisposed));
-			if(!SplitLinesByVertices(fixedlines, movingverts, STITCH_DISTANCE, movinglines, mergemode))
+			if (!SplitLinesByVertices(fixedlines, movingverts, STITCH_DISTANCE, movinglines, mergemode))
+			{
+				EndAddRemove(); // Unfreeze arrays before returning
 				return false;
+			}
 
 			//mxd. Split moving lines with fixed lines
-			if(!SplitLinesByLines(fixedlines, movinglines, mergemode)) return false;
+			if (!SplitLinesByLines(fixedlines, movinglines, mergemode))
+			{
+				EndAddRemove(); // Unfreeze arrays before returning
+				return false;
+			}
 			
 			// Remove looped linedefs
 			RemoveLoopedLinedefs(movinglines);
-			
+
 			// Join overlapping lines
-			if(!JoinOverlappingLines(movinglines)) return false;
+			if (!JoinOverlappingLines(movinglines))
+			{
+				EndAddRemove(); // Unfreeze arrays before returning
+				return false;
+			}
 
 			//mxd. Remove remaining new verts from dragged shape if possible
 			if(mergemode == MergeGeometryMode.REPLACE)
@@ -2988,52 +3022,60 @@ namespace CodeImp.DoomBuilder.Map
 				lineverts.Add(l.End);
 			}
 
-			for(int w = 0; w < bmWidth; w++) 
+			foreach (Vertex v in verts)
 			{
-				for(int h = 0; h < bmHeight; h++) 
+				HashSet<BlockEntry> blocks;
+
+				// If a vertex is in the very bottom left of it's block, and a linedef passes through the vertex it can
+				// happen (depending on the linedef's direction) that the vertex and the linedef are not in the same
+				// block. This will cause the linedef to not be split correctly. The prevent this we'll get all blocks
+				// surrounding the vertex, since the linedef will definitely be in at least one of them. Otherwise
+				// just take the block the vertex is in.
+				if ((blockmap.Range.Left - (int)v.Position.x) % blockmap.BlockSize == 0 && (blockmap.Range.Bottom - (int)v.Position.y) % blockmap.BlockSize == 0)
 				{
-					BlockEntry block = bmap[w, h];
-					if(block.Vertices.Count == 0 || block.Lines.Count == 0) continue;
+					blocks = blockmap.GetSquareRange(v.Position.x - 1, v.Position.y - 1, 2, 2);
+				}
+				else
+				{
+					blocks = new HashSet<BlockEntry>() { blockmap.GetBlockAt(v.Position) };
+				}
 
-					// Go for all the lines
-					for(int i = 0; i < block.Lines.Count; i++)
+				foreach (BlockEntry be in blocks)
+				{
+					if (be == null) continue;
+
+					for (int i = 0; i < be.Lines.Count; i++)
 					{
-						Linedef l = block.Lines[i];
-						
-						// Go for all the vertices
-						for(int c = 0; c < block.Vertices.Count; c++)
+						Linedef l = be.Lines[i];
+
+						// Check if v is close enough to l for splitting
+						if (l.DistanceToSq(v.Position, true) <= splitdist2)
 						{
-							Vertex v = block.Vertices[c];
-
-							// Check if v is close enough to l for splitting
-							if(l.DistanceToSq(v.Position, true) <= splitdist2) 
+							// Line is not already referencing v?
+							Vector2D deltastart = l.Start.Position - v.Position;
+							Vector2D deltaend = l.End.Position - v.Position;
+							if (((Math.Abs(deltastart.x) > 0.001) || (Math.Abs(deltastart.y) > 0.001)) &&
+								((Math.Abs(deltaend.x) > 0.001) || (Math.Abs(deltaend.y) > 0.001)))
 							{
-								// Line is not already referencing v?
-								Vector2D deltastart = l.Start.Position - v.Position;
-								Vector2D deltaend = l.End.Position - v.Position;
-								if(((Math.Abs(deltastart.x) > 0.001f) || (Math.Abs(deltastart.y) > 0.001f)) &&
-								   ((Math.Abs(deltaend.x) > 0.001f) || (Math.Abs(deltaend.y) > 0.001f))) 
+								// Split line l with vertex v
+								Linedef nl = l.Split(v);
+								if (nl == null) return false;
+								v.Marked = true; //mxd
+								splitverts.Add(v); //mxd
+
+								// Add the new line to the list
+								lines.Add(nl);
+								blockmap.AddLinedef(nl);
+
+								// Both lines must be updated because their new length is relevant for next iterations!
+								l.UpdateCache();
+								nl.UpdateCache();
+
+								// Add both lines to changedlines
+								if (changedlines != null)
 								{
-									// Split line l with vertex v
-									Linedef nl = l.Split(v);
-									if(nl == null) return false;
-									v.Marked = true; //mxd
-									splitverts.Add(v); //mxd
-
-									// Add the new line to the list
-									lines.Add(nl);
-									blockmap.AddLinedef(nl);
-
-									// Both lines must be updated because their new length is relevant for next iterations!
-									l.UpdateCache();
-									nl.UpdateCache();
-
-									// Add both lines to changedlines
-									if(changedlines != null) 
-									{
-										changedlines.Add(l);
-										changedlines.Add(nl);
-									}
+									changedlines.Add(l);
+									changedlines.Add(nl);
 								}
 							}
 						}

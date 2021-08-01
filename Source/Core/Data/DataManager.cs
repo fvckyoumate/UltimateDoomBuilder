@@ -385,7 +385,7 @@ namespace CodeImp.DoomBuilder.Data
 
 						// WAD file container
 						case DataLocation.RESOURCE_WAD:
-							c = new WADReader(dl, General.Map.Options.UseResourcesInReadonlyMode || dl.notfortesting || new FileInfo(dl.location).IsReadOnly);
+							c = new WADReader(dl, true);
 							if(((WADReader)c).WadFile.IsOfficialIWAD) //mxd
 							{
 								if(!string.IsNullOrEmpty(prevofficialiwad))
@@ -396,12 +396,12 @@ namespace CodeImp.DoomBuilder.Data
 
 						// Directory container
 						case DataLocation.RESOURCE_DIRECTORY:
-							c = new DirectoryReader(dl, General.Map.Options.UseResourcesInReadonlyMode || dl.notfortesting);
+							c = new DirectoryReader(dl, true);
 							break;
 
 						// PK3 file container
 						case DataLocation.RESOURCE_PK3:
-							c = new PK3Reader(dl, General.Map.Options.UseResourcesInReadonlyMode || dl.notfortesting || new FileInfo(dl.location).IsReadOnly);
+							c = new PK3Reader(dl, true);
 							break;
 					}
 				}
@@ -1381,7 +1381,9 @@ namespace CodeImp.DoomBuilder.Data
             }
 
 			//mxd. Add sprites from sprites collection (because GetSpriteNames() doesn't return TEXTURES sprites)
-			foreach(ImageData data in sprites.Values) spritenames.Add(data.Name);
+			foreach(ImageData data in sprites.Values)
+				if(WADReader.IsValidSpriteName(data.Name))
+					spritenames.Add(data.Name);
 			
 			//mxd. Get names of all voxel models, which can be used "as is" (these do not require corresponding sprite to work)
 			HashSet<string> voxelnames = new HashSet<string>(StringComparer.Ordinal);

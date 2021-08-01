@@ -34,6 +34,18 @@ using CodeImp.DoomBuilder.Data;
 
 namespace CodeImp.DoomBuilder.Config
 {
+	public struct CompatibilityOptions
+	{
+		public bool FixNegativePatchOffsets;
+		public bool FixMaskedPatchOffsets;
+
+		public CompatibilityOptions(Configuration cfg)
+		{
+			FixNegativePatchOffsets = cfg.ReadSetting("compatibility.fixnegativepatchoffsets", false);
+			FixMaskedPatchOffsets = cfg.ReadSetting("compatibility.fixmaskedpatchoffsets", false);
+		}
+	}
+
 	public class GameConfiguration
 	{
 		#region ================== Constants
@@ -185,6 +197,9 @@ namespace CodeImp.DoomBuilder.Config
         // [ZZ] compat
         private readonly bool buggymodeldefpitch;
 
+		// Compatibility options
+		CompatibilityOptions compatibility;
+
         #endregion
 
         #region ================== Properties
@@ -327,6 +342,9 @@ namespace CodeImp.DoomBuilder.Config
 
         // [ZZ] compat
         public bool BuggyModelDefPitch { get { return buggymodeldefpitch; } } // reverses +USEACTORPITCH (as in before GZDoom 2.4, but after +INHERITACTORPITCH)
+
+		// Compatibility options
+		public CompatibilityOptions Compatibility { get { return compatibility; } }
 		
 		#endregion
 
@@ -523,6 +541,9 @@ namespace CodeImp.DoomBuilder.Config
 
 			// Make door flags
 			LoadMakeDoorFlags();
+
+			// Compatibility options
+			compatibility = new CompatibilityOptions(cfg);
 		}
 
 		// Destructor

@@ -260,9 +260,7 @@ namespace CodeImp.DoomBuilder.BuilderModes.IO
 								// The image might have a color correction applied, but we need it without. So we use LocalGetBitmap, because it reloads the image,
 								// but doesn't applie the color correction if we set UseColorCorrection to false first
 								ImageData imagedata = General.Map.Data.GetFlatImage(s.FloorTexture);
-								imagedata.UseColorCorrection = false;
-								brushtexture = new Bitmap(imagedata.LocalGetBitmap());
-								imagedata.UseColorCorrection = true;
+								brushtexture = new Bitmap(imagedata.LocalGetBitmap(false));
 
 								textureoffset.x = s.Fields.GetValue("xpanningfloor", 0.0) * scale;
 								textureoffset.y = s.Fields.GetValue("ypanningfloor", 0.0) * scale;
@@ -276,9 +274,7 @@ namespace CodeImp.DoomBuilder.BuilderModes.IO
 								// The image might have a color correction applied, but we need it without. So we use LocalGetBitmap, because it reloads the image,
 								// but doesn't applie the color correction if we set UseColorCorrection to false first
 								ImageData imagedata = General.Map.Data.GetFlatImage(s.CeilTexture);
-								imagedata.UseColorCorrection = false;
-								brushtexture = new Bitmap(imagedata.LocalGetBitmap());
-								imagedata.UseColorCorrection = true;
+								brushtexture = new Bitmap(imagedata.LocalGetBitmap(false));
 
 								textureoffset.x = s.Fields.GetValue("xpanningceiling", 0.0) * scale;
 								textureoffset.y = s.Fields.GetValue("ypanningceiling", 0.0) * scale;
@@ -301,6 +297,12 @@ namespace CodeImp.DoomBuilder.BuilderModes.IO
 								int brightness = General.Clamp(s.Brightness, 0, 255);
 								AdjustBrightness(ref brushtexture, brightness > 0 ? brightness / 255.0f : 0.0f);
 							}
+
+							// Take sector colors into account
+							int lightcolor = s.Fields.GetValue("lightcolor", 0xffffff);
+							int surfacecolor = settings.Floor ? s.Fields.GetValue("color_floor", 0xffffff) : s.Fields.GetValue("color_ceiling", 0xffffff);
+							Rendering.Color4 color = Rendering.PixelColor.Modulate(Rendering.PixelColor.FromInt(lightcolor), Rendering.PixelColor.FromInt(surfacecolor)).ToColorValue();
+							Colorize(ref brushtexture, color.Red, color.Green, color.Blue);
 
 							if (scale > 1.0f)
 								ResizeImage(ref brushtexture, brushtexture.Width * (int)scale, brushtexture.Height * (int)scale);
@@ -481,6 +483,41 @@ namespace CodeImp.DoomBuilder.BuilderModes.IO
 			ColorMatrix cm = new ColorMatrix(new float[][] {
 				new float[] {b, 0, 0, 0, 0},
 				new float[] {0, b, 0, 0, 0},
+				new float[] {0, 0, b, 0, 0},
+				new float[] {0, 0, 0, 1, 0},
+				new float[] {0, 0, 0, 0, 1},
+			});
+			ImageAttributes attributes = new ImageAttributes();
+			attributes.SetColorMatrix(cm);
+
+			// Draw the image onto the new bitmap while applying the new ColorMatrix.
+			Point[] points = {
+				new Point(0, 0),
+				new Point(image.Width, 0),
+				new Point(0, image.Height),
+			};
+			Rectangle rect = new Rectangle(0, 0, image.Width, image.Height);
+
+			// Make the result bitmap.
+			Bitmap bm = new Bitmap(image.Width, image.Height);
+			using (Graphics gr = Graphics.FromImage(bm))
+			{
+				gr.DrawImage(image, points, rect, GraphicsUnit.Pixel, attributes);
+			}
+
+			// Dispose the original...
+			image.Dispose();
+
+			// ... and set it as the adjusted image
+			image = bm;
+		}
+
+		private void Colorize(ref Bitmap image, float r, float g, float b)
+		{
+			// Make the ColorMatrix.
+			ColorMatrix cm = new ColorMatrix(new float[][] {
+				new float[] {r, 0, 0, 0, 0},
+				new float[] {0, g, 0, 0, 0},
 				new float[] {0, 0, b, 0, 0},
 				new float[] {0, 0, 0, 1, 0},
 				new float[] {0, 0, 0, 0, 1},

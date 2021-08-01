@@ -704,6 +704,8 @@ namespace CodeImp.DoomBuilder.Editing
 		{
 			if(testFromCurrentPosition) 
 			{
+				bool oldignorepropchanges = General.Map.UndoRedo.IgnorePropChanges;
+
 				if (!mouseinside)
 				{
 					General.MainWindow.DisplayStatus(StatusType.Warning, "Can't test from current position: mouse is outside editing window!");
@@ -751,22 +753,28 @@ namespace CodeImp.DoomBuilder.Editing
 					}
 				}
 
-				if(start == null) 
+				if(start == null) // biwa. If there's no existing valid player start create one
 				{
-					// biwa. If there's no existing valid player start create one
 					playerStartIsTempThing = true;
-					start = General.Map.Map.CreateThing();
+
+					// We have to circumvent the undo manager when creating the temporary player start, otherwise undoing
+					// stuff will crash: https://github.com/jewalky/UltimateDoomBuilder/issues/573
+					start = General.Map.Map.CreateTempThing();
 
 					if (start != null)
 					{
+						// We have to ignore property changes, otherwise the undo manager will try to record the changes
+						General.Map.UndoRedo.IgnorePropChanges = true;
 						General.Settings.ApplyDefaultThingSettings(start);
 						start.Type = 1;
-					} else
+					}
+					else
 					{
 						General.MainWindow.DisplayStatus(StatusType.Warning, "Can't test from current position: couldn't create player start!");
 						return false;
 					}
-				} else
+				}
+				else
 				{
 					playerStartIsTempThing = false;
 				}
@@ -777,6 +785,8 @@ namespace CodeImp.DoomBuilder.Editing
 
 				//everything should be valid, let's move player start here
 				start.Move(new Vector3D(mousemappos.x, mousemappos.y, s.FloorHeight));
+
+				General.Map.UndoRedo.IgnorePropChanges = oldignorepropchanges;
 			}
 
 			return true;
@@ -786,11 +796,15 @@ namespace CodeImp.DoomBuilder.Editing
 		{
 			if(testFromCurrentPosition) 
 			{
-				//restore position
-				playerStart.Move(playerStartPosition);
-
 				if (playerStartIsTempThing) // biwa
+				{
 					General.Map.Map.RemoveThing(playerStart.Index);
+				}
+				else
+				{
+					//restore position
+					playerStart.Move(playerStartPosition);
+				}
 
 				playerStart = null;
 			}
