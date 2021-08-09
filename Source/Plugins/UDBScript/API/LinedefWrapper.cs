@@ -30,6 +30,7 @@ using System.Dynamic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CodeImp.DoomBuilder.Config;
 using CodeImp.DoomBuilder.Geometry;
 using CodeImp.DoomBuilder.Map;
 
@@ -232,7 +233,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 					IDictionary<string, object> so = sender as IDictionary<string, object>;
 
 					// Only allow known flags to be set
-					if (!General.Map.Config.LinedefFlags.Keys.Contains(pcea.PropertyName))
+					if (!General.Map.Config.LinedefFlags.Keys.Contains(pcea.PropertyName) && !General.Map.Config.LinedefActivates.Any(lai => lai.Key == pcea.PropertyName))
 						throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Flag name '" + pcea.PropertyName + "' is not valid.");
 
 					// New value must be bool

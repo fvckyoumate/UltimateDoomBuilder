@@ -555,6 +555,16 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 			}
 		}
 
+		/// <summary>
+		/// Determines and returns the `Sector` the `Thing` is in.
+		/// </summary>
+		/// <returns>The `Sector` the `Thing` is in</returns>
+		public SectorWrapper getSector()
+		{
+			thing.DetermineSector();
+			return new SectorWrapper(thing.Sector);
+		}
+
 		#endregion
 	}
 }
