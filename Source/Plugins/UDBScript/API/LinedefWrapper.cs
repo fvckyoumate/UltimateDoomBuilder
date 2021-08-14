@@ -201,6 +201,27 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
+		/// The activation flag. Hexen format only.
+		/// </summary>
+		public int activate
+		{
+			get
+			{
+				if (linedef.IsDisposed)
+					throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Linedef is disposed, the activate property can not be accessed.");
+
+				return linedef.Activate;
+			}
+			set
+			{
+				if (linedef.IsDisposed)
+					throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Linedef is disposed, the activate property can not be accessed.");
+
+				linedef.Activate = value;
+			}
+		}
+
+		/// <summary>
 		/// `Linedef` flags. It's an object with the flags as properties. In Doom format and Hexen format they are identified by numbers, in UDMF by their name.
 		/// Doom and Hexen:
 		/// ```
@@ -435,13 +456,25 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Flips the `Linedef`'s `Sidedefs`.
+		/// Flips the `Linedef`'s `Sidedef`s.
 		/// </summary>
 		public void flipSidedefs()
 		{
 			if (linedef.IsDisposed)
 				throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Linedef is disposed, the flipSidedefs method can not be accessed.");
 
+			linedef.FlipSidedefs();
+		}
+
+		/// <summary>
+		/// Flips the `Linedef`'s vertex attachments and `Sidedef`s. This is a shortcut to using both `flipVertices()` and `flipSidedefs()`.
+		/// </summary>
+		public void flip()
+		{
+			if (linedef.IsDisposed)
+				throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Linedef is disposed, the flip method can not be accessed.");
+
+			linedef.FlipVertices();
 			linedef.FlipSidedefs();
 		}
 

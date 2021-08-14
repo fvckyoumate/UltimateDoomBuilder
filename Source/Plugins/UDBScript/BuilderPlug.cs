@@ -31,6 +31,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Security.Cryptography;
 using CodeImp.DoomBuilder.Actions;
@@ -123,7 +124,8 @@ namespace CodeImp.DoomBuilder.UDBScript
 		{
 			base.OnMapNewEnd();
 
-			LoadScripts();
+			// Methods called by LoadScripts might sleep for some time, so call LoadScripts asynchronously
+			new Task(LoadScripts).Start();
 
 			watcher.EnableRaisingEvents = true;
 		}
@@ -132,7 +134,8 @@ namespace CodeImp.DoomBuilder.UDBScript
 		{
 			base.OnMapOpenEnd();
 
-			LoadScripts();
+			// Methods called by LoadScripts might sleep for some time, so call LoadScripts asynchronously
+			new Task(LoadScripts).Start();
 
 			watcher.EnableRaisingEvents = true;
 		}
@@ -210,16 +213,33 @@ namespace CodeImp.DoomBuilder.UDBScript
 
 			foreach (string filename in Directory.GetFiles(path, "*.js"))
 			{
-				try
+				bool retry = true;
+				int retrycounter = 5;
+
+				while (retry)
 				{
-					ScriptInfo si = new ScriptInfo(filename);
-					sds.Scripts.Add(si);
-					scriptinfo.Add(si);
-				}
-				catch(Exception e)
-				{
-					General.ErrorLogger.Add(ErrorType.Warning, "Failed to process " + filename + ": " + e.Message);
-					General.WriteLogLine("Failed to process " + filename + ": " + e.Message);
+					try
+					{
+						ScriptInfo si = new ScriptInfo(filename);
+						sds.Scripts.Add(si);
+						scriptinfo.Add(si);
+						retry = false;
+					}
+					catch (IOException)
+					{
+						// The FileSystemWatcher can fire the event while the file is still being written, in that case we'll get
+						// an IOException (file is locked by another process). So just try to load the file a couple times
+						Thread.Sleep(100);
+						retrycounter--;
+						if (retrycounter == 0)
+							retry = false;
+					}
+					catch (Exception e)
+					{
+						General.ErrorLogger.Add(ErrorType.Warning, "Failed to process " + filename + ": " + e.Message);
+						General.WriteLogLine("Failed to process " + filename + ": " + e.Message);
+						retry = false;
+					}
 				}
 			}
 

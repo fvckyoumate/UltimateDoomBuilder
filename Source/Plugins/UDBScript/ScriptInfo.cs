@@ -71,14 +71,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 			version = 1;
 			options = new List<ScriptOption>();
 
-			try
-			{
-				data = File.ReadAllText(file);
-			}
-			catch(Exception e)
-			{
-				throw new ArgumentException(e.Message);
-			}
+			data = File.ReadAllText(file);
 
 			Scanner scanner = new Scanner(data);
 			Token token;
