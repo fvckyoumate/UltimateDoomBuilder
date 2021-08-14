@@ -3,6 +3,8 @@
 ## Properties
 ### action
 `Linedef` action.
+### activate
+The activation flag. Hexen format only.
 ### angle
 The `Linedef`'s angle in degree. Read-only.
 ### angleRad
@@ -100,8 +102,10 @@ Gets the shortest squared distance from `pos` to the line.
 * bounded: `true` if only the finite length of the line should be used, `false` if the infinite length of the line should be used
 #### Return value
 Squared distance to the line
+### flip()
+Flips the `Linedef`'s vertex attachments and `Sidedef`s. This is a shortcut to using both `flipVertices()` and `flipSidedefs()`.
 ### flipSidedefs()
-Flips the `Linedef`'s `Sidedefs`.
+Flips the `Linedef`'s `Sidedef`s.
 ### flipVertices()
 Flips the `Linedef`'s vertex attachments.
 ### getCenterPoint()

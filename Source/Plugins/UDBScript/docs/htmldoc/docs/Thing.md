@@ -107,6 +107,10 @@ t.distanceToSq([ 32, 64 ]);
 * pos: Point to calculate the squared distance to.
 #### Return value
 Distance to `pos`
+### getSector()
+Determines and returns the `Sector` the `Thing` is in.
+#### Return value
+The `Sector` the `Thing` is in
 ### snapToAccuracy()
 Snaps the `Thing`'s position to the map format's accuracy.
 ### snapToGrid()
