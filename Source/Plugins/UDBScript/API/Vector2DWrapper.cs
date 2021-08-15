@@ -217,11 +217,11 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Returns the angle between two `Vector2D`s in radians.
+		/// Returns the angle between two `Vector2D`s in degrees.
 		/// </summary>
 		/// <param name="a">First `Vector2D`</param>
 		/// <param name="b">Second `Vector2D`</param>
-		/// <returns>Angle in radians</returns>
+		/// <returns>Angle in degrees</returns>
 		public static double getAngle(object a, object b)
 		{
 			try

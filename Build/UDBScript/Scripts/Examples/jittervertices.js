@@ -22,7 +22,7 @@ max
 // Gets a random value between min and max, then randomly make it negative
 function getRandomValue(min, max)
 {
-    return Math.floor(Math.random() * (max-min)) + min * (Math.random() < 0.5 ? 1 : -1);
+    return (Math.floor(Math.random() * (max-min)) + min) * (Math.random() < 0.5 ? 1 : -1);
 }
 
 // Get selected vertices
