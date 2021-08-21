@@ -23,15 +23,13 @@
 
 #region ================== Namespaces
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using CodeImp.DoomBuilder.BuilderModes;
 using CodeImp.DoomBuilder.Editing;
 using CodeImp.DoomBuilder.Geometry;
 using CodeImp.DoomBuilder.Map;
+using CodeImp.DoomBuilder.VisualModes;
 
 #endregion
 
@@ -42,6 +40,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		#region ================== Variables
 
 		private MapSet map;
+		private VisualCameraWrapper visualcamera;
 
 		#endregion
 
@@ -87,7 +86,21 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		{
 			get
 			{
-				return ((ClassicMode)General.Editing.Mode).MouseMapPos;
+				if (General.Editing.Mode is ClassicMode)
+					return ((ClassicMode)General.Editing.Mode).MouseMapPos;
+				else
+					return ((VisualMode)General.Editing.Mode).GetHitPosition();
+			}
+		}
+
+		/// <summary>
+		/// `VisualCamera` object with information about the position of the camera in visual mode. Read-only.
+		/// </summary>
+		public VisualCameraWrapper camera
+		{
+			get
+			{
+				return visualcamera;
 			}
 		}
 
@@ -98,6 +111,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		internal MapWrapper()
 		{
 			map = General.Map.Map;
+			visualcamera = new VisualCameraWrapper();
 		}
 
 		#endregion

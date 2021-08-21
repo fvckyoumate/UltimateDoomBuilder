@@ -256,7 +256,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 				ScriptOption so = (ScriptOption)row.Tag;
 
 				so.typehandler.Browse(this.ParentForm);
-				row.Cells["Value"].Value = so.typehandler.GetValue();
+				row.Cells["Value"].Value = so.typehandler.GetStringValue();
 
 				if (so.typehandler.DynamicImage) browsebutton.Image = so.typehandler.BrowseImage;
 				parametersview.Focus();

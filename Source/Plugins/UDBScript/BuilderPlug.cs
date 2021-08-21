@@ -278,6 +278,8 @@ namespace CodeImp.DoomBuilder.UDBScript
 				return (Vector2D)data;
 			else if (data is Vector2DWrapper)
 				return new Vector2D(((Vector2DWrapper)data).x, ((Vector2DWrapper)data).y);
+			else if (data is Vector3DWrapper)
+				return new Vector3D(((Vector3DWrapper)data).x, ((Vector3DWrapper)data).y, ((Vector3DWrapper)data).z);
 			else if (data.GetType().IsArray)
 			{
 				object[] vals = (object[])data;

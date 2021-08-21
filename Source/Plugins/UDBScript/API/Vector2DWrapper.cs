@@ -392,6 +392,15 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 			return new Vector2DWrapper(new Vector2D(x, y).GetRotated(theta));
 		}
 
+		/// <summary>
+		/// Checks if the `Vector2D` is finite or not.
+		/// </summary>
+		/// <returns>`true` if `Vector2D` is finite, otherwise `false`</returns>
+		public bool isFinite()
+		{
+			return new Vector2D(x, y).IsFinite();
+		}
+
 		public override string ToString()
 		{
 			return new Vector2D(x, y).ToString();
