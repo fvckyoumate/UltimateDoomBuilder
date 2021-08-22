@@ -695,7 +695,13 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 			if (linedef.Tags.Contains(tag))
 				return false;
 
-			linedef.Tags.Add(tag);
+			// We have to take the detour by creating a new list and assigning that because otherwise the
+			// BeforePropsChange will not be triggered
+			List<int> tags = new List<int>(linedef.Tags);
+			tags.Add(tag);
+			tags.Remove(0);
+
+			linedef.Tags = tags;
 
 			return true;
 		}
@@ -707,7 +713,24 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// <returns>`true` when the tag was removed successfully, `false` when the tag did not exist</returns>
 		public bool removeTag(int tag)
 		{
-			return linedef.Tags.Remove(tag);
+			if (linedef.Tags.Contains(tag))
+			{
+				// If it's the only tag just set it to 0, otherwise remove the tag completely
+				if (linedef.Tags.Count == 1)
+					linedef.Tag = 0;
+				else
+				{
+					// We have to take the detour by creating a new list and assigning that because otherwise the
+					// BeforePropsChange will not be triggered
+					List<int> tags = new List<int>(linedef.Tags);
+					tags.Remove(tag);
+					linedef.Tags = tags;
+				}
+
+				return true;
+			}
+
+			return false;
 		}
 
 		#endregion

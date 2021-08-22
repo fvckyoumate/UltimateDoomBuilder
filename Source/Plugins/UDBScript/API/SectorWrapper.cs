@@ -524,7 +524,13 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 			if (sector.Tags.Contains(tag))
 				return false;
 
-			sector.Tags.Add(tag);
+			// We have to take the detour by creating a new list and assigning that because otherwise the
+			// BeforePropsChange will not be triggered
+			List<int> tags = new List<int>(sector.Tags);
+			tags.Add(tag);
+			tags.Remove(0);
+
+			sector.Tags = tags;
 
 			return true;
 		}
@@ -536,16 +542,19 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// <returns>`true` when the tag was removed successfully, `false` when the tag did not exist</returns>
 		public bool removeTag(int tag)
 		{
-			// Make sure changes are recorded for the undo/redo system
-			sector.Fields.BeforeFieldsChange();
-
 			if(sector.Tags.Contains(tag))
 			{
 				// If it's the only tag just set it to 0, otherwise remove the tag completely
 				if (sector.Tags.Count == 1)
 					sector.Tag = 0;
 				else
-					sector.Tags.Remove(tag);
+				{
+					// We have to take the detour by creating a new list and assigning that because otherwise the
+					// BeforePropsChange will not be triggered
+					List<int> tags = new List<int>(sector.Tags);
+					tags.Remove(tag);
+					sector.Tags = tags;
+				}
 
 				return true;
 			}
