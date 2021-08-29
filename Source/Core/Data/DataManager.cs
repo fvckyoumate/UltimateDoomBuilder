@@ -38,6 +38,7 @@ using CodeImp.DoomBuilder.Windows;
 using CodeImp.DoomBuilder.ZDoom;
 using Matrix = CodeImp.DoomBuilder.Rendering.Matrix;
 using CodeImp.DoomBuilder.Controls;
+using CodeImp.DoomBuilder.Dehacked;
 
 #endregion
 
@@ -131,6 +132,9 @@ namespace CodeImp.DoomBuilder.Data
         private Dictionary<string, ActorStructure> zdoomclasses;
 		private List<ThingCategory> thingcategories;
 		private Dictionary<int, ThingTypeInfo> thingtypes;
+
+		// Dehacked
+		private DehackedParser dehacked;
 		
 		// Disposing
 		private bool isdisposed;
@@ -443,8 +447,11 @@ namespace CodeImp.DoomBuilder.Data
 			//mxd. Load Script Editor-only stuff...
 			LoadExtraTextLumps();
 
+			LoadDehackedThings();
             LoadZScriptThings();
             LoadDecorateThings();
+			ApplyDehackedThings();
+			FixRenamedDehackedSprites();
             int thingcount = ApplyZDoomThings(spawnnums, doomednums);
 			int spritecount = LoadThingSprites();
 			LoadInternalSprites();
@@ -1761,6 +1768,37 @@ namespace CodeImp.DoomBuilder.Data
                 decorate.ClearActors();
 		}
 
+		/// <summary>
+		/// Loads Dehacked things
+		/// </summary>
+		private void LoadDehackedThings()
+		{
+			// Create new parser
+			dehacked = new DehackedParser();
+
+			HashSet<string> availablesprites = new HashSet<string>();
+
+			foreach(DataReader dr in containers)
+			{
+				availablesprites.UnionWith(dr.GetSpriteNames());
+			}
+
+			for(int i = containers.Count-1; i >= 0; i--)
+			{
+				DataReader dr = containers[i];
+
+				List<TextResourceData> dehackedstreams = new List<TextResourceData>(dr.GetDehackedData("DEHACKED"));
+
+				if(dehackedstreams.Count > 0)
+				{
+					dehackedstreams[0].Stream.Seek(0, SeekOrigin.Begin);
+					dehacked.Parse(dehackedstreams[0], General.Map.Config.DehackedData, availablesprites);
+
+					break;
+				}
+			}
+		}
+
         // [ZZ] this retrieves ZDoom actor structure by class name.
         public ActorStructure GetZDoomActor(string classname)
         {
@@ -1966,6 +2004,44 @@ namespace CodeImp.DoomBuilder.Data
 
             return counter;
         }
+
+		private int ApplyDehackedThings()
+		{
+			int numaddthings = 0;
+			DecorateCategoryInfo dci = new DecorateCategoryInfo();
+			dci.Category = new List<string>() { "Dehacked" };
+
+			foreach(DehackedThing t in dehacked.Things)
+			{
+				// This is not a thing that can be placed in the map
+				if (t.DoomEdNum <= 0)
+					continue;
+
+				if(!thingtypes.ContainsKey(t.DoomEdNum))
+				{
+					ThingCategory cat = GetThingCategory(null, thingcategories, dci);
+					ThingTypeInfo tti = new ThingTypeInfo(cat, t);
+					thingtypes[t.DoomEdNum] = tti;
+					cat.AddThing(tti);
+				}
+				else
+				{
+					thingtypes[t.DoomEdNum].ModifyByDehackedThing(t);
+				}
+
+				numaddthings++;				
+			}
+
+			return numaddthings;
+		}
+
+		private void FixRenamedDehackedSprites()
+		{
+			foreach(ThingTypeInfo tti in thingtypes.Values)
+			{
+				tti.ModifyBySpriteReplacement(dehacked.Texts);
+			}
+		}
 
         //mxd
         private static ThingCategory GetThingCategory(ThingCategory parent, List<ThingCategory> categories, DecorateCategoryInfo catinfo) 
