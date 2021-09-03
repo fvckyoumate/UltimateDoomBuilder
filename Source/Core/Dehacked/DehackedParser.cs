@@ -93,6 +93,7 @@ namespace CodeImp.DoomBuilder.Dehacked
 
 		private enum ParseSection
 		{
+			NONE,
 			HEADER,
 			THING,
 			FRAME,
@@ -158,8 +159,12 @@ namespace CodeImp.DoomBuilder.Dehacked
 					line = GetLine();
 
 					// Skip blank lines
-					if (string.IsNullOrEmpty(line))
+					if (string.IsNullOrWhiteSpace(line))
+					{
+						if (parsesection == ParseSection.CODEPTR)
+							parsesection = ParseSection.NONE;
 						continue;
+					}
 					// Comment lines start with #. Apparently comments after payload are not supported
 					else if (line.StartsWith("#"))
 						continue;
@@ -173,22 +178,7 @@ namespace CodeImp.DoomBuilder.Dehacked
 					}
 					else if (line.ToLowerInvariant().StartsWith("thing"))
 					{
-						Regex re = new Regex(@"thing\s+(\d+)\s+\((.+)\)", RegexOptions.IgnoreCase);
-						Match m = re.Match(line);
-
-						if (!m.Success)
-						{
-							LogError("Found thing definition, but thing header seems to be wrong.");
-							return false;
-						}
-
-						int dehthingnumber = int.Parse(m.Groups[1].Value);
-						string dehthingname = m.Groups[2].Value;
-
-						thing = new DehackedThing(dehthingnumber, dehthingname);
-						things.Add(thing);
-						parsesection = ParseSection.THING;
-
+						ParseThing(line);
 						continue; // Go to next line
 					}
 					else if (line.ToLowerInvariant().StartsWith("frame") && parsesection != ParseSection.CODEPTR)
@@ -225,17 +215,17 @@ namespace CodeImp.DoomBuilder.Dehacked
 						parsesection = ParseSection.STRINGS;
 						continue; // Go to next line
 					}
-					else if(line.ToLowerInvariant().StartsWith("[sprites]"))
+					else if (line.ToLowerInvariant().StartsWith("[sprites]"))
 					{
 						parsesection = ParseSection.SPRITES;
 						continue; // Go to next line
 					}
-					else if(line.ToLowerInvariant().StartsWith("[sounds]"))
+					else if (line.ToLowerInvariant().StartsWith("[sounds]"))
 					{
 						parsesection = ParseSection.SOUNDS;
 						continue; // Go to next line
 					}
-					else if(line.ToLowerInvariant().StartsWith("text"))
+					else if (line.ToLowerInvariant().StartsWith("text"))
 					{
 						parsesection = ParseSection.TEXT;
 
@@ -252,7 +242,7 @@ namespace CodeImp.DoomBuilder.Dehacked
 						textreplacenewcount = int.Parse(m.Groups[2].Value);
 
 						StringBuilder oldtext = new StringBuilder(textreplaceoldcount);
-						while(textreplaceoldcount > 0)
+						while (textreplaceoldcount > 0)
 						{
 							int c = datareader.Read();
 
@@ -264,22 +254,26 @@ namespace CodeImp.DoomBuilder.Dehacked
 						}
 
 						StringBuilder newtext = new StringBuilder();
-						while(textreplacenewcount > 0)
+						while (textreplacenewcount > 0)
 						{
 							int c = datareader.Read();
 
 							// Ignore CR
 							if (c == '\r') continue;
 
+							if (c == '\n') linenumber++;
+
 							newtext.Append(Convert.ToChar(c));
 							textreplacenewcount--;
 						}
 
-						if(datareader.Read() != '\r' && datareader.Read() != '\n')
+						if (!datareader.EndOfStream && datareader.Read() != '\r' && datareader.Read() != '\n')
 						{
 							LogError("Expected CRLF after text replacement, got something else.");
 							return false;
 						}
+
+						linenumber++;
 
 						texts[oldtext.ToString()] = newtext.ToString();
 
@@ -295,12 +289,6 @@ namespace CodeImp.DoomBuilder.Dehacked
 									LogWarning("Unexpected Doom version. Expected 21, got " + fieldvalue + ". Parsing might not work correctly.");
 								else if (fieldvalue == "Patch format" && fieldvalue != "6")
 									LogWarning("Unexpected patch format. Expected 6, got " + fieldvalue + ". Parsing might not work correctly.");
-							}
-							break;
-						case ParseSection.THING:
-							if(hasfieldvaluepair)
-							{
-								thing.Props[fieldkey.ToLowerInvariant()] = fieldvalue;
 							}
 							break;
 						case ParseSection.FRAME:
@@ -380,6 +368,59 @@ namespace CodeImp.DoomBuilder.Dehacked
 			TextResourceErrorItem error = new TextResourceErrorItem(ErrorType.Error, ScriptType.DEHACKED, datalocation, sourcename, sourcelumpindex, linenumber, message);
 
 			General.ErrorLogger.Add(error);
+		}
+
+		private bool GetKeyValueFromLine(string line, out string key, out string value)
+		{
+			key = string.Empty;
+			value = string.Empty;
+
+			if (!line.Contains('='))
+			{
+				LogError("Line in thing definition didn't contain '='.");
+				return false;
+			}
+
+			string[] parts = line.Split('=');
+			key = parts[0].Trim().ToLowerInvariant();
+			value = parts[1].Trim();
+
+			return true;
+		}
+
+		private bool ParseThing(string line)
+		{
+			Regex re = new Regex(@"thing\s+(\d+)\s+\((.+)\)", RegexOptions.IgnoreCase);
+			Match m = re.Match(line);
+
+			if (!m.Success)
+			{
+				LogError("Found thing definition, but thing header seems to be wrong.");
+				return false;
+			}
+
+			int dehthingnumber = int.Parse(m.Groups[1].Value);
+			string dehthingname = m.Groups[2].Value;
+			string fieldkey = string.Empty;
+			string fieldvalue = string.Empty;
+
+			DehackedThing thing = new DehackedThing(dehthingnumber, dehthingname);
+			things.Add(thing);
+
+			while(true)
+			{
+				line = GetLine();
+
+				if (string.IsNullOrWhiteSpace(line)) break;
+				if (line.StartsWith("#")) continue;
+
+				if (!GetKeyValueFromLine(line, out fieldkey, out fieldvalue))
+					return false;
+
+				thing.Props[fieldkey] = fieldvalue;
+			}
+
+			return true;
 		}
 
 		#endregion
