@@ -2056,6 +2056,9 @@ namespace CodeImp.DoomBuilder.Data
 		/// </summary>
 		private void FixRenamedDehackedSprites()
 		{
+			if (dehacked.Things.Count == 0)
+				return;
+
 			foreach(ThingTypeInfo tti in thingtypes.Values)
 			{
 				tti.ModifyBySpriteReplacement(dehacked.GetSpriteReplacements());
