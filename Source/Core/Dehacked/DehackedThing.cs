@@ -46,6 +46,9 @@ namespace CodeImp.DoomBuilder.Dehacked
 		private int height;
 		private int width;
 		private List<string> bits;
+		private string category;
+		private int color;
+		private bool bright;
 
 		#endregion
 
@@ -60,6 +63,9 @@ namespace CodeImp.DoomBuilder.Dehacked
 		public int Height { get { return height; } internal set { height = value; } }
 		public int Width { get { return width; } internal set { width = value; } }
 		public List<string> Bits { get { return bits; } }
+		public string Category { get { return category; } }
+		public int Color { get { return color; } }
+		public bool Bright { get { return bright; } }
 
 		#endregion
 
@@ -69,6 +75,7 @@ namespace CodeImp.DoomBuilder.Dehacked
 		{
 			this.number = number;
 			this.name = name;
+			color = -1;
 
 			props = new Dictionary<string, string>();
 			bits = new List<string>();
@@ -84,8 +91,16 @@ namespace CodeImp.DoomBuilder.Dehacked
 
 		#endregion
 
-		internal void Process(Dictionary<int, DehackedFrame> frames, Dictionary<int, string> definedsprites, Dictionary<long, string> bitmnemonics, DehackedThing basething, HashSet<string> availablesprites)
+		/// <summary>
+		/// Processes the thing, setting it up according to the properties defined in the Dehacked patch.
+		/// </summary>
+		/// <param name="frames">Dehacked frames the thing could use</param>
+		/// <param name="bitmnemonics">Bit mnemonics</param>
+		/// <param name="basething">The base thing to copy properties from</param>
+		/// <param name="availablesprites">All sprites available in the resources</param>
+		internal void Process(Dictionary<int, DehackedFrame> frames, Dictionary<long, string> bitmnemonics, DehackedThing basething, HashSet<string> availablesprites)
 		{
+			// Copy all missing properties from the base thing
 			if(basething != null)
 			{
 				doomednum = basething.DoomEdNum;
@@ -110,12 +125,24 @@ namespace CodeImp.DoomBuilder.Dehacked
 							if (frames.ContainsKey(initialframe))
 							{
 								// It doesn't seem to matter which rotation we select, UDB will automagically
-								// find the correct sprites later
-								string spritename = frames[initialframe].Sprite + Convert.ToChar(frames[initialframe].SpriteSubNumber + 'A');
-								if (availablesprites.Contains(spritename + "0"))
-									sprite = spritename + "0";
+								// find the correct sprites later. We just try to find a sprite that's available
+								// in the loaded resources, either xxxxA0 (i.e. without rotations) or xxxxA1 (i.e. with rotations)
+								if (!string.IsNullOrEmpty(frames[initialframe].Sprite))
+								{
+									string spritename = frames[initialframe].Sprite + Convert.ToChar(frames[initialframe].SpriteSubNumber + 'A');
+									if (availablesprites.Contains(spritename + "0"))
+										sprite = spritename + "0";
+									else
+										sprite = spritename + "1";
+								}
 								else
-									sprite = spritename + "1";
+									sprite = null;
+
+								bright = frames[initialframe].Bright;
+							}
+							else
+							{
+								General.ErrorLogger.Add(ErrorType.Error, "Dehacked thing " + number + " is referencing initial frame " + initialframe + " that is not defined.");
 							}
 						}
 						break;
@@ -135,18 +162,28 @@ namespace CodeImp.DoomBuilder.Dehacked
 						break;
 					case "bits":
 						long allbits;
+						// Try to parse the value as an number, if that works it's an old-school bit set and not mnemonics
 						if(long.TryParse(value, out allbits))
 						{
+							// Go through all given mnemonics and translate the bits to them
 							foreach (long mask in bitmnemonics.Keys)
 								if ((mask & allbits) == mask)
 									bits.Add(bitmnemonics[mask]);
 						}
 						else
 						{
+							// The bits are mnemonics, so split them and turn them into a list
 							foreach (string mnemonic in value.Split('+'))
 								bits.Add(mnemonic.Trim().ToLowerInvariant());
 						}
 						break;
+					//case "$category":
+					//	category = value;
+					//	break;
+					//case "$color":
+					//	if (!int.TryParse(value, out color))
+					//		color = 18; // Default light brown
+					//	break;
 				}
 			}
 		}

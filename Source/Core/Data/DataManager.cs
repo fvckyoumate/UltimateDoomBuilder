@@ -2005,11 +2005,13 @@ namespace CodeImp.DoomBuilder.Data
             return counter;
         }
 
+		/// <summary>
+		/// Adds things defined in a Dehacked patch to the list of things
+		/// </summary>
+		/// <returns>Number of changed/added Dehacked things</returns>
 		private int ApplyDehackedThings()
 		{
 			int numaddthings = 0;
-			DecorateCategoryInfo dci = new DecorateCategoryInfo();
-			dci.Category = new List<string>() { "Dehacked" };
 
 			foreach(DehackedThing t in dehacked.Things)
 			{
@@ -2017,16 +2019,30 @@ namespace CodeImp.DoomBuilder.Data
 				if (t.DoomEdNum <= 0)
 					continue;
 
-				if(!thingtypes.ContainsKey(t.DoomEdNum))
+				DecorateCategoryInfo dci = GetCategoryInfo(t, thingcategories);
+				ThingCategory cat = GetThingCategory(null, thingcategories, dci);
+				ThingTypeInfo tti = new ThingTypeInfo(cat, t);
+
+				if (!thingtypes.ContainsKey(t.DoomEdNum))
 				{
-					ThingCategory cat = GetThingCategory(null, thingcategories, dci);
-					ThingTypeInfo tti = new ThingTypeInfo(cat, t);
 					thingtypes[t.DoomEdNum] = tti;
 					cat.AddThing(tti);
 				}
 				else
 				{
-					thingtypes[t.DoomEdNum].ModifyByDehackedThing(t);
+					if (!string.IsNullOrEmpty(t.Category))
+					{
+						// Remove the thing from its old category...
+						thingtypes[t.DoomEdNum].Category.RemoveThing(thingtypes[t.DoomEdNum]);
+						thingtypes[t.DoomEdNum] = tti;
+
+						// ... and add it to the new one
+						cat.AddThing(tti);
+					}
+					else
+					{
+						thingtypes[t.DoomEdNum].ModifyByDehackedThing(t);
+					}
 				}
 
 				numaddthings++;				
@@ -2035,11 +2051,14 @@ namespace CodeImp.DoomBuilder.Data
 			return numaddthings;
 		}
 
+		/// <summary>
+		/// Fixes all thing type infos to use the sprites that were renamed through Dehacked
+		/// </summary>
 		private void FixRenamedDehackedSprites()
 		{
 			foreach(ThingTypeInfo tti in thingtypes.Values)
 			{
-				tti.ModifyBySpriteReplacement(dehacked.Texts);
+				tti.ModifyBySpriteReplacement(dehacked.GetSpriteReplacements());
 			}
 		}
 
@@ -2094,6 +2113,42 @@ namespace CodeImp.DoomBuilder.Data
 			}
 
 			return cat;
+		}
+
+		private static DecorateCategoryInfo GetCategoryInfo(DehackedThing thing, List<ThingCategory> categories)
+		{
+			string catname = null;
+
+			// Try to find which category the thing is in
+			foreach(ThingCategory c in categories)
+			{
+				foreach (ThingTypeInfo tti in c.Things)
+				{
+					if (tti.Index == thing.DoomEdNum)
+					{
+						catname = c.Title;
+						break;
+					}
+				}
+
+				if (!string.IsNullOrEmpty(catname))
+					break;
+			}
+
+			DecorateCategoryInfo catinfo = new DecorateCategoryInfo();
+			if(string.IsNullOrEmpty(thing.Category)) // No category for the thing was set through Dehacked
+			{
+				if (!string.IsNullOrEmpty(catname)) // We did find the category the thing was originally in
+					catinfo.Category = catname.Split(CATEGORY_SPLITTER, StringSplitOptions.RemoveEmptyEntries).ToList();
+				else // The thing wasn't in a category before, put it in the "User-defined" category
+					catinfo.Category = new List<string> { "User-defined" };
+			}
+			else // A category for the thing was set through Dehacked
+			{
+				catinfo.Category = thing.Category.Split(CATEGORY_SPLITTER, StringSplitOptions.RemoveEmptyEntries).ToList();
+			}
+
+			return catinfo;
 		}
 
 		//mxd

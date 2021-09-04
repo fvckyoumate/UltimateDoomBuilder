@@ -481,6 +481,9 @@ namespace CodeImp.DoomBuilder.Config
 
 		internal ThingTypeInfo(ThingCategory cat, DehackedThing thing) : this(cat, thing.DoomEdNum, thing.Name)
 		{
+			category = cat;
+			bright = thing.Bright;
+
 			ModifyByDehackedThing(thing);
 		}
 
@@ -630,21 +633,37 @@ namespace CodeImp.DoomBuilder.Config
             dynamiclighttype = GZGeneral.GetGZLightTypeByClass(actor);
         }
 
+		/// <summary>
+		/// Modifies the thing type info by the given Dehacked thing.
+		/// </summary>
+		/// <param name="thing">The Dehacked thing to modify the thing type info by</param>
 		internal void ModifyByDehackedThing(DehackedThing thing)
 		{
-			sprite = thing.Sprite;
+			if(string.IsNullOrEmpty(thing.Sprite))
+				sprite = DataManager.INTERNAL_PREFIX + "unknownthing";
+			else
+				sprite = thing.Sprite;
 
 			title = thing.Name;
 			if (thing.Height != 0) height = thing.Height;
 			if (thing.Width != 0) radius = thing.Width;
 			blocking = thing.Bits.Contains("solid") ? 1 : 0;
 			hangs = thing.Bits.Contains("spawnceiling");
-		
+
+			if (thing.Color >= 0 && thing.Color <= 19)
+				color = thing.Color;
+
 			spriteframe = new[] { new SpriteFrameInfo { Sprite = sprite, SpriteLongName = Lump.MakeLongName(sprite, true) } };
 		}
 
+		/// <summary>
+		/// Changes the sprite of the thing by Dehacked sprite replacements.
+		/// </summary>
+		/// <param name="texts">Dehacked sprite replacements</param>
 		internal void ModifyBySpriteReplacement(Dictionary<string, string> texts)
 		{
+			// Cut the sprite into the 4 character base sprite and the animation, then rebuild 
+			// the sprite with the sprite replacement if necessary...
 			if (sprite.Length >= 4)
 			{
 				string basesprite = sprite.Substring(0, 4);
@@ -656,7 +675,8 @@ namespace CodeImp.DoomBuilder.Config
 				}
 			}
 
-			for (int i =0; i < spriteframe.Length; i++)
+			// ... then do the same with every sprite frame
+			for (int i=0; i < spriteframe.Length; i++)
 			{
 				SpriteFrameInfo sfi = spriteframe[i];
 

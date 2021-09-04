@@ -42,6 +42,7 @@ namespace CodeImp.DoomBuilder.Dehacked
 		private long spritesubnumber;
 		private Dictionary<string, string> props;
 		private string sprite;
+		private bool bright;
 
 		#endregion
 
@@ -52,6 +53,7 @@ namespace CodeImp.DoomBuilder.Dehacked
 		public long SpriteSubNumber { get { return spritesubnumber; } internal set { spritesubnumber = value; } }
 		public Dictionary<string, string> Props { get { return props; } }
 		public string Sprite { get { return sprite; } internal set { sprite = value; } }
+		public bool Bright { get { return bright; } }
 
 		#endregion
 
@@ -74,8 +76,14 @@ namespace CodeImp.DoomBuilder.Dehacked
 
 		#region ================== Methods
 
+		/// <summary>
+		/// Processes the frame, setting it up so it can be used by things
+		/// </summary>
+		/// <param name="definedsprites">All available Dehacked sprites</param>
+		/// <param name="baseframe">The base Dehacked frame</param>
 		internal void Process(Dictionary<int, string> definedsprites, DehackedFrame baseframe)
 		{
+			// Copy all missing properties of the base frame
 			if(baseframe != null)
 			{
 				foreach (string key in baseframe.Props.Keys)
@@ -94,11 +102,16 @@ namespace CodeImp.DoomBuilder.Dehacked
 						spritenumber = int.Parse(value);
 						if (definedsprites.ContainsKey(spritenumber))
 							sprite = definedsprites[spritenumber];
+						else
+							General.ErrorLogger.Add(ErrorType.Error, "Dehacked frame " + number + " is referencing sprite " + spritenumber + " that is not defined.");
 						break;
 					case "sprite subnumber":
 						spritesubnumber = long.Parse(value);
 						if (spritesubnumber >= 32768)
+						{
 							spritesubnumber -= 32768;
+							bright = true;
+						}
 						break;
 				}
 			}

@@ -44,6 +44,7 @@ namespace CodeImp.DoomBuilder.Dehacked
 		private Dictionary<int, DehackedThing> things;
 		private Dictionary<int, DehackedFrame> frames;
 		private Dictionary<int, string> sprites;
+		private Dictionary<long, string> bitmnemonics;
 		private DehackedFrame defaultframe;
 		private Configuration cfg;
 		private string root;
@@ -55,6 +56,7 @@ namespace CodeImp.DoomBuilder.Dehacked
 		public Dictionary<int, DehackedThing> Things { get { return things; } }
 		public Dictionary<int, DehackedFrame> Frames { get { return frames; } }
 		public Dictionary<int, string> Sprites { get { return sprites; } }
+		public Dictionary<long, string> BitMnemonics { get { return bitmnemonics; } }
 
 		#endregion
 
@@ -65,6 +67,7 @@ namespace CodeImp.DoomBuilder.Dehacked
 			things = new Dictionary<int, DehackedThing>();
 			frames = new Dictionary<int, DehackedFrame>();
 			sprites = new Dictionary<int, string>();
+			bitmnemonics = new Dictionary<long, string>();
 
 			this.cfg = cfg;
 			this.root = root;
@@ -95,6 +98,15 @@ namespace CodeImp.DoomBuilder.Dehacked
 
 				if (int.TryParse(sb.Key.ToString(), out key))
 					sprites[key] = cfg.ReadSetting(root + ".sprites." + key, "----");
+			}
+
+			IDictionary bitmnemonicsblock = cfg.ReadSetting(root + ".bitmnemonics", new Hashtable());
+			foreach (DictionaryEntry bmb in bitmnemonicsblock)
+			{
+				int key;
+
+				if (int.TryParse(bmb.Key.ToString(), out key))
+					bitmnemonics[key] = cfg.ReadSetting(root + ".bitmnemonics." + key, "unset");
 			}
 		}
 
