@@ -501,6 +501,38 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 			General.Map.Map.EndAddRemove();
 		}
 
+		/// <summary>
+		/// Gets an array of `Vector2D` arrays, representing the vertices of the triangulated sector.
+		/// </summary>
+		/// <returns>Array of `Vector2D` arrays</returns>
+		public Vector2DWrapper[][] getTriangles()
+		{
+			if (sector.IsDisposed)
+				throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Sector is disposed, the getTriangles method can not be accessed.");
+
+			// Updating the cache will also triangulate the sector (if necessary)
+			sector.UpdateCache();
+
+			// The triangles are stored in a flat list of Vector2D, so there should always be a multiple of 3 Vector2D
+			if(sector.Triangles.Vertices.Count % 3 != 0)
+				throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Sector triangle vertices is not a multiple of 3.");
+
+			int numtriangles = sector.Triangles.Vertices.Count / 3;
+
+			Vector2DWrapper[][] triangles = new Vector2DWrapper[numtriangles][];
+
+			for(int i=0; i < numtriangles; i++)
+			{
+				triangles[i] = new Vector2DWrapper[3] {
+					new Vector2DWrapper(sector.Triangles.Vertices[i * 3]),
+					new Vector2DWrapper(sector.Triangles.Vertices[i * 3 + 1]),
+					new Vector2DWrapper(sector.Triangles.Vertices[i * 3 + 2]),
+				};
+			}
+
+			return triangles;
+		}
+
 		#endregion
 
 		#region ================== Interface implementations
