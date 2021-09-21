@@ -154,6 +154,7 @@
     <EmbeddedResource Include="Resources\Actions.cfg" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="Resources\Add.png" />
     <None Include="Resources\Drawsegs.png" />
     <None Include="Resources\Drawsegs_pal.png" />

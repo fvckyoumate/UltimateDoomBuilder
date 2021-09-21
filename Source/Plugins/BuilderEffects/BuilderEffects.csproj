@@ -194,6 +194,7 @@
     <EmbeddedResource Include="Resources\Actions.cfg" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="Resources\Update.png" />
   </ItemGroup>
   <ItemGroup>

@@ -114,6 +114,7 @@
     <EmbeddedResource Include="Resources\Hints.cfg" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="Resources\ShowHiddenLines.png" />
   </ItemGroup>
   <ItemGroup>

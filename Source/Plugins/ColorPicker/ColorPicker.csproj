@@ -191,6 +191,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="Resources\cp.png" />
   </ItemGroup>
   <ItemGroup>
