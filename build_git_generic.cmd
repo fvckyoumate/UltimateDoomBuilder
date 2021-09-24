@@ -13,19 +13,20 @@ ECHO.     Files in the 'GIT_Build' directory may be overwritten.
 ECHO.
 ECHO.
 
-SET STUDIODIR=c:\Program Files (x86)\Microsoft Visual Studio 14.0
+SET STUDIODIR=c:\Program Files (x86)\Microsoft Visual Studio\2019\Community
 SET HHWDIR=c:\Program Files (x86)\HTML Help Workshop
 SET SEVENZIPDIR=c:\Program Files\7-Zip
 SET ISSDIR=c:\Program Files (x86)\Inno Setup 6
 
 IF NOT DEFINED PLATFORM SET PLATFORM=x86
+IF NOT DEFINED COMPILERARCH SET COMPILERARCH=x86
 
 SET DB_OUTDIR="%CD%\GIT_Build"
 IF DEFINED BUILD_RELEASE SET DB_OUTDIR="%CD%\Release"
 
 ECHO %DB_OUTDIR%
 
-CALL "%STUDIODIR%\Common7\Tools\vsdevcmd.bat" %PLATFORM%
+CALL "%STUDIODIR%\Common7\Tools\vsdevcmd.bat" -arch=%COMPILERARCH% -host_arch=%COMPILERARCH%
 ECHO.
 ECHO Building for platform %PLATFORM%
 ECHO.
