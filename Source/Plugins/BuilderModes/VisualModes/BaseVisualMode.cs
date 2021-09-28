@@ -523,6 +523,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			// Should we update the info on panels?
 			bool updateinfo = (newtarget.picked != target.picked);
 
+			// Operating on slope handles is potentially expensive, so only do it it absolutely necessary (i.e. when a new slope handle was selected)
 			if (updateinfo)
 			{
 				if (target.picked is VisualSlope) // Old target
@@ -1389,8 +1390,8 @@ namespace CodeImp.DoomBuilder.BuilderModes
 					if (ld.IsDisposed)
 						continue;
 
-					if (ld.Front != null && !ld.Front.Sector.IsDisposed) vertexsectors.Add(ld.Front.Sector);
-					if (ld.Back != null && !ld.Front.Sector.IsDisposed) vertexsectors.Add(ld.Back.Sector);
+					if (ld.Front != null && ld.Front.Sector != null && !ld.Front.Sector.IsDisposed) vertexsectors.Add(ld.Front.Sector);
+					if (ld.Back != null && ld.Back.Sector != null && !ld.Back.Sector.IsDisposed) vertexsectors.Add(ld.Back.Sector);
 				}
 
 				foreach(Sector s in vertexsectors)
@@ -2507,10 +2508,16 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			{
 				if (General.Map.UDMF)
 				{
+					VisualSlope oldsmartpivot = null;
+
 					foreach (KeyValuePair<Sector, List<VisualSlope>> kvp in allslopehandles)
 					{
 						foreach (VisualSlope handle in kvp.Value)
 						{
+							// We want to keep the old smart pivot handle
+							if (handle.SmartPivot)
+								oldsmartpivot = handle;
+
 							handle.Selected = false;
 							handle.Pivot = false;
 							handle.SmartPivot = false;
@@ -2518,6 +2525,20 @@ namespace CodeImp.DoomBuilder.BuilderModes
 					}
 
 					usedslopehandles.Clear();
+
+					// Clearing the used slopes also clears the currently highlighted handle and the smart pivot handle. For
+					// performance reasons PickTarget() will not do its slope handle stuff if the current and new pick are
+					// the same, so we need to re-add the currently picked slope handle and its smart pivot handle
+					if (target.picked is VisualSlope)
+					{
+						usedslopehandles.Add((VisualSlope)target.picked);
+
+						if (oldsmartpivot != null)
+						{
+							oldsmartpivot.SmartPivot = true;
+							usedslopehandles.Add(oldsmartpivot);
+						}
+					}
 				}
 			}
 

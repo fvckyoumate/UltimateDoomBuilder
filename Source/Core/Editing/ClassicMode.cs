@@ -83,6 +83,7 @@ namespace CodeImp.DoomBuilder.Editing
 		private Thing playerStart;
 		private Vector3D playerStartPosition;
 		private bool playerStartIsTempThing;
+		private bool mapWasChangedBeforeTest;
 		
 		#endregion
 
@@ -721,12 +722,16 @@ namespace CodeImp.DoomBuilder.Editing
 					return false;
 				}
 
-				//41 = player's height in Doom. Is that so in all other games as well?
-				if (s.CeilHeight - s.FloorHeight < 41)
+				// Spawning sector height isn't too low to cause a stuck player.
+				int playerheight = General.Map.Config.ReadSetting("thingtypes.players.height", 56);
+				if (s.CeilHeight - s.FloorHeight < playerheight)
 				{
 					General.MainWindow.DisplayStatus(StatusType.Warning, "Can't test from current position: sector is too low!");
 					return false;
 				}
+
+				// Capture whether the map was changed before modifying player things.
+				mapWasChangedBeforeTest = General.Map.IsChanged;
 
 				//find Single Player Start. Should be type 1 in all games
 				Thing start = null;
@@ -765,8 +770,7 @@ namespace CodeImp.DoomBuilder.Editing
 					{
 						// We have to ignore property changes, otherwise the undo manager will try to record the changes
 						General.Map.UndoRedo.IgnorePropChanges = true;
-						General.Settings.ApplyDefaultThingSettings(start);
-						start.Type = 1;
+						General.Settings.ApplyCleanThingSettings(start, 1);
 					}
 					else
 					{
@@ -807,6 +811,13 @@ namespace CodeImp.DoomBuilder.Editing
 				}
 
 				playerStart = null;
+
+				// Restore the value of General.Map.IsChanged before player
+				// things were modified in OnMapTestBegin().
+				if (!mapWasChangedBeforeTest)
+				{
+					General.Map.ForceMapIsChangedFalse();
+				}
 			}
 		}
 

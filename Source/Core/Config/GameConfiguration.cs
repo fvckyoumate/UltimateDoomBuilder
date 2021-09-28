@@ -24,6 +24,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using CodeImp.DoomBuilder.Dehacked;
 using CodeImp.DoomBuilder.IO;
 using CodeImp.DoomBuilder.Map;
 using CodeImp.DoomBuilder.Editing;
@@ -109,6 +110,8 @@ namespace CodeImp.DoomBuilder.Config
 		private readonly bool localsidedeftextureoffsets; //MaxW
 		private readonly bool effect3dfloorsupport;
 		private readonly bool planeequationsupport;
+		private readonly bool distinctfloorandceilingbrightness;
+		private readonly bool distinctwallbrightness;
 
 		// Skills
 		private readonly List<SkillInfo> skills;
@@ -123,6 +126,10 @@ namespace CodeImp.DoomBuilder.Config
 
 		// Static limits for the base game and map format.
 		private readonly StaticLimits staticlimits;
+
+		// Visplane Explorer plugin settings.
+		private readonly int visplaneviewheightdefault;
+		private readonly Dictionary<string, string> visplaneviewheights;
 
 		// Texture/flat/voxel sources
 		private readonly IDictionary textureranges;
@@ -200,6 +207,9 @@ namespace CodeImp.DoomBuilder.Config
 		// Compatibility options
 		CompatibilityOptions compatibility;
 
+		// Dehacked
+		private DehackedData dehackeddata;
+
         #endregion
 
         #region ================== Properties
@@ -268,9 +278,14 @@ namespace CodeImp.DoomBuilder.Config
 		// Static limits for the base game and map format.
 		public StaticLimits StaticLimits { get { return staticlimits; } }
 
+		public int VisplaneViewHeightDefault { get { return visplaneviewheightdefault; } }
+		public Dictionary<string, string> VisplaneViewHeights { get { return visplaneviewheights; } }
+
 		public bool UseLocalSidedefTextureOffsets { get { return localsidedeftextureoffsets; } } //MaxW
 		public bool Effect3DFloorSupport { get { return effect3dfloorsupport; } }
 		public bool PlaneEquationSupport { get { return planeequationsupport; } }
+		public bool DistinctFloorAndCeilingBrightness { get { return distinctfloorandceilingbrightness; } }
+		public bool DistinctWallBrightness { get { return distinctwallbrightness; } }
 
 		// Texture/flat/voxel sources
 		public IDictionary TextureRanges { get { return textureranges; } }
@@ -345,6 +360,9 @@ namespace CodeImp.DoomBuilder.Config
 
 		// Compatibility options
 		public CompatibilityOptions Compatibility { get { return compatibility; } }
+
+		// Dehacked
+		public DehackedData DehackedData { get { return dehackeddata; } }
 		
 		#endregion
 
@@ -442,6 +460,8 @@ namespace CodeImp.DoomBuilder.Config
 			localsidedeftextureoffsets = (cfg.ReadSetting("localsidedeftextureoffsets", false)); //MaxW
 			effect3dfloorsupport = cfg.ReadSetting("effect3dfloorsupport", false);
 			planeequationsupport = cfg.ReadSetting("planeequationsupport", false);
+			distinctfloorandceilingbrightness = cfg.ReadSetting("distinctfloorandceilingbrightness", false);
+			distinctwallbrightness = cfg.ReadSetting("distinctwallbrightness", false);
 			for (int i = 0; i < Linedef.NUM_ARGS; i++) makedoorargs[i] = cfg.ReadSetting("makedoorarg" + i.ToString(CultureInfo.InvariantCulture), 0);
 
 			//mxd. Update map format flags
@@ -451,6 +471,11 @@ namespace CodeImp.DoomBuilder.Config
 
 			// Read static limits for the base game and map format.
 			staticlimits = new StaticLimits(cfg);
+
+			// Read the Visplane Explorer plugin's default selectable view heights.
+			visplaneviewheightdefault = cfg.ReadSetting("visplaneexplorer.viewheightdefault", 41);
+			visplaneviewheights = new Dictionary<string, string>(StringComparer.Ordinal);
+			LoadStringDictionary(visplaneviewheights, "visplaneexplorer.viewheights");
 
 			//mxd. Texture names length
 			longtexturenames = cfg.ReadSetting("longtexturenames", false);
@@ -544,6 +569,9 @@ namespace CodeImp.DoomBuilder.Config
 
 			// Compatibility options
 			compatibility = new CompatibilityOptions(cfg);
+
+			// Dehacked
+			dehackeddata = new DehackedData(cfg, "dehacked");
 		}
 
 		// Destructor
