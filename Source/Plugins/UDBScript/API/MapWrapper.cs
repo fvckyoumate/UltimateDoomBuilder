@@ -851,7 +851,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 				if(t == null)
 					throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Failed to create new thing.");
 
-				General.Settings.ApplyDefaultThingSettings(t);
+				General.Settings.ApplyCleanThingSettings(t);
 
 				if (type > 0)
 					t.Type = type;
