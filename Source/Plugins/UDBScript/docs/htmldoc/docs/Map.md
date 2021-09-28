@@ -1,6 +1,8 @@
 # Map
 
 ## Properties
+### camera
+`VisualCamera` object with information about the position of the camera in visual mode. Read-only.
 ### isDoom
 `true` if the map is in Doom format, `false` if it isn't. Read-only.
 ### isHexen

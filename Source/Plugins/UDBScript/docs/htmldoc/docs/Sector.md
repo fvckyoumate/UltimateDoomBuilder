@@ -75,6 +75,10 @@ Returns an `Array` of all `Sidedef`s of the `Sector`.
 Returns an `Array` of the `Sector`'s tags. UDMF only. Supported game configurations only.
 #### Return value
 `Array` of tags
+### getTriangles()
+Gets an array of `Vector2D` arrays, representing the vertices of the triangulated sector.
+#### Return value
+Array of `Vector2D` arrays
 ### intersect(p)
 Checks if the given point is in this `Sector` or not. The given point can be a `Vector2D` or an `Array` of two numbers.
 

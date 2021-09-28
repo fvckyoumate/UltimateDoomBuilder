@@ -46,12 +46,12 @@ Creates a `Vector2D` from an angle in radians,
 #### Return value
 Vector as `Vector2D`
 ### getAngle(a, b)
-Returns the angle between two `Vector2D`s in radians.
+Returns the angle between two `Vector2D`s in degrees.
 #### Parameters
 * a: First `Vector2D`
 * b: Second `Vector2D`
 #### Return value
-Angle in radians
+Angle in degrees
 ### getAngleRad(a, b)
 Returns the angle between two `Vector2D`s in radians
 #### Parameters
@@ -145,3 +145,7 @@ Returns the transformed vector as `Vector2D`.
 * scaley: Y scale
 #### Return value
 The transformed vector as `Vector2D`
+### isFinite()
+Checks if the `Vector2D` is finite or not.
+#### Return value
+`true` if `Vector2D` is finite, otherwise `false`
