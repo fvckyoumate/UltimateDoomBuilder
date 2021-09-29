@@ -141,7 +141,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 
 		public JavaScriptException CreateRuntimeException(string message)
 		{
-			return new JavaScriptException(ErrorConstructor.CreateErrorConstructor(engine, new JsString("UDBScriptRuntimeException")), message);
+			return new JavaScriptException(engine.Realm.Intrinsics.Error, message);
 		}
 
 		/// <summary>

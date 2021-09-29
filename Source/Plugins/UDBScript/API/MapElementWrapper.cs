@@ -70,6 +70,10 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// ```
 		/// s.fields.user_myintfield = new UniValue(0, 25); // Sets the 'user_myintfield' field to an integer value of 25
 		/// ```
+		/// To remove a field you have to assign `null` to it:
+		/// ```
+		/// s.fields.user_myintfield = null;
+		/// ```
 		/// </summary>
 		public ExpandoObject fields
 		{
