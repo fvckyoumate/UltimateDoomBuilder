@@ -633,7 +633,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// Gets all selected (default) or unselected vertices.
 		/// </summary>
 		/// <param name="selected">`true` to get all selected vertices, `false` to get all unselected ones</param>
-		/// <returns></returns>
+		/// <returns>`Array` of `Vertex`</returns>
 		public VertexWrapper[] getSelectedVertices(bool selected=true)
 		{
 			List<VertexWrapper> vertices = new List<VertexWrapper>();
@@ -657,10 +657,52 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
+		/// Get the currently highlighted `Vertex`.
+		/// </summary>
+		/// <returns>The currently highlighted `Vertex` or `null` if no `Vertex` is highlighted</returns>
+		public VertexWrapper getHighlightedVertex()
+		{
+			Vertex v = General.Editing.Mode.HighlightedObject as Vertex;
+
+			if (v != null)
+				return new VertexWrapper(v);
+
+			return null;
+		}
+
+		/// <summary>
+		/// Gets the currently selected `Vertex`s *or*, if no `Vertex`s are selected, a currently highlighted `Vertex`.
+		/// </summary>
+		/// <returns>`Array` of `Vertex`</returns>
+		public VertexWrapper[] getSelectedOrHighlightedVertices()
+		{
+			if (General.Map.Map.SelectedVerticessCount > 0)
+			{
+				List<VertexWrapper> linedefs = new List<VertexWrapper>();
+
+				foreach (Vertex v in General.Map.Map.Vertices)
+					if (v.Selected)
+						linedefs.Add(new VertexWrapper(v));
+
+				return linedefs.ToArray();
+			}
+			else
+			{
+				Vertex v = General.Editing.Mode.HighlightedObject as Vertex;
+
+				if (v != null)
+					return new VertexWrapper[] { new VertexWrapper(v) };
+
+			}
+
+			return new VertexWrapper[] { };
+		}
+
+		/// <summary>
 		/// Gets all selected (default) or unselected `Thing`s.
 		/// </summary>
 		/// <param name="selected">`true` to get all selected `Thing`s, `false` to get all unselected ones</param>
-		/// <returns></returns>
+		/// <returns>`Array` of `Thing`s</returns>
 		public ThingWrapper[] getSelectedThings(bool selected = true)
 		{
 			List<ThingWrapper> things = new List<ThingWrapper>();
@@ -684,10 +726,52 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
+		/// Get the currently highlighted `Thing`.
+		/// </summary>
+		/// <returns>The currently highlighted `Thing` or `null` if no `Thing` is highlighted</returns>
+		public ThingWrapper getHighlightedThing()
+		{
+			Thing t = General.Editing.Mode.HighlightedObject as Thing;
+
+			if (t != null)
+				return new ThingWrapper(t);
+
+			return null;
+		}
+
+		/// <summary>
+		/// Gets the currently selected `Thing`s *or*, if no `Thing`s are selected, a currently highlighted `Thing`.
+		/// </summary>
+		/// <returns>`Array` of `Thing`s</returns>
+		public ThingWrapper[] getSelectedOrHighlightedThings()
+		{
+			if (General.Map.Map.SelectedThingsCount > 0)
+			{
+				List<ThingWrapper> things = new List<ThingWrapper>();
+
+				foreach (Thing t in General.Map.Map.Things)
+					if (t.Selected)
+						things.Add(new ThingWrapper(t));
+
+				return things.ToArray();
+			}
+			else
+			{
+				Thing t = General.Editing.Mode.HighlightedObject as Thing;
+
+				if (t != null)
+					return new ThingWrapper[] { new ThingWrapper(t) };
+
+			}
+
+			return new ThingWrapper[] { };
+		}
+
+		/// <summary>
 		/// Gets all selected (default) or unselected `Sector`s.
 		/// </summary>
 		/// <param name="selected">`true` to get all selected `Sector`s, `false` to get all unselected ones</param>
-		/// <returns></returns>
+		/// <returns>`Array` of `Sector`s</returns>
 		public SectorWrapper[] getSelectedSectors(bool selected = true)
 		{
 			List<SectorWrapper> sectors = new List<SectorWrapper>();
@@ -711,10 +795,52 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
+		/// Get the currently highlighted `Sector`.
+		/// </summary>
+		/// <returns>The currently highlighted `Sector` or `null` if no `Sector` is highlighted</returns>
+		public SectorWrapper getHighlightedSector()
+		{
+			Sector s = General.Editing.Mode.HighlightedObject as Sector;
+
+			if (s != null)
+				return new SectorWrapper(s);
+
+			return null;
+		}
+
+		/// <summary>
+		/// Gets the currently selected `Sector`s *or*, if no `Sector`s are selected, a currently highlighted `Sector`.
+		/// </summary>
+		/// <returns>`Array` of `Sector`s</returns>
+		public SectorWrapper[] getSelectedOrHighlightedSectors()
+		{
+			if (General.Map.Map.SelectedThingsCount > 0)
+			{
+				List<SectorWrapper> sectors = new List<SectorWrapper>();
+
+				foreach (Sector s in General.Map.Map.Sectors)
+					if (s.Selected)
+						sectors.Add(new SectorWrapper(s));
+
+				return sectors.ToArray();
+			}
+			else
+			{
+				Sector s = General.Editing.Mode.HighlightedObject as Sector;
+
+				if (s != null)
+					return new SectorWrapper[] { new SectorWrapper(s) };
+
+			}
+
+			return new SectorWrapper[] { };
+		}
+
+		/// <summary>
 		/// Gets all selected (default) or unselected `Linedef`s.
 		/// </summary>
 		/// <param name="selected">`true` to get all selected `Linedef`s, `false` to get all unselected ones</param>
-		/// <returns></returns>
+		/// <returns>`Array` of `Linedef`s</returns>
 		public LinedefWrapper[] getSelectedLinedefs(bool selected = true)
 		{
 			List<LinedefWrapper> linedefs = new List<LinedefWrapper>();
@@ -736,6 +862,78 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 
 			return linedefs.ToArray();
 		}
+
+		/// <summary>
+		/// Get the currently highlighted `Linedef`.
+		/// </summary>
+		/// <returns>The currently highlighted `Linedef` or `null` if no `Linedef` is highlighted</returns>
+		public LinedefWrapper getHighlightedLinedef()
+		{
+			Linedef ld = General.Editing.Mode.HighlightedObject as Linedef;
+
+			if (ld != null)
+				return new LinedefWrapper(ld);
+
+			return null;
+		}
+
+		/// <summary>
+		/// Gets the currently selected `Linedef`s *or*, if no `Linede`f`s are selected, a currently highlighted `Linedef`.
+		/// </summary>
+		/// <returns>`Array` of `Linedef`s</returns>
+		public LinedefWrapper[] getSelectedOrHighlightedLinedefs()
+		{
+			if (General.Map.Map.SelectedLinedefsCount > 0)
+			{
+				List<LinedefWrapper> linedefs = new List<LinedefWrapper>();
+
+				foreach (Linedef ld in General.Map.Map.Linedefs)
+					if (ld.Selected)
+						linedefs.Add(new LinedefWrapper(ld));
+
+				return linedefs.ToArray();
+			}
+			else
+			{
+				Linedef ld = General.Editing.Mode.HighlightedObject as Linedef;
+
+				if (ld != null)
+					return new LinedefWrapper[] { new LinedefWrapper(ld) };
+
+			}
+
+			return new LinedefWrapper[] { };
+		}
+
+		/*
+		public LinedefWrapper[] getAnyLinedefs()
+		{
+			if (General.Map.Map.SelectedLinedefsCount > 0)
+			{
+				List<LinedefWrapper> linedefs = new List<LinedefWrapper>();
+
+				foreach (Linedef ld in General.Map.Map.Linedefs)
+					if (ld.Selected)
+						linedefs.Add(new LinedefWrapper(ld));
+
+				return linedefs.ToArray();
+			}
+			else if (General.Editing.Mode.HighlightedObject != null && General.Editing.Mode.HighlightedObject is Linedef)
+			{
+				return new LinedefWrapper[] { new LinedefWrapper((Linedef)General.Editing.Mode.HighlightedObject) };
+			}
+			else
+			{
+				List<LinedefWrapper> linedefs = new List<LinedefWrapper>();
+
+				foreach (Linedef ld in General.Map.Map.Linedefs)
+					if (ld.Selected)
+						linedefs.Add(new LinedefWrapper(ld));
+
+				return linedefs.ToArray();
+			}
+		}
+		*/
 
 		/// <summary>
 		/// Gets all `Sidedef`s from the selected `Linedef`s.
