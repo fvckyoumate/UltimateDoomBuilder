@@ -11,7 +11,6 @@
 ## UI
 - add favorite script functionality (in the UI and with hotkeys)
 - add "quick script" function to write and run one-shot scripts in UDB without having to create files
-- monitor filesystem for changes, so that scripts added to the folders at runtime will show up in the tree
 
 ## Other
 - remove the `Wrapper` part from the wrapper class names?

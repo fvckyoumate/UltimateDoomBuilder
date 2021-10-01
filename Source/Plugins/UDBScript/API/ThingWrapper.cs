@@ -444,7 +444,8 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 
 		public override string ToString()
 		{
-			return thing.ToString();
+			// The Thing class doesn't have a proper ToString method, so we have to output something sensible ourself
+			return "Thing " + thing.Index.ToString();
 		}
 
 		/// <summary>

@@ -745,24 +745,13 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// <returns>`Array` of `Thing`s</returns>
 		public ThingWrapper[] getSelectedOrHighlightedThings()
 		{
-			if (General.Map.Map.SelectedThingsCount > 0)
-			{
-				List<ThingWrapper> things = new List<ThingWrapper>();
+			ThingWrapper[] things = getSelectedThings(true);
+			if (things.Length > 0)
+				return things;
 
-				foreach (Thing t in General.Map.Map.Things)
-					if (t.Selected)
-						things.Add(new ThingWrapper(t));
-
-				return things.ToArray();
-			}
-			else
-			{
-				Thing t = General.Editing.Mode.HighlightedObject as Thing;
-
-				if (t != null)
-					return new ThingWrapper[] { new ThingWrapper(t) };
-
-			}
+			ThingWrapper highlight = getHighlightedThing();
+			if (highlight != null)
+				return new ThingWrapper[] { highlight };
 
 			return new ThingWrapper[] { };
 		}
@@ -800,10 +789,20 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// <returns>The currently highlighted `Sector` or `null` if no `Sector` is highlighted</returns>
 		public SectorWrapper getHighlightedSector()
 		{
-			Sector s = General.Editing.Mode.HighlightedObject as Sector;
+			if (General.Editing.Mode is BaseVisualMode)
+			{
+				VisualSector s = General.Editing.Mode.HighlightedObject as VisualSector;
 
-			if (s != null)
-				return new SectorWrapper(s);
+				if (s != null)
+					return new SectorWrapper(s.Sector);
+			}
+			else
+			{
+				Sector s = General.Editing.Mode.HighlightedObject as Sector;
+
+				if (s != null)
+					return new SectorWrapper(s);
+			}
 
 			return null;
 		}
@@ -814,24 +813,13 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// <returns>`Array` of `Sector`s</returns>
 		public SectorWrapper[] getSelectedOrHighlightedSectors()
 		{
-			if (General.Map.Map.SelectedThingsCount > 0)
-			{
-				List<SectorWrapper> sectors = new List<SectorWrapper>();
+			SectorWrapper[] things = getSelectedSectors(true);
+			if (things.Length > 0)
+				return things;
 
-				foreach (Sector s in General.Map.Map.Sectors)
-					if (s.Selected)
-						sectors.Add(new SectorWrapper(s));
-
-				return sectors.ToArray();
-			}
-			else
-			{
-				Sector s = General.Editing.Mode.HighlightedObject as Sector;
-
-				if (s != null)
-					return new SectorWrapper[] { new SectorWrapper(s) };
-
-			}
+			SectorWrapper highlight = getHighlightedSector();
+			if (highlight != null)
+				return new SectorWrapper[] { highlight };
 
 			return new SectorWrapper[] { };
 		}
@@ -869,10 +857,20 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// <returns>The currently highlighted `Linedef` or `null` if no `Linedef` is highlighted</returns>
 		public LinedefWrapper getHighlightedLinedef()
 		{
-			Linedef ld = General.Editing.Mode.HighlightedObject as Linedef;
+			if (General.Editing.Mode is BaseVisualMode)
+			{
+				Sidedef sd = General.Editing.Mode.HighlightedObject as Sidedef;
 
-			if (ld != null)
-				return new LinedefWrapper(ld);
+				if (sd != null)
+					return new LinedefWrapper(sd.Line);
+			}
+			else
+			{
+				Linedef ld = General.Editing.Mode.HighlightedObject as Linedef;
+
+				if (ld != null)
+					return new LinedefWrapper(ld);
+			}
 
 			return null;
 		}
@@ -883,24 +881,13 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// <returns>`Array` of `Linedef`s</returns>
 		public LinedefWrapper[] getSelectedOrHighlightedLinedefs()
 		{
-			if (General.Map.Map.SelectedLinedefsCount > 0)
-			{
-				List<LinedefWrapper> linedefs = new List<LinedefWrapper>();
+			LinedefWrapper[] linedefs = getSelectedLinedefs(true);
+			if (linedefs.Length > 0)
+				return linedefs;
 
-				foreach (Linedef ld in General.Map.Map.Linedefs)
-					if (ld.Selected)
-						linedefs.Add(new LinedefWrapper(ld));
-
-				return linedefs.ToArray();
-			}
-			else
-			{
-				Linedef ld = General.Editing.Mode.HighlightedObject as Linedef;
-
-				if (ld != null)
-					return new LinedefWrapper[] { new LinedefWrapper(ld) };
-
-			}
+			LinedefWrapper highlight = getHighlightedLinedef();
+			if (highlight != null)
+				return new LinedefWrapper[] { highlight };
 
 			return new LinedefWrapper[] { };
 		}
