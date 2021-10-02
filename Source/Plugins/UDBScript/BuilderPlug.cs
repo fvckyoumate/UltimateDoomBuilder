@@ -34,6 +34,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Security.Cryptography;
+using System.Text.RegularExpressions;
 using CodeImp.DoomBuilder.Actions;
 using CodeImp.DoomBuilder.Controls;
 using CodeImp.DoomBuilder.Geometry;
@@ -70,6 +71,11 @@ namespace CodeImp.DoomBuilder.UDBScript
 
 		private delegate void CallVoidMethodDeletage();
 
+		#region ================== Constants
+
+		public const int NUM_SCRIPT_SLOTS = 30;
+		#endregion
+
 		#region ================== Variables
 
 		private static BuilderPlug me;
@@ -82,6 +88,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 		private ScriptDirectoryStructure scriptdirectorystructure;
 		private FileSystemWatcher watcher;
 		private object lockobj;
+		private Dictionary<int, ScriptInfo> scriptslots;
 
 		#endregion
 
@@ -103,13 +110,14 @@ namespace CodeImp.DoomBuilder.UDBScript
 
 			lockobj = new object();
 
+			scriptinfo = new List<ScriptInfo>();
+			scriptslots = new Dictionary<int, ScriptInfo>();
+
 			panel = new ScriptDockerControl(SCRIPT_FOLDER);
 			docker = new Docker("udbscript", "Scripts", panel);
 			General.Interface.AddDocker(docker);
 
 			General.Actions.BindMethods(this);
-
-			scriptinfo = new List<ScriptInfo>();
 
 			watcher = new FileSystemWatcher(Path.Combine(General.AppPath, SCRIPT_FOLDER, "scripts"));
 			watcher.NotifyFilter = NotifyFilters.CreationTime | NotifyFilters.DirectoryName | NotifyFilters.FileName | NotifyFilters.LastWrite | NotifyFilters.Size;
@@ -172,6 +180,48 @@ namespace CodeImp.DoomBuilder.UDBScript
 
 			// This must be called to remove bound methods for actions.
 			General.Actions.UnbindMethods(this);
+		}
+
+		/// <summary>
+		/// Sets a ScriptInfo to a specific slot.
+		/// </summary>
+		/// <param name="slot">The slot</param>
+		/// <param name="si">The ScriptInfo to assign to the  slot</param>
+		public void SetScriptSlot(int slot, ScriptInfo si)
+		{
+			// Check if the ScriptInfo is already assigned to a slot, and remove it if so
+			// Have to use ToList because otherwise the collection would be changed while iterating over it
+			foreach (int s in scriptslots.Keys.ToList())
+				if (scriptslots[s] == si)
+					scriptslots[s] = null;
+
+			scriptslots[slot] = si;
+		}
+
+		/// <summary>
+		/// Gets a ScriptInfo for a specific script slot.
+		/// </summary>
+		/// <param name="slot">The slot to get the ScriptInfo for</param>
+		/// <returns>The ScriptInfo for the slot, or null if the ScriptInfo is at no slot</returns>
+		public ScriptInfo GetScriptSlot(int slot)
+		{
+			if (scriptslots.ContainsKey(slot))
+				return scriptslots[slot];
+			else
+				return null;
+		}
+
+		/// <summary>
+		/// Gets the script slot by a ScriptInfo.
+		/// </summary>
+		/// <param name="si">The ScriptInfo to get the slot of</param>
+		/// <returns>The slot the ScriptInfo is in, or 0 if the ScriptInfo is not assigned to a slot</returns>
+		public int GetScriptSlotByScriptInfo(ScriptInfo si)
+		{
+			if (!scriptslots.Values.Contains(si))
+				return 0;
+
+			return scriptslots.FirstOrDefault(i => i.Value == si).Key;
 		}
 
 		/// <summary>
@@ -435,6 +485,56 @@ namespace CodeImp.DoomBuilder.UDBScript
 
 			scriptrunner = new ScriptRunner(currentscript);
 			scriptrunner.Run();
+		}
+
+		[BeginAction("udbscriptexecuteslot1")]
+		[BeginAction("udbscriptexecuteslot2")]
+		[BeginAction("udbscriptexecuteslot3")]
+		[BeginAction("udbscriptexecuteslot4")]
+		[BeginAction("udbscriptexecuteslot5")]
+		[BeginAction("udbscriptexecuteslot6")]
+		[BeginAction("udbscriptexecuteslot7")]
+		[BeginAction("udbscriptexecuteslot8")]
+		[BeginAction("udbscriptexecuteslot9")]
+		[BeginAction("udbscriptexecuteslot10")]
+		[BeginAction("udbscriptexecuteslot11")]
+		[BeginAction("udbscriptexecuteslot12")]
+		[BeginAction("udbscriptexecuteslot13")]
+		[BeginAction("udbscriptexecuteslot14")]
+		[BeginAction("udbscriptexecuteslot15")]
+		[BeginAction("udbscriptexecuteslot16")]
+		[BeginAction("udbscriptexecuteslot17")]
+		[BeginAction("udbscriptexecuteslot18")]
+		[BeginAction("udbscriptexecuteslot19")]
+		[BeginAction("udbscriptexecuteslot20")]
+		[BeginAction("udbscriptexecuteslot21")]
+		[BeginAction("udbscriptexecuteslot22")]
+		[BeginAction("udbscriptexecuteslot23")]
+		[BeginAction("udbscriptexecuteslot24")]
+		[BeginAction("udbscriptexecuteslot25")]
+		[BeginAction("udbscriptexecuteslot26")]
+		[BeginAction("udbscriptexecuteslot27")]
+		[BeginAction("udbscriptexecuteslot28")]
+		[BeginAction("udbscriptexecuteslot29")]
+		[BeginAction("udbscriptexecuteslot30")]
+		public void ScriptExecuteSlot()
+		{
+			// Extract the slot number from the action name. The action name is something like udbscript__udbscriptexecuteslot1.
+			// Not super nice, but better than having 30 identical methods for each slot.
+			Regex re = new Regex(@"(\d+)$");
+			Match m = re.Match(General.Actions.Current.Name);
+
+			if(m.Success)
+			{
+				int slot = int.Parse(m.Value);
+
+				// Check if there's a ScriptInfo in the slot and run it if so
+				if (scriptslots.ContainsKey(slot) && scriptslots[slot] != null)
+				{
+					ScriptRunner sr = new ScriptRunner(scriptslots[slot]);
+					sr.Run();
+				}
+			}
 		}
 
 		#endregion

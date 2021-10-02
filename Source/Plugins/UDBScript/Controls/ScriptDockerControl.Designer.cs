@@ -124,6 +124,7 @@
 			this.filetree.Size = new System.Drawing.Size(312, 239);
 			this.filetree.TabIndex = 24;
 			this.filetree.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.filetree_AfterSelect);
+			this.filetree.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.filetree_NodeMouseClick);
 			// 
 			// tbDescription
 			// 

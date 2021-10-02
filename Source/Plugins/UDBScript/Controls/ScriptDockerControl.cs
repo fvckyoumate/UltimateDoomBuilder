@@ -22,21 +22,11 @@
 #endregion
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Drawing;
 using System.Data;
-using System.Dynamic;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using CodeImp.DoomBuilder.Controls;
-using CodeImp.DoomBuilder.IO;
-using Esprima;
 
 namespace CodeImp.DoomBuilder.UDBScript
 {
@@ -45,6 +35,8 @@ namespace CodeImp.DoomBuilder.UDBScript
 		#region ================== Variables
 
 		private ImageList images;
+		private ContextMenuStrip contextmenu;
+		ToolStripMenuItem[] slotitems;
 
 		#endregion
 
@@ -66,12 +58,132 @@ namespace CodeImp.DoomBuilder.UDBScript
 
 			filetree.ImageList = images;
 
-			// FillTree(foldername);
+			CreateContextMenu();
+			UpdateContextMenu();
 		}
 
 		#endregion
 
 		#region ================== Methods
+
+		private void CreateContextMenu()
+		{
+			ToolStripMenuItem edititem = new ToolStripMenuItem("Edit");
+			edititem.Click += EditScriptClicked;
+
+			slotitems = new ToolStripMenuItem[BuilderPlug.NUM_SCRIPT_SLOTS];
+			for (int i = 0; i < BuilderPlug.NUM_SCRIPT_SLOTS; i++)
+			{
+				slotitems[i] = new ToolStripMenuItem("Slot " + (i + 1));
+				slotitems[i].Tag = i + 1;
+			}
+
+			ToolStripMenuItem setslot = new ToolStripMenuItem("Set slot");
+			setslot.DropDownItems.AddRange(slotitems);
+			setslot.DropDownItemClicked += ItemClicked;
+
+			contextmenu = new ContextMenuStrip();
+			contextmenu.Items.AddRange(new ToolStripItem[]
+			{
+				setslot,
+				edititem
+			});
+		}
+
+		/// <summary>
+		/// Returns the hotkey text for a script s lot.
+		/// </summary>
+		/// <param name="slot">Slot to get the hotkey text for</param>
+		/// <returns>The hotkey text</returns>
+		private string GetHotkeyText(int slot)
+		{
+			string actionname = "udbscript_udbscriptexecuteslot" + slot;
+			string keytext = "no hotkey";
+
+			Actions.Action action = General.Actions.GetActionByName(actionname);
+			if (action.ShortcutKey != 0)
+				keytext = Actions.Action.GetShortcutKeyDesc(actionname);
+
+			return keytext;
+		}
+
+		/// <summary>
+		/// Updates the context menu of the slots so that the items show the script name and hotkey (if applicable)
+		/// </summary>
+		private void UpdateContextMenu()
+		{
+			for (int i = 0; i < BuilderPlug.NUM_SCRIPT_SLOTS; i++)
+			{
+				ScriptInfo si = BuilderPlug.Me.GetScriptSlot(i + 1);
+
+				if (si != null)
+					slotitems[i].Text = "Slot " + (i+1) + ": " + si.Name + " [" + GetHotkeyText(i+1) + "]";
+				else
+					slotitems[i].Text = "Slot " + (i+1) + ": not assigned [" + GetHotkeyText(i + 1) + "]";
+			}
+		}
+
+		/// <summary>
+		/// Recursively updates the tree, so that the items show the hotkey (if applicable)
+		/// </summary>
+		/// <param name="node"></param>
+		private void UpdateTree(TreeNode node)
+		{
+			ScriptInfo si = node.Tag as ScriptInfo;
+
+			// Update the item
+			if(si != null)
+			{
+				int slot = BuilderPlug.Me.GetScriptSlotByScriptInfo(si);
+
+				if (slot == 0) // Not assigned to a slot, just set the name
+					node.Text = si.Name;
+				else // It's assigned to a slot, so set the name and the hotkey
+					node.Text = si.Name + " [" + GetHotkeyText(slot) + "]";
+			}
+
+			// Update all children
+			foreach(TreeNode childnode in node.Nodes)
+				UpdateTree(childnode);
+		}
+
+		/// <summary>
+		/// Assignes a script to a slot.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		private void ItemClicked(object sender, ToolStripItemClickedEventArgs e)
+		{
+			ScriptInfo si = filetree.SelectedNodes[0].Tag as ScriptInfo;
+
+			if (si == null)
+				return;
+
+			if(e.ClickedItem.Tag is int)
+			{
+				BuilderPlug.Me.SetScriptSlot((int)e.ClickedItem.Tag, si);
+
+				UpdateContextMenu();
+
+				foreach(TreeNode node in filetree.Nodes)
+					UpdateTree(node);
+			}
+		}
+
+		/// <summary>
+		/// Edits a script.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		private void EditScriptClicked(object sender, EventArgs e)
+		{
+			ScriptInfo si = filetree.SelectedNodes[0].Tag as ScriptInfo;
+
+			if (si == null)
+				return;
+
+			MessageBox.Show("Edit script " + si.ScriptFile);
+		}
 
 		/// <summary>
 		/// Fills the tree of all available scripts. Tries to re-select a previously selected script
@@ -95,7 +207,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 			{
 				TreeNode result = FindScriptTreeNode(previousscriptfile, node);
 
-				if(result != null)
+				if (result != null)
 				{
 					filetree.SelectedNodes.Add(result);
 					break;
@@ -129,6 +241,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 		{
 			List<TreeNode> newnodes = new List<TreeNode>();
 
+			// Go through folders and add files (and other folders) recusrively
 			foreach (ScriptDirectoryStructure subsds in sds.Directories.OrderBy(s => s.Name))
 			{
 				TreeNode tn = new TreeNode(subsds.Name, AddToTree(subsds));
@@ -137,11 +250,13 @@ namespace CodeImp.DoomBuilder.UDBScript
 				newnodes.Add(tn);
 			}
 
+			// Add the scripts in to folder to the tree
 			foreach(ScriptInfo si in sds.Scripts.OrderBy(s => s.Name))
 			{
 				TreeNode tn = new TreeNode(si.Name);
 				tn.Tag = si;
 				tn.SelectedImageKey = tn.ImageKey = "Script";
+				tn.ContextMenuStrip = contextmenu; // CreateContextMenu(si);
 
 				newnodes.Add(tn);
 			}
@@ -229,6 +344,17 @@ namespace CodeImp.DoomBuilder.UDBScript
 					General.Settings.DeletePluginSetting(BuilderPlug.Me.CurrentScript.GetScriptPathHash() + "." + so.name);
 				}
 			}
+		}
+
+		/// <summary>
+		/// Sets the node that was clicked on as the selected node. This is needed for the context menu, because it's the easiest
+		/// way to know which node the context menu was opened for.
+		/// </summary>
+		/// <param name="sender">The sender</param>
+		/// <param name="e">The event</param>
+		private void filetree_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
+		{
+			((TreeView)sender).SelectedNode = e.Node;
 		}
 
 		#endregion
