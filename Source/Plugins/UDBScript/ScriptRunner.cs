@@ -85,11 +85,11 @@ namespace CodeImp.DoomBuilder.UDBScript
 		/// <summary>
 		/// Shows a message box with an "OK" button
 		/// </summary>
-		/// <param name="s">Message to show</param>
-		public void ShowMessage(string s)
+		/// <param name="message">Message to show</param>
+		public void ShowMessage(object message)
 		{
 			stopwatch.Stop();
-			MessageForm mf = new MessageForm("OK", null, s);
+			MessageForm mf = new MessageForm("OK", null, message.ToString());
 			DialogResult result = mf.ShowDialog();
 			stopwatch.Start();
 
@@ -100,12 +100,12 @@ namespace CodeImp.DoomBuilder.UDBScript
 		/// <summary>
 		/// Shows a message box with an "Yes" and "No" button
 		/// </summary>
-		/// <param name="s">Message to show</param>
+		/// <param name="message">Message to show</param>
 		/// <returns>true if "Yes" was clicked, false if "No" was clicked</returns>
-		public bool ShowMessageYesNo(string s)
+		public bool ShowMessageYesNo(object message)
 		{
 			stopwatch.Stop();
-			MessageForm mf = new MessageForm("Yes", "No", s);
+			MessageForm mf = new MessageForm("Yes", "No", message.ToString());
 			DialogResult result = mf.ShowDialog();
 			stopwatch.Start();
 
@@ -213,8 +213,8 @@ namespace CodeImp.DoomBuilder.UDBScript
 				cfg.Constraint(new RuntimeConstraint(stopwatch));
 			});
 			engine.SetValue("log", new Action<object>(Console.WriteLine));
-			engine.SetValue("showMessage", new Action<string>(ShowMessage));
-			engine.SetValue("showMessageYesNo", new Func<string, bool>(ShowMessageYesNo));
+			engine.SetValue("showMessage", new Action<object>(ShowMessage));
+			engine.SetValue("showMessageYesNo", new Func<object, bool>(ShowMessageYesNo));
 			engine.SetValue("exit", new Action<string>(ExitScript));
 			engine.SetValue("die", new Action<string>(DieScript));
 			engine.SetValue("QueryOptions", TypeReference.CreateTypeReference(engine, typeof(QueryOptions)));
