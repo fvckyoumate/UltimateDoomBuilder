@@ -5,6 +5,8 @@
 The `Sector`'s brightness.
 ### ceilingHeight
 Ceiling height of the `Sector`.
+### ceilingSlopeOffset
+The ceiling's slope offset.
 ### ceilingTexture
 Ceiling texture of the `Sector`.
 ### fields
@@ -30,6 +32,11 @@ There are some restrictions, though:
 ```js
 s.fields.user_myintfield = new UniValue(0, 25); // Sets the 'user_myintfield' field to an integer value of 25
 ```
+To remove a field you have to assign `null` to it:
+
+```js
+s.fields.user_myintfield = null;
+```
 ### flags
 `Sector` flags. It's an object with the flags as properties. Only available in UDMF.
 
@@ -40,6 +47,8 @@ s.flags.noattack = true; // Also works
 ```
 ### floorHeight
 Floor height of the `Sector`.
+### floorSlopeOffset
+The floor's slope offset.
 ### floorTexture
 Floor texture of the `Sector`.
 ### index
@@ -67,6 +76,14 @@ Copies the properties from this `Sector` to another.
 * s: the `Sector` to copy the properties to
 ### delete()
 Deletes the `Sector` and its `Sidedef`s.
+### getCeilingSlope()
+Gets the ceiling's slope vector.
+#### Return value
+The ceiling's slope normal as a `Vector3D`
+### getFloorSlope()
+Gets the floor's slope vector.
+#### Return value
+The floor's slope normal as a `Vector3D`
 ### getSidedefs()
 Returns an `Array` of all `Sidedef`s of the `Sector`.
 #### Return value
@@ -92,7 +109,7 @@ if(s.intersect([ 32, 64 ]))
 #### Parameters
 * p: Point to test
 #### Return value
-*missing*
+`true` if the point is in the `Sector`, `false` if it isn't
 ### join(other)
 Joins this `Sector` with another `Sector`. Lines shared between the sectors will not be removed.
 #### Parameters
@@ -103,3 +120,11 @@ Removes a tag from the `Sector`. UDMF only. Supported game configurations only.
 * tag: Tag to remove
 #### Return value
 `true` when the tag was removed successfully, `false` when the tag did not exist
+### setCeilingSlope(normal)
+Sets the ceiling's slope vector. The vector has to be normalized.
+#### Parameters
+* normal: The new slope vector as `Vector3D`
+### setFloorSlope(normal)
+Sets the floor's slope vector. The vector has to be normalized.
+#### Parameters
+* normal: The new slope vector as `Vector3D`

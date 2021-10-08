@@ -327,6 +327,42 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 			}
 		}
 
+		/// <summary>
+		/// The floor's slope offset.
+		/// </summary>
+		public double floorSlopeOffset
+		{
+			get
+			{
+				if (sector.IsDisposed)
+					throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Sector is disposed, the floorSlopeOffset property can not be accessed.");
+
+				return sector.FloorSlopeOffset;
+			}
+			set
+			{
+				sector.FloorSlopeOffset = value;
+			}
+		}
+
+		/// <summary>
+		/// The ceiling's slope offset.
+		/// </summary>
+		public double ceilingSlopeOffset
+		{
+			get
+			{
+				if (sector.IsDisposed)
+					throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Sector is disposed, the ceilingSlopeOffset property can not be accessed.");
+
+				return sector.CeilSlopeOffset;
+			}
+			set
+			{
+				sector.CeilSlopeOffset = value;
+			}
+		}
+
 		#endregion
 
 		#region ================== Constructors
@@ -406,7 +442,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		///	```
 		/// </summary>
 		/// <param name="p">Point to test</param>
-		/// <returns></returns>
+		/// <returns>`true` if the point is in the `Sector`, `false` if it isn't</returns>
 		public bool intersect(object p)
 		{
 			if (sector.IsDisposed)
@@ -422,7 +458,6 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 			{
 				throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException(e.Message);
 			}
-
 
 			throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Position values must be a Vector2D, or an array of numbers.");
 		}
@@ -531,6 +566,62 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 			}
 
 			return triangles;
+		}
+
+		/// <summary>
+		/// Gets the floor's slope vector.
+		/// </summary>
+		/// <returns>The floor's slope normal as a `Vector3D`</returns>
+		public Vector3DWrapper getFloorSlope()
+		{
+			return new Vector3DWrapper(sector.FloorSlope.GetNormal());
+		}
+
+		/// <summary>
+		/// Sets the floor's slope vector. The vector has to be normalized.
+		/// </summary>
+		/// <param name="normal">The new slope vector as `Vector3D`</param>
+		public void setFloorSlope(object normal)
+		{
+			if (sector.IsDisposed)
+				throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Sector is disposed, the setFloorSlope method can not be accessed.");
+
+			try
+			{
+				sector.FloorSlope = (Vector3D)BuilderPlug.Me.GetVectorFromObject(normal, true);
+			}
+			catch (CantConvertToVectorException e)
+			{
+				throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException(e.Message);
+			}
+		}
+
+		/// <summary>
+		/// Gets the ceiling's slope vector.
+		/// </summary>
+		/// <returns>The ceiling's slope normal as a `Vector3D`</returns>
+		public Vector3DWrapper getCeilingSlope()
+		{
+			return new Vector3DWrapper(sector.CeilSlope.GetNormal());
+		}
+
+		/// <summary>
+		/// Sets the ceiling's slope vector. The vector has to be normalized.
+		/// </summary>
+		/// <param name="normal">The new slope vector as `Vector3D`</param>
+		public void setCeilingSlope(object normal)
+		{
+			if (sector.IsDisposed)
+				throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Sector is disposed, the setCeilingSlope method can not be accessed.");
+
+			try
+			{
+				sector.CeilSlope = (Vector3D)BuilderPlug.Me.GetVectorFromObject(normal, true);
+			}
+			catch (CantConvertToVectorException e)
+			{
+				throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException(e.Message);
+			}
 		}
 
 		#endregion

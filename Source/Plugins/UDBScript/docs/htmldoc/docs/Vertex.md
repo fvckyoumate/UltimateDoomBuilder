@@ -26,6 +26,11 @@ There are some restrictions, though:
 ```js
 s.fields.user_myintfield = new UniValue(0, 25); // Sets the 'user_myintfield' field to an integer value of 25
 ```
+To remove a field you have to assign `null` to it:
+
+```js
+s.fields.user_myintfield = null;
+```
 ### floorZ
 The floor z position of the `Vertex`. Only available in UDMF. Only available for supported game configurations.
 ### index

@@ -93,6 +93,22 @@ Map.drawLines([
 * data: `Array` of positions
 #### Return value
 `true` if drawing was successful, `false` if it wasn't
+### getHighlightedLinedef()
+Get the currently highlighted `Linedef`.
+#### Return value
+The currently highlighted `Linedef` or `null` if no `Linedef` is highlighted
+### getHighlightedSector()
+Get the currently highlighted `Sector`.
+#### Return value
+The currently highlighted `Sector` or `null` if no `Sector` is highlighted
+### getHighlightedThing()
+Get the currently highlighted `Thing`.
+#### Return value
+The currently highlighted `Thing` or `null` if no `Thing` is highlighted
+### getHighlightedVertex()
+Get the currently highlighted `Vertex`.
+#### Return value
+The currently highlighted `Vertex` or `null` if no `Vertex` is highlighted
 ### getLinedefs()
 Returns an `Array` of all `Linedef`s in the map.
 #### Return value
@@ -148,25 +164,41 @@ Gets all selected (default) or unselected `Linedef`s.
 #### Parameters
 * selected: `true` to get all selected `Linedef`s, `false` to get all unselected ones
 #### Return value
-*missing*
+`Array` of `Linedef`s
+### getSelectedOrHighlightedLinedefs()
+Gets the currently selected `Linedef`s *or*, if no `Linede`f`s are selected, a currently highlighted `Linedef`.
+#### Return value
+`Array` of `Linedef`s
+### getSelectedOrHighlightedSectors()
+Gets the currently selected `Sector`s *or*, if no `Sector`s are selected, a currently highlighted `Sector`.
+#### Return value
+`Array` of `Sector`s
+### getSelectedOrHighlightedThings()
+Gets the currently selected `Thing`s *or*, if no `Thing`s are selected, a currently highlighted `Thing`.
+#### Return value
+`Array` of `Thing`s
+### getSelectedOrHighlightedVertices()
+Gets the currently selected `Vertex`s *or*, if no `Vertex`s are selected, a currently highlighted `Vertex`.
+#### Return value
+`Array` of `Vertex`
 ### getSelectedSectors(selected = true)
 Gets all selected (default) or unselected `Sector`s.
 #### Parameters
 * selected: `true` to get all selected `Sector`s, `false` to get all unselected ones
 #### Return value
-*missing*
+`Array` of `Sector`s
 ### getSelectedThings(selected = true)
 Gets all selected (default) or unselected `Thing`s.
 #### Parameters
 * selected: `true` to get all selected `Thing`s, `false` to get all unselected ones
 #### Return value
-*missing*
+`Array` of `Thing`s
 ### getSelectedVertices(selected=true)
 Gets all selected (default) or unselected vertices.
 #### Parameters
 * selected: `true` to get all selected vertices, `false` to get all unselected ones
 #### Return value
-*missing*
+`Array` of `Vertex`
 ### getSidedefs()
 Returns an `Array` of all `Sidedef`s in the map.
 #### Return value
