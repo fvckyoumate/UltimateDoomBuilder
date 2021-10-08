@@ -574,6 +574,9 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// <returns>The floor's slope normal as a `Vector3D`</returns>
 		public Vector3DWrapper getFloorSlope()
 		{
+			if (sector.IsDisposed)
+				throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Sector is disposed, the getFloorSlope method can not be accessed.");
+
 			return new Vector3DWrapper(sector.FloorSlope.GetNormal());
 		}
 
@@ -602,6 +605,9 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// <returns>The ceiling's slope normal as a `Vector3D`</returns>
 		public Vector3DWrapper getCeilingSlope()
 		{
+			if (sector.IsDisposed)
+				throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Sector is disposed, the getCeilingSlope method can not be accessed.");
+
 			return new Vector3DWrapper(sector.CeilSlope.GetNormal());
 		}
 
