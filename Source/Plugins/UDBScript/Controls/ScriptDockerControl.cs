@@ -87,8 +87,8 @@ namespace CodeImp.DoomBuilder.UDBScript
 			contextmenu = new ContextMenuStrip();
 			contextmenu.Items.AddRange(new ToolStripItem[]
 			{
-				setslot,
-				edititem
+				edititem,
+				setslot
 			});
 		}
 
@@ -192,7 +192,8 @@ namespace CodeImp.DoomBuilder.UDBScript
 			if (si == null)
 				return;
 
-			MessageBox.Show("Edit script " + si.ScriptFile);
+			//MessageBox.Show("Edit script " + si.ScriptFile);
+			BuilderPlug.Me.EditScript(si.ScriptFile);
 		}
 
 		/// <summary>

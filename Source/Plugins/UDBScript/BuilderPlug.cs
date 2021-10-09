@@ -35,6 +35,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
+using Microsoft.Win32;
 using CodeImp.DoomBuilder.Actions;
 using CodeImp.DoomBuilder.Controls;
 using CodeImp.DoomBuilder.Geometry;
@@ -44,6 +45,7 @@ using CodeImp.DoomBuilder.Plugins;
 using CodeImp.DoomBuilder.Types;
 using Jint;
 using CodeImp.DoomBuilder.UDBScript.Wrapper;
+using CodeImp.DoomBuilder.Windows;
 
 namespace CodeImp.DoomBuilder.UDBScript
 {
@@ -90,6 +92,8 @@ namespace CodeImp.DoomBuilder.UDBScript
 		private FileSystemWatcher watcher;
 		private object lockobj;
 		private Dictionary<int, ScriptInfo> scriptslots;
+		private string editorexepath;
+		private PreferencesForm preferencesform;
 
 		#endregion
 
@@ -100,6 +104,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 		internal ScriptInfo CurrentScript { get { return currentscript; } set { currentscript = value; } }
 		internal ScriptRunner ScriptRunner { get { return scriptrunner; } }
 		internal ScriptDirectoryStructure ScriptDirectoryStructure { get { return scriptdirectorystructure; } }
+		internal string EditorExePath { get { return editorexepath; } }
 
 		#endregion
 
@@ -127,6 +132,10 @@ namespace CodeImp.DoomBuilder.UDBScript
 			watcher.Created += OnWatcherEvent;
 			watcher.Deleted += OnWatcherEvent;
 			watcher.Renamed += OnWatcherEvent;
+
+			editorexepath = General.Settings.ReadPluginSetting("externaleditor", string.Empty);
+
+			FindEditor();
 		}
 
 		public override void OnMapNewEnd()
@@ -167,6 +176,22 @@ namespace CodeImp.DoomBuilder.UDBScript
 			}
 		}
 
+		public override void OnShowPreferences(PreferencesController controller)
+		{
+			base.OnShowPreferences(controller);
+
+			preferencesform = new PreferencesForm();
+			preferencesform.Setup(controller);
+		}
+
+		public override void OnClosePreferences(PreferencesController controller)
+		{
+			base.OnClosePreferences(controller);
+
+			preferencesform.Dispose();
+			preferencesform = null;
+		}
+
 		private void OnWatcherEvent(object sender, FileSystemEventArgs e)
 		{
 			// We can't use the filter on the watcher, since for whatever reason that filter also applies to
@@ -186,6 +211,50 @@ namespace CodeImp.DoomBuilder.UDBScript
 
 			// This must be called to remove bound methods for actions.
 			General.Actions.UnbindMethods(this);
+		}
+
+		private void FindEditor()
+		{
+			if (!string.IsNullOrWhiteSpace(editorexepath))
+				return;
+
+			string editor = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "notepad.exe");
+
+			if (!File.Exists(editor))
+				return;
+
+			editorexepath = editor;
+		}
+
+		/// <summary>
+		/// Sets the new external editor exe path.
+		/// </summary>
+		/// <param name="exepath">Path and file name of the external editor</param>
+		internal void SetEditor(string exepath)
+		{
+			if (!string.IsNullOrWhiteSpace(exepath))
+			{
+				editorexepath = exepath;
+				General.Settings.WritePluginSetting("externaleditor", editorexepath);
+			}
+		}
+
+		/// <summary>
+		/// Opens a script in the external editor.
+		/// </summary>
+		/// <param name="file"></param>
+		internal void EditScript(string file)
+		{
+			if(string.IsNullOrWhiteSpace(editorexepath))
+			{
+				MessageBox.Show("No external editor set. Please set the external editor in the UDBScript tab in the preferences.");
+				return;
+			}
+
+			Process p = new Process();
+			p.StartInfo.FileName = editorexepath;
+			p.StartInfo.Arguments = "\"" + file + "\""; // File name might contain spaces, so put it in quotes
+			p.Start();
 		}
 
 		/// <summary>

@@ -20,23 +20,36 @@ All files ending on .js in the `Libraries` directory are loaded (parsed and exec
 
 All files ending on .js in the `Scripts` directory (and its subdirectories) are added to the Scripts docker. They are only run on the user's command.
 
-## Setting a key to execute scripts
+!!! tip
+	UDBScript does hot reloading, i.e. changes to the scripts, or copying new scripts into the directory structure will be shown immediately.
 
-A key to execute a script can be set by going to `Tools` -> `Preferences` -> `Controls`, and then filtering by `execute`.
+## Setting hotkeys to execute scripts
+
+Hotkeys to execute scripts can be set by going to `Tools` -> `Preferences` -> `Controls`, and then filtering by `execute`.
+
+You can set a hotkey to "Execute Script", which will execute the currently selected script in the docker (see [The docker](#the-docker)), or up to 30 hotkeys to the "Execute Script Slot *x*", which will execute the script in the corrosponding slots (see [The docker](#the-docker)).
 
 ![Setting a hokey](preferences.png)
 
+## Setting up an external script editor
+
+It is possible to set up an external script editor to edit the script from within UDB. To do so you have to open the preferences and go to the UDBScript tab (you probably have to scroll the tabs). It defaults to notepad.exe, but it's recommended to set it to an editor that supports syntax highlighting.
+
+![External editor setup](externaleditor.png)
+
 ## The docker
 
-Scripts can be accessed, configured, and run through the provided docker. Selecting a script will show it's description (if available) and configuration options.
+Scripts can be accessed, configured, and run through the provided docker. Selecting a script will show it's description (if available) and configuration options. 
 
 Default values in the script options will be shown in gray, deviating values as black. Pressing the `Reset` button will reset all values to the default. 
 
-Scripts can either be run using the `Run` button, or by pressing the assigned key (see previous section). Note that scripts might rely on the mouse cursor being somewhere in the map space, in which case they will not run correctly using the `Run` button. This should be intercepted by the script.
+Scripts can either be run using the `Run` button, or by pressing the assigned key (see [Setting hotkeys to execute scripts](#setting-hotkeys-to-execute-scripts)). Note that scripts might rely on the mouse cursor being somewhere in the map space, in which case they will not run correctly using the `Run` button. This should be intercepted by the script.
 
-Currently the available scripts are only read once at start, to add new scripts you have to restart UDB.
+![The docker](docker.png)
 
-![test](docker.png)
+You can open a context menu for each script by right-clicking on it. In the context menu you can either chose to edit the script, or to assign the script to one of the script slots. Assigning the script to a script slot allows you to execute the script by pressing the hotkey you assigned to the script slot (see [Setting hotkeys to execute scripts](#setting-hotkeys-to-execute-scripts)).
+
+![The context menu](contextmenu.png)
 
 ## Writing scripts
 
@@ -235,6 +248,17 @@ Normally a script ends when the last instruction is executed. But there can be s
 - `exit()`: this global function ends the script with success. It can optionally take a string argument that is shown in the status bar upon ending the script
 - `die()`: this global function ends the script with a failure. This means that it will undo any changes the script has made. It can optionally take a string argument that is shown in the status bar upon ending the script
 - `throw`: throws an exception. Only ends the script if it's not caught in a `try`/`catch` block. If not caught it'll end the script with a failure. This means that it will undo any changes the script has made. The string given as a parameter is shown in the status bar upon ending the script
+
+```js
+let sectors = Map.getSelectedSectors();
+
+if(sectors.length == 0)
+	die('You have to select at least one sector');
+
+exit('There were ' + sectors.length + ' sectors selected');
+
+throw 'This part of the script should never be reached!';
+```
 
 ### Communicating with the user
 
