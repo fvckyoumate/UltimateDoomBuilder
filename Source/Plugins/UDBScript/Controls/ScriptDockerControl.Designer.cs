@@ -198,6 +198,7 @@
 			this.Controls.Add(this.splitContainer1);
 			this.Name = "ScriptDockerControl";
 			this.Size = new System.Drawing.Size(318, 541);
+			this.VisibleChanged += new System.EventHandler(this.ScriptDockerControl_VisibleChanged);
 			this.tableLayoutPanel1.ResumeLayout(false);
 			this.splitContainer1.Panel1.ResumeLayout(false);
 			this.splitContainer1.Panel2.ResumeLayout(false);

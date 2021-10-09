@@ -157,7 +157,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 
 				ScriptOption so = new ScriptOption((string)de.Key, description, type, enumvalues, defaultvaluestr);
 
-				string savedvalue = General.Settings.ReadPluginSetting(GetScriptPathHash() + "." + so.name, so.defaultvalue.ToString());
+				string savedvalue = General.Settings.ReadPluginSetting("scriptoptions." + GetScriptPathHash() + "." + so.name, so.defaultvalue.ToString());
 
 				if (string.IsNullOrWhiteSpace(savedvalue))
 					so.value = so.defaultvalue;
@@ -183,9 +183,9 @@ namespace CodeImp.DoomBuilder.UDBScript
 			foreach(ScriptOption so in options)
 			{
 				if(so.value.ToString() == so.defaultvalue.ToString())
-					General.Settings.DeletePluginSetting(hash + "." + so.name);
+					General.Settings.DeletePluginSetting("scriptoptions." + hash + "." + so.name);
 				else
-					General.Settings.WritePluginSetting(hash + "." + so.name, so.value);
+					General.Settings.WritePluginSetting("scriptoptions." + hash + "." + so.name, so.value);
 			}
 		}
 

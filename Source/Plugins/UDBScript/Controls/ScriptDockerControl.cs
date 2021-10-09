@@ -36,7 +36,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 
 		private ImageList images;
 		private ContextMenuStrip contextmenu;
-		ToolStripMenuItem[] slotitems;
+		ToolStripItem[] slotitems;
 
 		#endregion
 
@@ -57,9 +57,6 @@ namespace CodeImp.DoomBuilder.UDBScript
 			images.Images.Add("Script", Properties.Resources.Script);
 
 			filetree.ImageList = images;
-
-			CreateContextMenu();
-			UpdateContextMenu();
 		}
 
 		#endregion
@@ -71,11 +68,16 @@ namespace CodeImp.DoomBuilder.UDBScript
 			ToolStripMenuItem edititem = new ToolStripMenuItem("Edit");
 			edititem.Click += EditScriptClicked;
 
-			slotitems = new ToolStripMenuItem[BuilderPlug.NUM_SCRIPT_SLOTS];
-			for (int i = 0; i < BuilderPlug.NUM_SCRIPT_SLOTS; i++)
+			ToolStripMenuItem deleteitem = new ToolStripMenuItem("Clear slot");
+			deleteitem.Tag = "deleteitem";
+
+			slotitems = new ToolStripItem[BuilderPlug.NUM_SCRIPT_SLOTS + 2];
+			slotitems[0] = deleteitem;
+			slotitems[1] = new ToolStripSeparator();
+			for (int i=0; i < BuilderPlug.NUM_SCRIPT_SLOTS; i++)
 			{
-				slotitems[i] = new ToolStripMenuItem("Slot " + (i + 1));
-				slotitems[i].Tag = i + 1;
+				slotitems[i+2] = new ToolStripMenuItem("Slot " + (i + 1));
+				slotitems[i+2].Tag = i + 1;
 			}
 
 			ToolStripMenuItem setslot = new ToolStripMenuItem("Set slot");
@@ -117,9 +119,9 @@ namespace CodeImp.DoomBuilder.UDBScript
 				ScriptInfo si = BuilderPlug.Me.GetScriptSlot(i + 1);
 
 				if (si != null)
-					slotitems[i].Text = "Slot " + (i+1) + ": " + si.Name + " [" + GetHotkeyText(i+1) + "]";
+					slotitems[i+2].Text = "Slot " + (i+1) + ": " + si.Name + " [" + GetHotkeyText(i+1) + "]";
 				else
-					slotitems[i].Text = "Slot " + (i+1) + ": not assigned [" + GetHotkeyText(i + 1) + "]";
+					slotitems[i+2].Text = "Slot " + (i+1) + ": not assigned [" + GetHotkeyText(i + 1) + "]";
 			}
 		}
 
@@ -159,15 +161,23 @@ namespace CodeImp.DoomBuilder.UDBScript
 			if (si == null)
 				return;
 
-			if(e.ClickedItem.Tag is int)
+			if (e.ClickedItem.Tag is string && (string)e.ClickedItem.Tag == "deleteitem")
 			{
-				BuilderPlug.Me.SetScriptSlot((int)e.ClickedItem.Tag, si);
+				int slot = BuilderPlug.Me.GetScriptSlotByScriptInfo(si);
 
-				UpdateContextMenu();
-
-				foreach(TreeNode node in filetree.Nodes)
-					UpdateTree(node);
+				if(slot != 0)
+					BuilderPlug.Me.SetScriptSlot(slot, null);
 			}
+			else
+			{
+				if (e.ClickedItem.Tag is int)
+					BuilderPlug.Me.SetScriptSlot((int)e.ClickedItem.Tag, si);
+			}
+
+			UpdateContextMenu();
+
+			foreach (TreeNode node in filetree.Nodes)
+				UpdateTree(node);
 		}
 
 		/// <summary>
@@ -253,7 +263,14 @@ namespace CodeImp.DoomBuilder.UDBScript
 			// Add the scripts in to folder to the tree
 			foreach(ScriptInfo si in sds.Scripts.OrderBy(s => s.Name))
 			{
-				TreeNode tn = new TreeNode(si.Name);
+				TreeNode tn = new TreeNode();
+				int slot = BuilderPlug.Me.GetScriptSlotByScriptInfo(si);
+
+				if (slot == 0) // Not assigned to a slot, just set the name
+					tn.Text = si.Name;
+				else // It's assigned to a slot, so set the name and the hotkey
+					tn.Text = si.Name + " [" + GetHotkeyText(slot) + "]";
+
 				tn.Tag = si;
 				tn.SelectedImageKey = tn.ImageKey = "Script";
 				tn.ContextMenuStrip = contextmenu; // CreateContextMenu(si);
@@ -341,7 +358,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 					row.Cells["Value"].Value = so.defaultvalue.ToString();
 					so.typehandler.SetValue(so.defaultvalue);
 
-					General.Settings.DeletePluginSetting(BuilderPlug.Me.CurrentScript.GetScriptPathHash() + "." + so.name);
+					General.Settings.DeletePluginSetting("scriptoptions." + BuilderPlug.Me.CurrentScript.GetScriptPathHash() + "." + so.name);
 				}
 			}
 		}
@@ -355,6 +372,16 @@ namespace CodeImp.DoomBuilder.UDBScript
 		private void filetree_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
 		{
 			((TreeView)sender).SelectedNode = e.Node;
+		}
+
+		private void ScriptDockerControl_VisibleChanged(object sender, EventArgs e)
+		{
+			if (!Visible || Disposing)
+				return;
+
+			CreateContextMenu();
+			UpdateContextMenu();
+			FillTree();
 		}
 
 		#endregion

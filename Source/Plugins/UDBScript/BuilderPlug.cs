@@ -74,6 +74,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 		#region ================== Constants
 
 		public const int NUM_SCRIPT_SLOTS = 30;
+
 		#endregion
 
 		#region ================== Variables
@@ -150,14 +151,19 @@ namespace CodeImp.DoomBuilder.UDBScript
 
 		public override void OnMapCloseBegin()
 		{
-			List<string> hashes = new List<string>();
-
 			watcher.EnableRaisingEvents = false;
 
+			// Save the script option values
 			foreach (ScriptInfo si in scriptinfo)
-			{
 				si.SaveOptionValues();
-				hashes.Add(si.GetScriptPathHash());
+
+			// Save the script slots
+			foreach(KeyValuePair<int, ScriptInfo> kvp in scriptslots)
+			{
+				if (kvp.Value == null || string.IsNullOrWhiteSpace(kvp.Value.ScriptFile))
+					continue;
+
+				General.Settings.WritePluginSetting("scriptslots.slot" + kvp.Key, kvp.Value.ScriptFile);
 			}
 		}
 
@@ -186,16 +192,23 @@ namespace CodeImp.DoomBuilder.UDBScript
 		/// Sets a ScriptInfo to a specific slot.
 		/// </summary>
 		/// <param name="slot">The slot</param>
-		/// <param name="si">The ScriptInfo to assign to the  slot</param>
+		/// <param name="si">The ScriptInfo to assign to the slot. Pass null to clear the slot</param>
 		public void SetScriptSlot(int slot, ScriptInfo si)
 		{
-			// Check if the ScriptInfo is already assigned to a slot, and remove it if so
-			// Have to use ToList because otherwise the collection would be changed while iterating over it
-			foreach (int s in scriptslots.Keys.ToList())
-				if (scriptslots[s] == si)
-					scriptslots[s] = null;
+			if (si == null)
+			{
+				scriptslots.Remove(slot);
+			}
+			else
+			{
+				// Check if the ScriptInfo is already assigned to a slot, and remove it if so
+				// Have to use ToList because otherwise the collection would be changed while iterating over it
+				foreach (int s in scriptslots.Keys.ToList())
+					if (scriptslots[s] == si)
+						scriptslots[s] = null;
 
-			scriptslots[slot] = si;
+				scriptslots[slot] = si;
+			}
 		}
 
 		/// <summary>
@@ -233,6 +246,22 @@ namespace CodeImp.DoomBuilder.UDBScript
 			{
 				scriptinfo = new List<ScriptInfo>();
 				scriptdirectorystructure = LoadScriptDirectoryStructure(Path.Combine(General.AppPath, SCRIPT_FOLDER, "scripts"));
+
+				scriptslots = new Dictionary<int, ScriptInfo>();
+				for(int i=0; i < NUM_SCRIPT_SLOTS; i++)
+				{
+					int num = i + 1;
+					string file = General.Settings.ReadPluginSetting("scriptslots.slot" + num, string.Empty);
+
+					if (string.IsNullOrWhiteSpace(file))
+						continue;
+
+					foreach(ScriptInfo si in scriptinfo)
+					{
+						if (si.ScriptFile == file)
+							scriptslots[num] = si;
+					}
+				}
 
 				// This might not be called from the main thread when called by the file system watcher, so use a delegate
 				// to run it cleanly
