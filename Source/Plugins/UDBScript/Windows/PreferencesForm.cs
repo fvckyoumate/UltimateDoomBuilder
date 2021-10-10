@@ -54,9 +54,6 @@ namespace CodeImp.DoomBuilder.UDBScript
 		[MethodImplAttribute(MethodImplOptions.NoInlining)]
 		public void OnAccept(PreferencesController controller)
 		{
-			// Write preferred settings
-			//General.Settings.WritePluginSetting("sectorlabeldisplayoption", sectorlabels.SelectedIndex);
-			//General.Settings.WritePluginSetting("slopevertexlabeldisplayoption", slopevertexlabels.SelectedIndex);
 			BuilderPlug.Me.SetEditor(exepath.Text);
 		}
 
