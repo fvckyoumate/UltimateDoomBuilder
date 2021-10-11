@@ -32,12 +32,15 @@
 			this.btnRunScript = new System.Windows.Forms.Button();
 			this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
 			this.splitContainer1 = new System.Windows.Forms.SplitContainer();
-			this.filetree = new CodeImp.DoomBuilder.Controls.MultiSelectTreeview();
 			this.tbDescription = new System.Windows.Forms.TextBox();
 			this.label3 = new System.Windows.Forms.Label();
 			this.label4 = new System.Windows.Forms.Label();
 			this.label1 = new System.Windows.Forms.Label();
 			this.label2 = new System.Windows.Forms.Label();
+			this.tbFilter = new System.Windows.Forms.TextBox();
+			this.btnClearFilter = new System.Windows.Forms.Button();
+			this.label5 = new System.Windows.Forms.Label();
+			this.filetree = new CodeImp.DoomBuilder.Controls.MultiSelectTreeview();
 			this.scriptoptions = new CodeImp.DoomBuilder.UDBScript.ScriptOptionsControl();
 			this.tableLayoutPanel1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
@@ -95,6 +98,9 @@
 			// 
 			// splitContainer1.Panel1
 			// 
+			this.splitContainer1.Panel1.Controls.Add(this.label5);
+			this.splitContainer1.Panel1.Controls.Add(this.btnClearFilter);
+			this.splitContainer1.Panel1.Controls.Add(this.tbFilter);
 			this.splitContainer1.Panel1.Controls.Add(this.filetree);
 			this.splitContainer1.Panel1.RightToLeft = System.Windows.Forms.RightToLeft.No;
 			// 
@@ -110,21 +116,6 @@
 			this.splitContainer1.Size = new System.Drawing.Size(312, 496);
 			this.splitContainer1.SplitterDistance = 239;
 			this.splitContainer1.TabIndex = 25;
-			// 
-			// filetree
-			// 
-			this.filetree.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.filetree.HideSelection = false;
-			this.filetree.Location = new System.Drawing.Point(0, 0);
-			this.filetree.Margin = new System.Windows.Forms.Padding(8, 8, 9, 8);
-			this.filetree.Name = "filetree";
-			this.filetree.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-			this.filetree.SelectionMode = CodeImp.DoomBuilder.Controls.TreeViewSelectionMode.SingleSelect;
-			this.filetree.ShowNodeToolTips = true;
-			this.filetree.Size = new System.Drawing.Size(312, 239);
-			this.filetree.TabIndex = 24;
-			this.filetree.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.filetree_AfterSelect);
-			this.filetree.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.filetree_NodeMouseClick);
 			// 
 			// tbDescription
 			// 
@@ -180,6 +171,53 @@
 			this.label2.Size = new System.Drawing.Size(313, 2);
 			this.label2.TabIndex = 2;
 			// 
+			// tbFilter
+			// 
+			this.tbFilter.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this.tbFilter.Location = new System.Drawing.Point(41, 6);
+			this.tbFilter.Name = "tbFilter";
+			this.tbFilter.Size = new System.Drawing.Size(244, 20);
+			this.tbFilter.TabIndex = 25;
+			this.tbFilter.TextChanged += new System.EventHandler(this.tbFilter_TextChanged);
+			// 
+			// btnClearFilter
+			// 
+			this.btnClearFilter.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.btnClearFilter.Image = global::CodeImp.DoomBuilder.UDBScript.Properties.Resources.SearchClear;
+			this.btnClearFilter.Location = new System.Drawing.Point(291, 5);
+			this.btnClearFilter.Name = "btnClearFilter";
+			this.btnClearFilter.Size = new System.Drawing.Size(22, 22);
+			this.btnClearFilter.TabIndex = 26;
+			this.btnClearFilter.UseVisualStyleBackColor = true;
+			this.btnClearFilter.Click += new System.EventHandler(this.btnClearFilter_Click);
+			// 
+			// label5
+			// 
+			this.label5.AutoSize = true;
+			this.label5.Location = new System.Drawing.Point(3, 9);
+			this.label5.Name = "label5";
+			this.label5.Size = new System.Drawing.Size(32, 13);
+			this.label5.TabIndex = 27;
+			this.label5.Text = "Filter:";
+			// 
+			// filetree
+			// 
+			this.filetree.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this.filetree.HideSelection = false;
+			this.filetree.Location = new System.Drawing.Point(0, 37);
+			this.filetree.Margin = new System.Windows.Forms.Padding(8, 8, 9, 8);
+			this.filetree.Name = "filetree";
+			this.filetree.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+			this.filetree.SelectionMode = CodeImp.DoomBuilder.Controls.TreeViewSelectionMode.SingleSelect;
+			this.filetree.ShowNodeToolTips = true;
+			this.filetree.Size = new System.Drawing.Size(312, 202);
+			this.filetree.TabIndex = 24;
+			this.filetree.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.filetree_AfterSelect);
+			this.filetree.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.filetree_NodeMouseClick);
+			// 
 			// scriptoptions
 			// 
 			this.scriptoptions.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -201,6 +239,7 @@
 			this.VisibleChanged += new System.EventHandler(this.ScriptDockerControl_VisibleChanged);
 			this.tableLayoutPanel1.ResumeLayout(false);
 			this.splitContainer1.Panel1.ResumeLayout(false);
+			this.splitContainer1.Panel1.PerformLayout();
 			this.splitContainer1.Panel2.ResumeLayout(false);
 			this.splitContainer1.Panel2.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
@@ -222,5 +261,8 @@
 		private System.Windows.Forms.TextBox tbDescription;
 		private System.Windows.Forms.Label label3;
 		private System.Windows.Forms.Label label4;
+		private System.Windows.Forms.Label label5;
+		private System.Windows.Forms.Button btnClearFilter;
+		private System.Windows.Forms.TextBox tbFilter;
 	}
 }

@@ -203,6 +203,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 		{
 			string previousscriptfile = string.Empty;
 			NodesCollection nc = filetree.SelectedNodes;
+			string filtertext = tbFilter.Text.ToLowerInvariant().Trim();
 
 			scriptoptions.ParametersView.Rows.Clear();
 			scriptoptions.ParametersView.Refresh();
@@ -210,8 +211,10 @@ namespace CodeImp.DoomBuilder.UDBScript
 			if(nc.Count > 0 && nc[0].Tag is ScriptInfo)
 				previousscriptfile = ((ScriptInfo)nc[0].Tag).ScriptFile;
 
+			filetree.BeginUpdate();
+
 			filetree.Nodes.Clear();
-			filetree.Nodes.AddRange(AddToTree(BuilderPlug.Me.ScriptDirectoryStructure));
+			filetree.Nodes.AddRange(AddToTree(filtertext, BuilderPlug.Me.ScriptDirectoryStructure));
 			filetree.ExpandAll();
 
 			foreach(TreeNode node in filetree.Nodes)
@@ -224,6 +227,8 @@ namespace CodeImp.DoomBuilder.UDBScript
 					break;
 				}
 			}
+
+			filetree.EndUpdate();
 		}
 
 		/// <summary>
@@ -248,14 +253,23 @@ namespace CodeImp.DoomBuilder.UDBScript
 			return null;
 		}
 
-		private TreeNode[] AddToTree(ScriptDirectoryStructure sds)
+		/// <summary>
+		/// Recursively adds nodes to the tree. Optionally filters script, showing only the ones containing the filter text in
+		/// the script name or description.
+		/// </summary>
+		/// <param name="filtertext">Text to filter by. null or an empty string will not filter at all</param>
+		/// <param name="sds">Directory structur or crawl through</param>
+		/// <returns></returns>
+		private TreeNode[] AddToTree(string filtertext, ScriptDirectoryStructure sds)
 		{
 			List<TreeNode> newnodes = new List<TreeNode>();
 
 			// Go through folders and add files (and other folders) recusrively
 			foreach (ScriptDirectoryStructure subsds in sds.Directories.OrderBy(s => s.Name))
 			{
-				TreeNode tn = new TreeNode(subsds.Name, AddToTree(subsds));
+				TreeNode[] children = AddToTree(filtertext, subsds);
+				TreeNode tn = new TreeNode(subsds.Name, AddToTree(filtertext, subsds));
+
 				tn.SelectedImageKey = tn.ImageKey = "Folder";
 
 				newnodes.Add(tn);
@@ -264,6 +278,14 @@ namespace CodeImp.DoomBuilder.UDBScript
 			// Add the scripts in to folder to the tree
 			foreach(ScriptInfo si in sds.Scripts.OrderBy(s => s.Name))
 			{
+				// Check if there's a text to filter scripts by, and if there is, skip scripts that do not contain
+				// the filter in the script name or description
+				if (!string.IsNullOrWhiteSpace(filtertext))
+				{
+					if (!si.Name.ToLowerInvariant().Contains(filtertext) && !si.Description.ToLowerInvariant().Contains(filtertext))
+						continue;
+				}
+
 				TreeNode tn = new TreeNode();
 				int slot = BuilderPlug.Me.GetScriptSlotByScriptInfo(si);
 
@@ -274,7 +296,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 
 				tn.Tag = si;
 				tn.SelectedImageKey = tn.ImageKey = "Script";
-				tn.ContextMenuStrip = contextmenu; // CreateContextMenu(si);
+				tn.ContextMenuStrip = contextmenu;
 
 				newnodes.Add(tn);
 			}
@@ -382,6 +404,17 @@ namespace CodeImp.DoomBuilder.UDBScript
 
 			CreateContextMenu();
 			UpdateContextMenu();
+			FillTree();
+		}
+
+		private void btnClearFilter_Click(object sender, EventArgs e)
+		{
+			tbFilter.Clear();
+		}
+
+		private void tbFilter_TextChanged(object sender, EventArgs e)
+		{
+			// TreeNodes can't by dynamically hidden, so it's easier to just fill the tholw tree again
 			FillTree();
 		}
 

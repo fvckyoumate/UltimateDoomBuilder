@@ -178,6 +178,9 @@
       <Name>BuilderModes</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\SearchClear.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>xcopy $(ProjectDir)Jint.dll $(TargetDir)Dependencies\ /y
