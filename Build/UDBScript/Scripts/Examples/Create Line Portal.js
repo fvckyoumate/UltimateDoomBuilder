@@ -1,6 +1,6 @@
 `#name Create Line Portal`;
 
-`#description Creates a quick portal (line action 301) between the selected lines. Only works in UDMF. Only works when exactly two lines are selected. Both lines must have exactly the same length. Draws a sector at the back of the selected lines.`
+`#description Creates a quick portal (line action 301) between the selected lines. Only works in UDMF. Only works when exactly two lines are selected. Both lines must have exactly the same length. Draws a sector at the back of the selected lines.`;
 
 `#scriptoptions
 

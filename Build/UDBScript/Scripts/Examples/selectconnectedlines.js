@@ -2,7 +2,7 @@
 
 `#description Recursively selects all linedefs that are connected to the currently selected linedef(s).`;
 
-let lines = Map.getSelectedLinedefs();
+let lines = Map.getSelectedOrHighlightedLinedefs();
 
 if(lines.length == 0)
     die('You have to select at least one linedef!');
