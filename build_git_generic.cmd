@@ -98,7 +98,7 @@ ECHO Compiling Doom Builder...
 ECHO.
 IF DEFINED EXPERIMENTALNAME (
 	echo ##### BUILDING EXPERIMENTAL VERSION %EXPERIMENTALNAME%
-	msbuild.exe Builder.sln /t:Rebuild /p:Configuration=Release /p:Platform=%PLATFORM% /v:minimal /p:DefineConstants="DEBUG;TRACE;NO_UPDATER"
+	msbuild.exe Builder.sln /t:Rebuild /p:Configuration=Release /p:Platform=%PLATFORM% /v:minimal /p:DefineConstants="TRACE;NO_UPDATER"
 ) ELSE (
 	msbuild.exe Builder.sln /t:Rebuild /p:Configuration=Release /p:Platform=%PLATFORM% /v:minimal
 )
