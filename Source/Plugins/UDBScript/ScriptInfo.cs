@@ -41,6 +41,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 		#region ================== Variables
 
 		private uint version;
+		private bool ignoreversion;
 		private string name;
 		private string description;
 		private string scriptfile;
@@ -50,6 +51,8 @@ namespace CodeImp.DoomBuilder.UDBScript
 
 		#region ================== Properties
 
+		public uint Version { get { return version; } }
+		public bool IgnoreVersion { get { return ignoreversion; } set { ignoreversion = value; } }
 		public string Name { get { return name; } }
 		public string Description { get { return description; } }
 		public string ScriptFile { get { return scriptfile; } }
@@ -157,7 +160,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 
 				ScriptOption so = new ScriptOption((string)de.Key, description, type, enumvalues, defaultvaluestr);
 
-				string savedvalue = General.Settings.ReadPluginSetting("scriptoptions." + GetScriptPathHash() + "." + so.name, so.defaultvalue.ToString());
+				string savedvalue = General.Settings.ReadPluginSetting("scripts." + GetScriptPathHash() + ".options." + so.name, so.defaultvalue.ToString());
 
 				if (string.IsNullOrWhiteSpace(savedvalue))
 					so.value = so.defaultvalue;
@@ -179,13 +182,24 @@ namespace CodeImp.DoomBuilder.UDBScript
 				return;
 
 			string hash = GetScriptPathHash();
+			int optionswritten = 0;
 
 			foreach(ScriptOption so in options)
 			{
-				if(so.value.ToString() == so.defaultvalue.ToString())
-					General.Settings.DeletePluginSetting("scriptoptions." + hash + "." + so.name);
+				if (so.value.ToString() == so.defaultvalue.ToString())
+					General.Settings.DeletePluginSetting("scripts." + hash + ".options." + so.name);
 				else
-					General.Settings.WritePluginSetting("scriptoptions." + hash + "." + so.name, so.value);
+				{
+					General.Settings.WritePluginSetting("scripts." + hash + ".options." + so.name, so.value);
+					optionswritten++;
+				}
+			}
+
+			// If no options were written the whole block should be deleted
+			if (optionswritten == 0)
+			{
+				General.Settings.DeletePluginSetting("scripts." + hash + ".options");
+				General.Settings.DeletePluginSetting("scripts." + hash);
 			}
 		}
 

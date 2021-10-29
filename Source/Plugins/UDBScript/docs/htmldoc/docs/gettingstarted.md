@@ -62,15 +62,19 @@ Scripts can contain metadata at the top of the file to provide information about
 
 Example:
 ```js
+`#version 2`;
+
 `#name Super Useful Script`;
+
+`#description This script does something really, really useful.`;
 ```
 
 Currently the following metadata commands are available:
 
+- `version`: the feature version the script needs to run. Properties and methods that require a specific version are noted as such in the API documentation. If omitted version 1 is assumed. If the script requires a higher feature version than the user's UDBScript feature version the user will be asked if they want to execute the script anyway. If the user choses to execute the script this choice will be remembered for the session
 - `name`: name of the script that will be shown in the docker. If omitted the capitalized file name without the extension will be used as the script name
 - `description`: description of the script. Should include what the script does and what the requirements are (for example if something has to be selected for the script to work)
 - `scriptoptions`: the script options. The payload has to be in UDB's configuration file format (see below)
-- `version`: the feature version the script needs to run
 
 #### Setting script options
 
