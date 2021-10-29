@@ -23,11 +23,6 @@
 
 #region ================== Namespaces
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using CodeImp.DoomBuilder.Geometry;
 
 #endregion
@@ -99,6 +94,90 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		internal Vector3D AsVector3D()
 		{
 			return new Vector3D(x, y, z);
+		}
+
+		#endregion
+
+		#region ================== Operators
+
+		public static implicit operator Vector2DWrapper(Vector3DWrapper a)
+		{
+			return new Vector2DWrapper(a.x, a.y);
+		}
+
+		public static Vector3DWrapper operator +(Vector3DWrapper a, Vector3DWrapper b)
+		{
+			return new Vector3DWrapper(a.x + b.x, a.y + b.y, a.z + b.z);
+		}
+
+		public static Vector3DWrapper operator +(Vector3DWrapper a, double b)
+		{
+			return new Vector3DWrapper(a.x + b, a.y + b, a.z + b);
+		}
+
+		public static Vector3DWrapper operator +(double b, Vector3DWrapper a)
+		{
+			return new Vector3DWrapper(a.x + b, a.y + b, a.z + b);
+		}
+
+		public static Vector3DWrapper operator -(Vector3DWrapper a, Vector3DWrapper b)
+		{
+			return new Vector3DWrapper(a.x - b.x, a.y - b.y, a.z - b.z);
+		}
+
+		public static Vector3DWrapper operator -(Vector3DWrapper a, double b)
+		{
+			return new Vector3DWrapper(a.x - b, a.y - b, a.z - b);
+		}
+
+		public static Vector3DWrapper operator -(double a, Vector3DWrapper b)
+		{
+			return new Vector3DWrapper(a - b.x, a - b.y, a - b.z);
+		}
+
+		public static Vector3DWrapper operator -(Vector3DWrapper a)
+		{
+			return new Vector3DWrapper(-a.x, -a.y, -a.z);
+		}
+
+		public static Vector3DWrapper operator *(double s, Vector3DWrapper a)
+		{
+			return new Vector3DWrapper(a.x * s, a.y * s, a.z * s);
+		}
+
+		public static Vector3DWrapper operator *(Vector3DWrapper a, double s)
+		{
+			return new Vector3DWrapper(a.x * s, a.y * s, a.z * s);
+		}
+
+		public static Vector3DWrapper operator *(Vector3DWrapper a, Vector3DWrapper b)
+		{
+			return new Vector3DWrapper(a.x * b.x, a.y * b.y, a.z * b.z);
+		}
+
+		public static Vector3DWrapper operator /(double s, Vector3DWrapper a)
+		{
+			return new Vector3DWrapper(a.x / s, a.y / s, a.z / s);
+		}
+
+		public static Vector3DWrapper operator /(Vector3DWrapper a, double s)
+		{
+			return new Vector3DWrapper(a.x / s, a.y / s, a.z / s);
+		}
+
+		public static Vector3DWrapper operator /(Vector3DWrapper a, Vector3DWrapper b)
+		{
+			return new Vector3DWrapper(a.x / b.x, a.y / b.y, a.z / b.z);
+		}
+
+		public static bool operator ==(Vector3DWrapper a, Vector3DWrapper b)
+		{
+			return (a.x == b.x) && (a.y == b.y) && (a.z == b.z);
+		}
+
+		public static bool operator !=(Vector3DWrapper a, Vector3DWrapper b)
+		{
+			return (a.x != b.x) || (a.y != b.y) || (a.z != b.z);
 		}
 
 		#endregion

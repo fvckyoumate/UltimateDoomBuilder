@@ -176,9 +176,7 @@ if(ScriptOptions.looping)
 }
 
 // Compute the new voodoo doll position
-let newpos = new Vector2D(32, 32).getRotated(Angle2D.doomToReal(-90 * ScriptOptions.direction - 90));
-newpos.x += basepos.x;
-newpos.y += basepos.y;
+let newpos = new Vector2D(32, 32).getRotated(Angle2D.doomToReal(-90 * ScriptOptions.direction - 90)) + basepos;
 
 // Get all player 1 starts
 let playerthings = Map.getThings().filter(o => o.type == 1);

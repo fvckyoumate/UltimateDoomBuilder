@@ -203,16 +203,17 @@ namespace CodeImp.DoomBuilder.UDBScript
 			BuilderPlug.Me.EndOptionEdit();
 			General.Interface.Focus();
 
-			// Get the script assemblies (and the one from Builder) to make them available to the script
-			//List<Assembly> assemblies = General.GetPluginAssemblies();
-			//assemblies.Add(General.ThisAssembly);
 
-			// Create the script engine
-			engine = new Engine(cfg => {
-				//cfg.AllowClr(assemblies.ToArray());
-				cfg.Constraint(new RuntimeConstraint(stopwatch));
+			// Set engine options
+			Options options = new Options();
+			options.Constraint(new RuntimeConstraint(stopwatch));
+			options.AllowOperatorOverloading();
+			options.SetTypeResolver(new TypeResolver {
+				MemberFilter = member => member.Name != nameof(GetType)
 			});
-			engine.SetValue("log", new Action<object>(Console.WriteLine));
+			
+			// Create the script engine
+			engine = new Engine(options);
 			engine.SetValue("showMessage", new Action<object>(ShowMessage));
 			engine.SetValue("showMessageYesNo", new Func<object, bool>(ShowMessageYesNo));
 			engine.SetValue("exit", new Action<string>(ExitScript));
@@ -227,11 +228,12 @@ namespace CodeImp.DoomBuilder.UDBScript
 			engine.SetValue("UniValue", TypeReference.CreateTypeReference(engine, typeof(UniValue)));
 			engine.SetValue("Data", TypeReference.CreateTypeReference(engine, typeof(DataWrapper)));
 
-			// We'll always need to import the UDB namespace anyway, so do it here instead in every single script
-			//engine.Execute("var UDB = importNamespace('CodeImp.DoomBuilder');");
+#if DEBUG
+			engine.SetValue("log", new Action<object>(Console.WriteLine));
+#endif
 
 			// Import all library files into the current engine
-			if(ImportLibraryCode(engine, out importlibraryerrors) == false)
+			if (ImportLibraryCode(engine, out importlibraryerrors) == false)
 				return;
 
 			// Tell the mode that a script is about to be run

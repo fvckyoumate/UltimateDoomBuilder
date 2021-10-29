@@ -23,11 +23,6 @@
 
 #region ================== Namespaces
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using CodeImp.DoomBuilder.Geometry;
 
 #endregion
@@ -94,6 +89,90 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		internal Vector2D AsVector2D()
 		{
 			return new Vector2D(x, y);
+		}
+
+		#endregion
+
+		#region ================== Operators
+
+		public static implicit operator Vector3DWrapper(Vector2DWrapper a)
+		{
+			return new Vector3DWrapper(a.x, a.y, 0.0);
+		}
+
+		public static Vector2DWrapper operator +(Vector2DWrapper a, Vector2DWrapper b)
+		{
+			return new Vector2DWrapper(a.x + b.x, a.y + b.y);
+		}
+
+		public static Vector2DWrapper operator +(double a, Vector2DWrapper b)
+		{
+			return new Vector2DWrapper(a + b.x, a + b.y);
+		}
+
+		public static Vector2DWrapper operator +(Vector2DWrapper a, double b)
+		{
+			return new Vector2DWrapper(a.x + b, a.y + b);
+		}
+
+		public static Vector2DWrapper operator -(Vector2DWrapper a, Vector2DWrapper b)
+		{
+			return new Vector2DWrapper(a.x - b.x, a.y - b.y);
+		}
+
+		public static Vector2DWrapper operator -(Vector2DWrapper a, double b)
+		{
+			return new Vector2DWrapper(a.x - b, a.y - b);
+		}
+
+		public static Vector2DWrapper operator -(double a, Vector2DWrapper b)
+		{
+			return new Vector2DWrapper(a - b.x, a - b.y);
+		}
+
+		public static Vector2DWrapper operator -(Vector2DWrapper a)
+		{
+			return new Vector2DWrapper(-a.x, -a.y);
+		}
+
+		public static Vector2DWrapper operator *(double s, Vector2DWrapper a)
+		{
+			return new Vector2DWrapper(a.x * s, a.y * s);
+		}
+
+		public static Vector2DWrapper operator *(Vector2DWrapper a, double s)
+		{
+			return new Vector2DWrapper(a.x * s, a.y * s);
+		}
+
+		public static Vector2DWrapper operator *(Vector2DWrapper a, Vector2DWrapper b)
+		{
+			return new Vector2DWrapper(a.x * b.x, a.y * b.y);
+		}
+
+		public static Vector2DWrapper operator /(double s, Vector2DWrapper a)
+		{
+			return new Vector2DWrapper(a.x / s, a.y / s);
+		}
+
+		public static Vector2DWrapper operator /(Vector2DWrapper a, double s)
+		{
+			return new Vector2DWrapper(a.x / s, a.y / s);
+		}
+
+		public static Vector2DWrapper operator /(Vector2DWrapper a, Vector2DWrapper b)
+		{
+			return new Vector2DWrapper(a.x / b.x, a.y / b.y);
+		}
+
+		public static bool operator ==(Vector2DWrapper a, Vector2DWrapper b)
+		{
+			return (a.x == b.x) && (a.y == b.y);
+		}
+
+		public static bool operator !=(Vector2DWrapper a, Vector2DWrapper b)
+		{
+			return (a.x != b.x) || (a.y != b.y);
 		}
 
 		#endregion

@@ -22,20 +22,15 @@
 #endregion
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
 using System.Windows.Forms;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Security.Cryptography;
 using System.Text.RegularExpressions;
-using Microsoft.Win32;
 using CodeImp.DoomBuilder.Actions;
 using CodeImp.DoomBuilder.Controls;
 using CodeImp.DoomBuilder.Geometry;
@@ -43,7 +38,6 @@ using CodeImp.DoomBuilder.IO;
 using CodeImp.DoomBuilder.Map;
 using CodeImp.DoomBuilder.Plugins;
 using CodeImp.DoomBuilder.Types;
-using Jint;
 using CodeImp.DoomBuilder.UDBScript.Wrapper;
 using CodeImp.DoomBuilder.Windows;
 

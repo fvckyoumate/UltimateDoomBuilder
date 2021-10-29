@@ -41,7 +41,7 @@ function drawPortalSector(line, depth)
     for(let i=0; i < points.length; i++)
     {
         let v = points[i].getRotated(line.getAngle() - 90);
-        points[i] = new Vector2D(v.x + origin.x, v.y + origin.y);
+        points[i] = origin + v;
     }
 
     // Draw the lines
