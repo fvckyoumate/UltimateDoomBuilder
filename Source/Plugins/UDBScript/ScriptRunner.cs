@@ -84,6 +84,9 @@ namespace CodeImp.DoomBuilder.UDBScript
 		/// <param name="message">Message to show</param>
 		public void ShowMessage(object message)
 		{
+			if (message == null)
+				message = string.Empty;
+
 			stopwatch.Stop();
 			MessageForm mf = new MessageForm("OK", null, message.ToString());
 			DialogResult result = mf.ShowDialog();
@@ -100,6 +103,9 @@ namespace CodeImp.DoomBuilder.UDBScript
 		/// <returns>true if "Yes" was clicked, false if "No" was clicked</returns>
 		public bool ShowMessageYesNo(object message)
 		{
+			if (message == null)
+				message = string.Empty;
+
 			stopwatch.Stop();
 			MessageForm mf = new MessageForm("Yes", "No", message.ToString());
 			DialogResult result = mf.ShowDialog();
