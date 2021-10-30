@@ -21,16 +21,12 @@
 
 #endregion
 
+#region ================== Namespaces
+
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using CodeImp.DoomBuilder.Geometry;
 using CodeImp.DoomBuilder.Map;
 using CodeImp.DoomBuilder.Windows;
 using CodeImp.DoomBuilder.UDBScript.Wrapper;
@@ -38,9 +34,9 @@ using CodeImp.DoomBuilder.UDBScript.API;
 using Jint;
 using Jint.Runtime;
 using Jint.Runtime.Interop;
-using Jint.Native;
-using Jint.Native.Error;
 using Esprima;
+
+#endregion
 
 namespace CodeImp.DoomBuilder.UDBScript
 {
