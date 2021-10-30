@@ -1,15 +1,11 @@
 class Pen
 {
-    constructor(pos)
+    constructor(pos = new Vector2D(0, 0))
     {
         this.angle = Math.PI / 2;
         this.snaptogrid = false;
         this.vertices = [];
-        
-        if(typeof pos !== 'undefined')
-            this.curpos = new Vector2D(pos);
-        else
-            this.curpos = new Vector2D(0, 0);
+        this.curpos = new Vector2D(pos);
     }
 
     moveTo(pos)
@@ -25,44 +21,32 @@ class Pen
         );
     }
 
-    turnRightRadians(radians)
+    turnRightRadians(radians = Math.PI / 2)
     {
-        if(typeof radians !== 'undefined')
-            this.angle -= radians;
-        else
-            this.angle -= Math.PI / 2;
+        this.angle -= radians;
 
         while(this.angle < 0)
             this.angle += Math.PI * 2;        
     }
 
-    turnLeftRadians(radians)
+    turnLeftRadians(radians = Math.PI / 2)
     {
-        if(typeof radians !== 'undefined')
-            this.angle += radians;
-        else
-            this.angle += Math.PI / 2;
+        this.angle += radians;
 
         while(this.angle > Math.PI * 2)
             this.angle -= Math.PI * 2;   
     }
 
-    turnRight(degrees)
+    turnRight(degrees = 90.0)
     {
-        if(typeof degrees === 'undefined')
-            degrees = 90.0;
-
         this.angle -= degrees * Math.PI / 180.0;
 
         while(this.angle < 0)
             this.angle += Math.PI * 2;
     }
 
-    turnLeft(degrees)
+    turnLeft(degrees = 90.0)
     {
-        if(typeof degrees === 'undefined')
-            degrees = 90.0;
-
         this.angle += degrees * Math.PI / 180.0;
 
         while(this.angle > Math.PI * 2)
@@ -84,9 +68,10 @@ class Pen
         this.vertices.push(this.curpos);
     }
 
-    finishDrawing()
+    finishDrawing(close = false)
     {
-        this.vertices.push(this.vertices[0]);
+        if(close)
+            this.vertices.push(this.vertices[0]);
 
         var result = Map.drawLines(this.vertices);
 

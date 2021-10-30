@@ -77,7 +77,7 @@ p.moveForward(ScriptOptions.length); p.drawVertex(); p.turnRight();
 p.moveForward(closetwidth); p.drawVertex(); p.turnRight();
 p.moveForward(ScriptOptions.length); p.drawVertex();
 
-if(!p.finishDrawing())
+if(!p.finishDrawing(true))
 	throw "Something went wrong while drawing!";
 
 // Get the new sector, assign a tag, and set heights
@@ -112,7 +112,7 @@ if(ScriptOptions.inactive)
 	p.turnRight(); p.moveForward(8); p.drawVertex();
 	p.turnLeft(); p.moveForward(closetwidth - 32); p.drawVertex();
 	
-	if(!p.finishDrawing())
+	if(!p.finishDrawing(true))
 		throw "Something went wrong while drawing!";
 	
 	// Get the new sectors and assign a tag

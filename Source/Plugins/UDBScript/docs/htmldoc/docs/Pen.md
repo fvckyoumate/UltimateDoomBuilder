@@ -22,7 +22,7 @@ p.finishDrawing();
 
 ## Constructors
 
-### Pen(pos)
+### Pen(pos=new Vector2D(0.0, 0.0))
 Creates an instance of the `Pen` class. The position can be a `Vector2D` or an `Array` of two numbers.
 #### Parameters
 * pos: start position of the pen (optional)
@@ -51,22 +51,22 @@ Sets the angle to the given radians.
 #### Parameters
 * radians: radians to set the angle to
 
-### turnLeft(degrees)
+### turnLeft(degrees=90.0)
 Turns the pen left by the given degrees.
 #### Parameters
 * degrees: degrees to turn left by. If omitted it will turn by 90°
 
-### turnLeftRadians(radians)
+### turnLeftRadians(radians=Math.PI/2)
 Turns the pen left by the given radians.
 #### Parameters
 * radians: radians to turn left by. If omitted it will turn by Pi/2
 
-### turnRight(degrees)
+### turnRight(degrees=90.0)
 Turns the pen right by the given degrees.
 #### Parameters
 * degrees: degrees to turn right by. If omitted it will turn by 90°
 
-### turnRightRadians(radians)
+### turnRightRadians(radians=Math.PI/2)
 Turns the pen right by the given radians.
 #### Parameters
 * radians: radians to turn right by. If omitted it will turn by Pi/2
@@ -74,5 +74,7 @@ Turns the pen right by the given radians.
 ### drawVertex()
 Draws a `Vertex` at the current position.
 
-### finishDrawing()
+### finishDrawing(close=false)
 Finishes the drawing, actually creating the geometry. Also resets the vertices of this instance of `Pen`.
+#### Parameters
+* close: if the drawing should be automatically close (going back to the first vertex) or not
