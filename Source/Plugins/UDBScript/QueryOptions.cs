@@ -21,12 +21,16 @@
 
 #endregion
 
+#region ================== Namespaces
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
 using System.Windows.Forms;
+
+#endregion
 
 namespace CodeImp.DoomBuilder.UDBScript
 {

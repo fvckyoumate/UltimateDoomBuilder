@@ -21,6 +21,8 @@
 
 #endregion
 
+#region ================== Namespaces
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -30,6 +32,8 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using CodeImp.DoomBuilder;
 using Jint;
+
+#endregion
 
 namespace CodeImp.DoomBuilder.UDBScript
 {

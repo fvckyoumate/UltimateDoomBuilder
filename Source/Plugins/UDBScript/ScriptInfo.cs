@@ -21,18 +21,20 @@
 
 #endregion
 
+#region ================== Namespaces
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Security.Cryptography;
 using CodeImp.DoomBuilder.IO;
 using Esprima;
+
+#endregion
 
 namespace CodeImp.DoomBuilder.UDBScript
 {

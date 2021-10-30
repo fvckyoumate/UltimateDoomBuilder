@@ -21,7 +21,11 @@
 
 #endregion
 
+#region ================== Namespaces
+
 using System;
+
+#endregion
 
 namespace CodeImp.DoomBuilder.UDBScript
 {

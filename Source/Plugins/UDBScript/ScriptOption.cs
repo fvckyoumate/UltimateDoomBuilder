@@ -21,19 +21,20 @@
 
 #endregion
 
-using System;
+#region ================== Namespaces
+
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using CodeImp.DoomBuilder.Config;
 using CodeImp.DoomBuilder.Types;
+
+#endregion
 
 namespace CodeImp.DoomBuilder.UDBScript
 {
 	public class ScriptOption
 	{
+		#region ================== Variables
+
 		public string name;
 		public string description;
 		public int type;
@@ -41,6 +42,10 @@ namespace CodeImp.DoomBuilder.UDBScript
 		public object value;
 		public TypeHandler typehandler;
 		private IDictionary enumvalues;
+
+		#endregion
+
+		#region ================== Constants
 
 		public static readonly UniversalType[] ValidTypes =
 		{
@@ -71,6 +76,10 @@ namespace CodeImp.DoomBuilder.UDBScript
 			UniversalType.PolyobjectNumber
 		};
 
+		#endregion
+
+		#region ================== Constructors
+
 		public ScriptOption(string name, string description, int type, IDictionary enumvalues, object defaultvalue)
 		{
 			this.name = name;
@@ -83,6 +92,10 @@ namespace CodeImp.DoomBuilder.UDBScript
 
 			FillEnumList();
 		}
+
+		#endregion
+
+		#region ================== Methods
 
 		/// <summary>
 		/// Reloads the type handler. This is necessary so that changed enums (like sector tags) are updated
@@ -118,5 +131,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 				}
 			}
 		}
+
+		#endregion
 	}
 }
