@@ -399,6 +399,23 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 			return new Vector3D(x, y, z).ToString();
 		}
 
+		public override int GetHashCode()
+		{
+			return base.GetHashCode();
+		}
+
+		public override bool Equals(object obj)
+		{
+			if (!(obj is Vector3DWrapper)) return false;
+
+			Vector3DWrapper other = (Vector3DWrapper)obj;
+
+			if (x != other.x) return false;
+			if (y != other.y) return false;
+			if (z != other.z) return false;
+			return true;
+		}
+
 		#endregion
 	}
 }
