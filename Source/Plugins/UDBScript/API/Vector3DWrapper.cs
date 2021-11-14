@@ -237,28 +237,6 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 
 		#region ================== Subtraction
 
-		/*
-		public static Vector3DWrapper operator -(Vector3DWrapper a, Vector3DWrapper b)
-		{
-			return new Vector3DWrapper(a._x - b._x, a._y - b._y, a._z - b._z);
-		}
-
-		public static Vector3DWrapper operator -(Vector3DWrapper a, double b)
-		{
-			return new Vector3DWrapper(a._x - b, a._y - b, a._z - b);
-		}
-
-		public static Vector3DWrapper operator -(double a, Vector3DWrapper b)
-		{
-			return new Vector3DWrapper(a - b._x, a - b._y, a - b._z);
-		}
-
-		public static Vector3DWrapper operator -(Vector3DWrapper a)
-		{
-			return new Vector3DWrapper(-a._x, -a._y, -a._z);
-		}
-		*/
-
 		public static object operator -(Vector3DWrapper lhs, object rhs)
 		{
 			if (rhs is double)
@@ -302,23 +280,6 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		#endregion
 
 		#region ================== Multiplication
-
-		/*
-		public static Vector3DWrapper operator *(double s, Vector3DWrapper a)
-		{
-			return new Vector3DWrapper(a._x * s, a._y * s, a._z * s);
-		}
-
-		public static Vector3DWrapper operator *(Vector3DWrapper a, double s)
-		{
-			return new Vector3DWrapper(a._x * s, a._y * s, a._z * s);
-		}
-
-		public static Vector3DWrapper operator *(Vector3DWrapper a, Vector3DWrapper b)
-		{
-			return new Vector3DWrapper(a._x * b._x, a._y * b._y, a._z * b._z);
-		}
-		*/
 
 		public static object operator *(Vector3DWrapper lhs, object rhs)
 		{
@@ -364,23 +325,6 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 
 		#region ================== Division
 
-		/*
-		public static Vector3DWrapper operator /(double s, Vector3DWrapper a)
-		{
-			return new Vector3DWrapper(a._x / s, a._y / s, a._z / s);
-		}
-
-		public static Vector3DWrapper operator /(Vector3DWrapper a, double s)
-		{
-			return new Vector3DWrapper(a._x / s, a._y / s, a._z / s);
-		}
-
-		public static Vector3DWrapper operator /(Vector3DWrapper a, Vector3DWrapper b)
-		{
-			return new Vector3DWrapper(a._x / b._x, a._y / b._y, a._z / b._z);
-		}
-		*/
-
 		public static object operator /(Vector3DWrapper lhs, object rhs)
 		{
 			if (rhs is double)
@@ -424,18 +368,6 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		#endregion
 
 		#region ================== Equality
-
-		/*
-		public static bool operator ==(Vector3DWrapper a, Vector3DWrapper b)
-		{
-			return (a._x == b._x) && (a._y == b._y) && (a._z == b._z);
-		}
-
-		public static bool operator !=(Vector3DWrapper a, Vector3DWrapper b)
-		{
-			return (a._x != b._x) || (a._y != b._y) || (a._z != b._z);
-		}
-		*/
 
 		public static bool operator ==(Vector3DWrapper lhs, object rhs)
 		{
