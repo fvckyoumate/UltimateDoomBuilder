@@ -100,37 +100,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 				if (vertex.IsDisposed)
 					throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Vertex is disposed, the position property can not be accessed.");
 
-				dynamic eo = new ExpandoObject();
-				IDictionary<string, object> o = eo as IDictionary<string, object>;
-
-				// Create x, y, and z properties
-				o.Add("x", vertex.Position.x);
-				o.Add("y", vertex.Position.y);
-
-				// Create event that gets called when a property is changed. This moves the thing to the given position
-				((INotifyPropertyChanged)eo).PropertyChanged += new PropertyChangedEventHandler((sender, ea) => {
-					string[] allowedproperties = new string[] { "x", "y" };
-
-					// Give us easier access to the variables
-					var pcea = ea as PropertyChangedEventArgs;
-					IDictionary<string, object> so = sender as IDictionary<string, object>;
-
-					// Make sure the changed property is a valid one
-					if (!allowedproperties.Contains(pcea.PropertyName))
-						throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Invalid property '" + pcea.PropertyName + "' given. Only x and y are allowed.");
-
-					if (!(so[pcea.PropertyName] is double))
-						throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Position values must be a number.");
-
-					double x = (double)so["x"];
-					double y = (double)so["y"];
-
-					vertex.Move(new Vector2D(x, y));
-
-					General.Map.Map.Update();
-				});
-
-				return eo;
+				return new Vector2DWrapper(vertex.Position, vertex);
 			}
 			set
 			{
@@ -139,9 +109,12 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 
 				try
 				{
-					Vector2D v = (Vector2D)BuilderPlug.Me.GetVectorFromObject(value, false);
+					object v = BuilderPlug.Me.GetVectorFromObject(value, false);
 
-					vertex.Move(v);
+					if (v is Vector2D)
+						vertex.Move((Vector2D)v);
+					else
+						vertex.Move((Vector3D)v);
 				}
 				catch (CantConvertToVectorException e)
 				{

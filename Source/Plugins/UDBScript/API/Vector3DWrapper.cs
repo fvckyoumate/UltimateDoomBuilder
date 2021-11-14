@@ -23,7 +23,9 @@
 
 #region ================== Namespaces
 
+using System.Dynamic;
 using CodeImp.DoomBuilder.Geometry;
+using CodeImp.DoomBuilder.Map;
 
 #endregion
 
@@ -33,20 +35,86 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 	{
 		#region ================== Variables
 
-		public double x;
-		public double y;
-		public double z;
+		public double _x;
+		public double _y;
+		public double _z;
+		private MapElement parent;
 
 		#endregion
 
 		#region ================== Constructors
 
-		internal Vector3DWrapper(Vector3D v)
+		internal Vector3DWrapper(Vector3D v, MapElement parent = null)
 		{
-			x = v.x;
-			y = v.y;
-			z = v.z;
+			_x = v.x;
+			_y = v.y;
+			_z = v.z;
+			this.parent = parent;
 		}
+
+		#region ================== Properties
+
+		/// <summary>
+		/// The `x` value of the vector.
+		/// </summary>
+		public double x
+		{
+			get
+			{
+				return _x;
+			}
+			set
+			{
+				_x = value;
+
+				if (parent is Vertex)
+					((Vertex)parent).Move(new Vector2D(_x, _y));
+				else if (parent is Thing)
+					((Thing)parent).Move(new Vector3D(_x, _y, _z));
+			}
+		}
+
+		/// <summary>
+		/// The `y` value of the vector.
+		/// </summary>
+		public double y
+		{
+			get
+			{
+				return _y;
+			}
+			set
+			{
+				_y = value;
+
+				if (parent is Vertex)
+					((Vertex)parent).Move(new Vector2D(_x, _y));
+				else if (parent is Thing)
+					((Thing)parent).Move(new Vector3D(_x, _y, _z));
+			}
+		}
+
+		/// <summary>
+		/// The `z` value of the vector.
+		/// </summary>
+		public double z
+		{
+			get
+			{
+				return _z;
+			}
+			set
+			{
+				_z = value;
+
+				if (parent is Vertex)
+					((Vertex)parent).Move(new Vector2D(_x, _y));
+				else if (parent is Thing)
+					((Thing)parent).Move(new Vector3D(_x, _y, _z));
+			}
+		}
+
+		#endregion
 
 		/// <summary>
 		/// Creates a new `Vector3D` from x and y coordinates
@@ -59,9 +127,10 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// <param name="z">The z coordinate</param>
 		public Vector3DWrapper(double x, double y, double z)
 		{
-			this.x = x;
-			this.y = y;
-			this.z = z;
+			this._x = x;
+			this._y = y;
+			this._z = z;
+			parent = null;
 		}
 
 		/// <summary>
@@ -77,9 +146,10 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 			{
 				Vector3D v1 = (Vector3D)BuilderPlug.Me.GetVectorFromObject(v, true);
 
-				x = v1.x;
-				y = v1.y;
-				z = v1.z;
+				_x = v1.x;
+				_y = v1.y;
+				_z = v1.z;
+				this.parent = null;
 			}
 			catch (CantConvertToVectorException e)
 			{
@@ -93,7 +163,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 
 		internal Vector3D AsVector3D()
 		{
-			return new Vector3D(x, y, z);
+			return new Vector3D(_x, _y, _z);
 		}
 
 		#endregion
@@ -102,83 +172,324 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 
 		public static implicit operator Vector2DWrapper(Vector3DWrapper a)
 		{
-			return new Vector2DWrapper(a.x, a.y);
+			return new Vector2DWrapper(a._x, a._y);
 		}
 
-		public static Vector3DWrapper operator +(Vector3DWrapper a, Vector3DWrapper b)
+		#region ================== Addition
+
+		public static object operator +(Vector3DWrapper lhs, object rhs)
 		{
-			return new Vector3DWrapper(a.x + b.x, a.y + b.y, a.z + b.z);
+			if(rhs is double)
+			{
+				return new Vector3DWrapper(lhs._x + (double)rhs, lhs._y + (double)rhs, lhs._z + (double)rhs);
+			}
+			else if(rhs.GetType().IsArray || rhs is ExpandoObject || rhs is Vector2DWrapper || rhs is Vector3DWrapper)
+			{
+				try
+				{
+					object v = BuilderPlug.Me.GetVectorFromObject(rhs, true);
+
+					if(v is Vector2D)
+						return new Vector3DWrapper(lhs._x + ((Vector2D)v).x, lhs._y + ((Vector2D)v).y, lhs._z);
+					else
+						return new Vector3DWrapper(lhs._x + ((Vector3D)v).x, lhs._y + ((Vector3D)v).y, lhs._z + ((Vector3D)v).z);
+				}
+				catch (CantConvertToVectorException e)
+				{
+					throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException(e.Message);
+				}
+			}
+			else
+			{
+				return lhs.ToString() + rhs.ToString();
+			}
 		}
 
-		public static Vector3DWrapper operator +(Vector3DWrapper a, double b)
+		public static object operator +(object lhs, Vector3DWrapper rhs)
 		{
-			return new Vector3DWrapper(a.x + b, a.y + b, a.z + b);
+			if(lhs is double)
+			{
+				return new Vector3DWrapper((double)lhs + rhs._x, (double)lhs + rhs._y, (double)lhs + rhs._z);
+			}
+			else if (lhs.GetType().IsArray || lhs is ExpandoObject || lhs is Vector2DWrapper || lhs is Vector3DWrapper)
+			{
+				try
+				{
+					object v = BuilderPlug.Me.GetVectorFromObject(lhs, true);
+
+					if (v is Vector2D)
+						return new Vector3DWrapper(((Vector2D)v).x + rhs._x, ((Vector2D)v).y + rhs._y, rhs._z);
+					else
+						return new Vector3DWrapper(((Vector3D)v).x + rhs._x, ((Vector3D)v).y + rhs._y, ((Vector3D)v).z + rhs._z);
+				}
+				catch (CantConvertToVectorException e)
+				{
+					throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException(e.Message);
+				}
+			}
+			else
+			{
+				return lhs.ToString() + rhs.ToString();
+			}
 		}
 
-		public static Vector3DWrapper operator +(double b, Vector3DWrapper a)
-		{
-			return new Vector3DWrapper(a.x + b, a.y + b, a.z + b);
-		}
+		#endregion
 
+		#region ================== Subtraction
+
+		/*
 		public static Vector3DWrapper operator -(Vector3DWrapper a, Vector3DWrapper b)
 		{
-			return new Vector3DWrapper(a.x - b.x, a.y - b.y, a.z - b.z);
+			return new Vector3DWrapper(a._x - b._x, a._y - b._y, a._z - b._z);
 		}
 
 		public static Vector3DWrapper operator -(Vector3DWrapper a, double b)
 		{
-			return new Vector3DWrapper(a.x - b, a.y - b, a.z - b);
+			return new Vector3DWrapper(a._x - b, a._y - b, a._z - b);
 		}
 
 		public static Vector3DWrapper operator -(double a, Vector3DWrapper b)
 		{
-			return new Vector3DWrapper(a - b.x, a - b.y, a - b.z);
+			return new Vector3DWrapper(a - b._x, a - b._y, a - b._z);
 		}
 
 		public static Vector3DWrapper operator -(Vector3DWrapper a)
 		{
-			return new Vector3DWrapper(-a.x, -a.y, -a.z);
+			return new Vector3DWrapper(-a._x, -a._y, -a._z);
+		}
+		*/
+
+		public static object operator -(Vector3DWrapper lhs, object rhs)
+		{
+			if (rhs is double)
+				return new Vector3DWrapper(lhs._x - (double)rhs, lhs._y - (double)rhs, lhs._z -(double)rhs);
+
+			try
+			{
+				object v = BuilderPlug.Me.GetVectorFromObject(rhs, true);
+
+				if (v is Vector2D)
+					return new Vector3DWrapper(lhs._x - ((Vector2D)v).x, lhs._y - ((Vector2D)v).y, lhs._z);
+				else
+					return new Vector3DWrapper(lhs._x - ((Vector3D)v).x, lhs._y - ((Vector3D)v).y, lhs._z - ((Vector3D)v).z);
+			}
+			catch (CantConvertToVectorException e)
+			{
+				throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException(e.Message);
+			}
 		}
 
+		public static object operator -(object lhs, Vector3DWrapper rhs)
+		{
+			if (lhs is double)
+				return new Vector3DWrapper(rhs._x- (double)lhs, rhs._y - (double)lhs, rhs._z - (double)lhs);
+
+			try
+			{
+				object v = BuilderPlug.Me.GetVectorFromObject(lhs, true);
+
+				if (v is Vector2D)
+					return new Vector3DWrapper(((Vector2D)v).x - rhs._x, ((Vector2D)v).y - rhs._y, -rhs._z);
+				else
+					return new Vector3DWrapper(((Vector3D)v).x - rhs._x, ((Vector3D)v).y - rhs._y, ((Vector3D)v).z - rhs._z);
+			}
+			catch (CantConvertToVectorException e)
+			{
+				throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException(e.Message);
+			}
+		}
+
+		#endregion
+
+		#region ================== Multiplication
+
+		/*
 		public static Vector3DWrapper operator *(double s, Vector3DWrapper a)
 		{
-			return new Vector3DWrapper(a.x * s, a.y * s, a.z * s);
+			return new Vector3DWrapper(a._x * s, a._y * s, a._z * s);
 		}
 
 		public static Vector3DWrapper operator *(Vector3DWrapper a, double s)
 		{
-			return new Vector3DWrapper(a.x * s, a.y * s, a.z * s);
+			return new Vector3DWrapper(a._x * s, a._y * s, a._z * s);
 		}
 
 		public static Vector3DWrapper operator *(Vector3DWrapper a, Vector3DWrapper b)
 		{
-			return new Vector3DWrapper(a.x * b.x, a.y * b.y, a.z * b.z);
+			return new Vector3DWrapper(a._x * b._x, a._y * b._y, a._z * b._z);
+		}
+		*/
+
+		public static object operator *(Vector3DWrapper lhs, object rhs)
+		{
+			if (rhs is double)
+				return new Vector3DWrapper(lhs._x * (double)rhs, lhs._y * (double)rhs, lhs._z * (double)rhs);
+
+			try
+			{
+				object v = BuilderPlug.Me.GetVectorFromObject(rhs, true);
+
+				if (v is Vector2D)
+					return new Vector3DWrapper(lhs._x * ((Vector2D)v).x, lhs._y * ((Vector2D)v).y, 0);
+				else
+					return new Vector3DWrapper(lhs._x * ((Vector3D)v).x, lhs._y * ((Vector3D)v).y, lhs._z * ((Vector3D)v).z);
+			}
+			catch (CantConvertToVectorException e)
+			{
+				throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException(e.Message);
+			}
 		}
 
+		public static object operator *(object lhs, Vector3DWrapper rhs)
+		{
+			if (lhs is double)
+				return new Vector3DWrapper(rhs._x * (double)lhs, rhs._y * (double)lhs, rhs._z * (double)lhs);
+
+			try
+			{
+				object v = BuilderPlug.Me.GetVectorFromObject(lhs, true);
+
+				if (v is Vector2D)
+					return new Vector3DWrapper(((Vector2D)v).x * rhs._x, ((Vector2D)v).y * rhs._y, 0);
+				else
+					return new Vector3DWrapper(((Vector3D)v).x * rhs._x, ((Vector3D)v).y * rhs._y, ((Vector3D)v).z * rhs._z);
+			}
+			catch (CantConvertToVectorException e)
+			{
+				throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException(e.Message);
+			}
+		}
+
+		#endregion
+
+		#region ================== Division
+
+		/*
 		public static Vector3DWrapper operator /(double s, Vector3DWrapper a)
 		{
-			return new Vector3DWrapper(a.x / s, a.y / s, a.z / s);
+			return new Vector3DWrapper(a._x / s, a._y / s, a._z / s);
 		}
 
 		public static Vector3DWrapper operator /(Vector3DWrapper a, double s)
 		{
-			return new Vector3DWrapper(a.x / s, a.y / s, a.z / s);
+			return new Vector3DWrapper(a._x / s, a._y / s, a._z / s);
 		}
 
 		public static Vector3DWrapper operator /(Vector3DWrapper a, Vector3DWrapper b)
 		{
-			return new Vector3DWrapper(a.x / b.x, a.y / b.y, a.z / b.z);
+			return new Vector3DWrapper(a._x / b._x, a._y / b._y, a._z / b._z);
+		}
+		*/
+
+		public static object operator /(Vector3DWrapper lhs, object rhs)
+		{
+			if (rhs is double)
+				return new Vector3DWrapper(lhs._x / (double)rhs, lhs._y / (double)rhs, lhs._z / (double)rhs);
+
+			try
+			{
+				object v = BuilderPlug.Me.GetVectorFromObject(rhs, true);
+
+				if (v is Vector2D)
+					return new Vector3DWrapper(lhs._x / ((Vector2D)v).x, lhs._y / ((Vector2D)v).y, lhs._z / 0);
+				else
+					return new Vector3DWrapper(lhs._x / ((Vector3D)v).x, lhs._y / ((Vector3D)v).y, lhs._z / ((Vector3D)v).z);
+			}
+			catch (CantConvertToVectorException e)
+			{
+				throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException(e.Message);
+			}
 		}
 
+		public static object operator /(object lhs, Vector3DWrapper rhs)
+		{
+			if (lhs is double)
+				return new Vector3DWrapper(rhs._x / (double)lhs, rhs._y / (double)lhs, rhs._z / (double)lhs);
+
+			try
+			{
+				object v = BuilderPlug.Me.GetVectorFromObject(lhs, true);
+
+				if (v is Vector2D)
+					return new Vector3DWrapper(((Vector2D)v).x / rhs._x, ((Vector2D)v).y / rhs._y, 0 / rhs._z);
+				else
+					return new Vector3DWrapper(((Vector3D)v).x / rhs._x, ((Vector3D)v).y / rhs._y, ((Vector3D)v).z / rhs._z);
+			}
+			catch (CantConvertToVectorException e)
+			{
+				throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException(e.Message);
+			}
+		}
+
+		#endregion
+
+		#region ================== Equality
+
+		/*
 		public static bool operator ==(Vector3DWrapper a, Vector3DWrapper b)
 		{
-			return (a.x == b.x) && (a.y == b.y) && (a.z == b.z);
+			return (a._x == b._x) && (a._y == b._y) && (a._z == b._z);
 		}
 
 		public static bool operator !=(Vector3DWrapper a, Vector3DWrapper b)
 		{
-			return (a.x != b.x) || (a.y != b.y) || (a.z != b.z);
+			return (a._x != b._x) || (a._y != b._y) || (a._z != b._z);
 		}
+		*/
+
+		public static bool operator ==(Vector3DWrapper lhs, object rhs)
+		{
+			try
+			{
+				Vector3D v1 = (Vector3D)BuilderPlug.Me.GetVectorFromObject(rhs, true);
+				return (lhs._x == v1.x) && (lhs._y == v1.y) && (lhs._z == v1.z);
+			}
+			catch (CantConvertToVectorException e)
+			{
+				throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException(e.Message);
+			}
+		}
+
+		public static bool operator ==(object lhs, Vector3DWrapper rhs)
+		{
+			try
+			{
+				Vector3D v1 = (Vector3D)BuilderPlug.Me.GetVectorFromObject(lhs, true);
+				return (v1.x == rhs._x) && (v1.y == rhs._y) && (v1.z == rhs._z);
+			}
+			catch (CantConvertToVectorException e)
+			{
+				throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException(e.Message);
+			}
+		}
+
+		public static bool operator !=(Vector3DWrapper lhs, object rhs)
+		{
+			try
+			{
+				Vector3D v1 = (Vector3D)BuilderPlug.Me.GetVectorFromObject(rhs, true);
+				return (lhs._x != v1.x) || (lhs._y != v1.y) || (lhs._z != v1.z);
+			}
+			catch (CantConvertToVectorException e)
+			{
+				throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException(e.Message);
+			}
+		}
+
+		public static bool operator !=(object lhs, Vector3DWrapper rhs)
+		{
+			try
+			{
+				Vector3D v1 = (Vector3D)BuilderPlug.Me.GetVectorFromObject(lhs, true);
+				return (v1.x != rhs._x) || (v1.y != rhs._y) || (v1.z != rhs._z);
+			}
+			catch (CantConvertToVectorException e)
+			{
+				throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException(e.Message);
+			}
+		}
+
+		#endregion
 
 		#endregion
 
@@ -193,7 +504,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		public static double dotProduct(Vector3DWrapper a, Vector3DWrapper b)
 		{
 			// Calculate and return the dot product
-			return a.x * b.x + a.y * b.y + a.z * b.z;
+			return a._x * b._x + a._y * b._y + a._z * b._z;
 		}
 
 		/// <summary>
@@ -309,7 +620,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// <returns>The x/y angle of the `Vector3D` in radians</returns>
 		public double getAngleXYRad()
 		{
-			return new Vector3D(x, y, z).GetAngleXY();
+			return new Vector3D(_x, _y, _z).GetAngleXY();
 		}
 
 		/// <summary>
@@ -318,7 +629,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// <returns>The angle of the `Vector3D` in degrees</returns>
 		public double getAngleXY()
 		{
-			return Angle2D.RadToDeg(new Vector3D(x, y, z).GetAngleXY());
+			return Angle2D.RadToDeg(new Vector3D(_x, _y, _z).GetAngleXY());
 		}
 
 		/// <summary>
@@ -327,7 +638,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// <returns>The z angle of the `Vector3D` in radians</returns>
 		public double getAngleZRad()
 		{
-			return new Vector3D(x, y, z).GetAngleZ();
+			return new Vector3D(_x, _y, _z).GetAngleZ();
 		}
 
 		/// <summary>
@@ -336,7 +647,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// <returns>The z angle of the `Vector3D` in degrees</returns>
 		public double getAngleZ()
 		{
-			return Angle2D.RadToDeg(new Vector3D(x, y, z).GetAngleZ());
+			return Angle2D.RadToDeg(new Vector3D(_x, _y, _z).GetAngleZ());
 		}
 
 		/// <summary>
@@ -345,7 +656,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// <returns>The length of the `Vector3D`</returns>
 		public double getLength()
 		{
-			return new Vector3D(x, y, z).GetLength();
+			return new Vector3D(_x, _y, _z).GetLength();
 		}
 
 		/// <summary>
@@ -354,7 +665,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// <returns>The square length of the `Vector3D`</returns>
 		public double getLengthSq()
 		{
-			return new Vector3D(x, y, z).GetLengthSq();
+			return new Vector3D(_x, _y, _z).GetLengthSq();
 		}
 
 		/// <summary>
@@ -363,7 +674,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// <returns>The normal as `Vector3D`</returns>
 		public Vector3DWrapper getNormal()
 		{
-			return new Vector3DWrapper(new Vector3D(x, y, z).GetNormal());
+			return new Vector3DWrapper(new Vector3D(_x, _y, _z).GetNormal());
 		}
 
 		/// <summary>
@@ -373,7 +684,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// <returns>The scaled `Vector3D`</returns>
 		public Vector3DWrapper getScaled(double scale)
 		{
-			return new Vector3DWrapper(new Vector3D(x, y, z).GetScaled(scale));
+			return new Vector3DWrapper(new Vector3D(_x, _y, _z).GetScaled(scale));
 		}
 
 		/// <summary>
@@ -382,7 +693,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// <returns>`true` if `Vector3D` is normalized, otherwise `false`</returns>
 		public bool isNormalized()
 		{
-			return new Vector3D(x, y, z).IsNormalized();
+			return new Vector3D(_x, _y, _z).IsNormalized();
 		}
 
 		/// <summary>
@@ -391,12 +702,12 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// <returns>`true` if `Vector3D` is finite, otherwise `false`</returns>
 		public bool isFinite()
 		{
-			return new Vector3D(x, y, z).IsFinite();
+			return new Vector3D(_x, _y, _z).IsFinite();
 		}
 
 		public override string ToString()
 		{
-			return new Vector3D(x, y, z).ToString();
+			return new Vector3D(_x, _y, _z).ToString();
 		}
 
 		public override int GetHashCode()
@@ -410,9 +721,9 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 
 			Vector3DWrapper other = (Vector3DWrapper)obj;
 
-			if (x != other.x) return false;
-			if (y != other.y) return false;
-			if (z != other.z) return false;
+			if (_x != other._x) return false;
+			if (_y != other._y) return false;
+			if (_z != other._z) return false;
 			return true;
 		}
 

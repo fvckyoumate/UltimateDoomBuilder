@@ -73,6 +73,13 @@ Returns a reversed `Vector3D`.
 * v: `Vector3D` to reverse
 #### Return value
 The reversed vector as `Vector3D`
+## Properties
+### x
+The `x` value of the vector.
+### y
+The `y` value of the vector.
+### z
+The `z` value of the vector.
 ## Methods
 ### getAngleXY()
 Returns the angle of the `Vector3D` in degrees.

@@ -81,7 +81,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 
 		internal Line2D AsLine2D()
 		{
-			return new Line2D(v1.x, v1.y, v2.x, v2.y);
+			return new Line2D(v1._x, v1._y, v2._x, v2._y);
 		}
 
 		#endregion
@@ -98,7 +98,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		public static bool areIntersecting(Line2DWrapper line1, Line2DWrapper line2, bool bounded=true)
 		{
 			double u_ray;
-			return Line2D.GetIntersection(line1.v1.AsVector2D(), line1.v2.AsVector2D(), line2.v1.x, line2.v1.y, line2.v2.x, line2.v2.y, out u_ray, bounded);
+			return Line2D.GetIntersection(line1.v1.AsVector2D(), line1.v2.AsVector2D(), line2.v1._x, line2.v1._y, line2.v2._x, line2.v2._y, out u_ray, bounded);
 		}
 
 		/// <summary>
@@ -281,7 +281,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// <returns>Position on the line as `Vector2D`</returns>
 		public Vector2DWrapper getCoordinatesAt(double u)
 		{
-			return new Vector2DWrapper(new Line2D(v1.x, v1.y, v2.x, v2.y).GetCoordinatesAt(u));
+			return new Vector2DWrapper(new Line2D(v1._x, v1._y, v2._x, v2._y).GetCoordinatesAt(u));
 		}
 
 		/// <summary>
@@ -290,7 +290,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// <returns>Length of the `Line2D`</returns>
 		public double getLength()
 		{
-			return Line2D.GetLength(v2.x - v1.x, v2.y - v1.y);
+			return Line2D.GetLength(v2._x - v1._x, v2._y - v1._y);
 		}
 
 		/// <summary>
@@ -317,7 +317,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// <returns>Perpendicular of this line as `Vector2D`</returns>
 		public Vector2DWrapper getPerpendicular()
 		{
-			return new Vector2DWrapper(new Line2D(v1.x, v1.y, v2.x, v2.y).GetPerpendicular());
+			return new Vector2DWrapper(new Line2D(v1._x, v1._y, v2._x, v2._y).GetPerpendicular());
 		}
 
 		/// <summary>
@@ -329,7 +329,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		public bool isIntersecting(Line2DWrapper ray, bool bounded=true)
 		{
 			double u_ray;
-			return AsLine2D().GetIntersection(ray.v1.x, ray.v1.y, ray.v2.x, ray.v2.y, out u_ray, bounded);
+			return AsLine2D().GetIntersection(ray.v1._x, ray.v1._y, ray.v2._x, ray.v2._y, out u_ray, bounded);
 		}
 
 		/// <summary>

@@ -2,7 +2,7 @@
 
 ## Introduction
 
-UDB Script allows the user to run custom JavaScript code on the currently opened map. This includes modifying existing map elements (like things or sectors), or creating completely new map elements (i.e. drawing lines, adding things etc.).
+UDBScript allows the user to run custom JavaScript code on the currently opened map. This includes modifying existing map elements (like things or sectors), or creating completely new map elements (i.e. drawing lines, adding things etc.).
 
 It uses the [Jint](https://github.com/sebastienros/jint) interpreter.
 
@@ -175,6 +175,64 @@ showMessage('The given length is ' + ScriptOptions.length);
 ```
 !!! tip
     You can also query options at runtime. See the `QueryOptions` API documentation.
+
+### Working with vectors
+
+In UDBScript vectors are commonly used to represent positions, like thing and vertex positions. They come in two flavors, `Vector2D` (representing a two-dimentional vector with `x` and `y` components) and `Vector3D` (representing a three-dimentional vector with `x`, `y`, and `z` components). They feature a range of vector math methods, such as rotating the vector.
+
+There are several ways to create a new vector:
+
+```js
+let v1 = new Vector2D(32, 64); // From x and y values
+let v2 = new Vector2D([ 32, 64 ]); // From an array with two numbers
+let v3 = new Vector2D({ x: 32, y: 64 }); // From an object with x and y properties
+let v4 = new Vector2D(v1); // From another Vector2D
+
+let v5 = new Vector3D(32, 64, 16); // From x, y, and z values
+let v6 = new Vector3D([ 32, 64, 16 ]); // From an array with three numbers
+let v7 = new Vector2D({ x: 32, y: 64, z: 16 }); // From an object with x, y, and z properties
+let v8 = new Vector3D(v4); // From another Vector3D
+```
+
+API methods that accept a `Vector2D` or `Vector3D` as a parameter also accept the array notation. For example the following lines are equivalent:
+
+```js
+let t1 = Map.createThing(new Vector2D(32, 64), 3001); // Create an Imp
+let t2 = Map.createThing([ 32, 64 ], 3001); // Create an Imp
+let t3 = new Map.createThing({ x: 32, y: 64 }, 3001); // Create an Imp
+
+let v = new Vector2D(32, 64); // Supplying the x and y values
+let t4 = Map.createThing(v, 3001); // Create an Imp
+```
+
+#### Vector arithmetic
+
+It is possible to do elementary arithmetic with vectors, i.e. you can add, substract, multiply, and divide them.
+
+```js
+let v1 = new Vector2D(2, 3) + new Vector2D(4, 5); // Results in new Vector(6, 8)
+let v2 = new Vector2D(2, 3) - new Vector2D(4, 5); // Results in new Vector(-2, -2)
+let v3 = new Vector2D(2, 3) * new Vector2D(4, 5); // Results in new Vector(8, 15)
+let v4 = new Vector2D(2, 3) / new Vector2D(4, 5); // Results in new Vector(0.5, 0.6)
+```
+
+This also works with the array and object notation:
+
+```js
+let v1 = new Vector2D(2, 3) + [ 4, 5 ]; // Results in new Vector(6, 8)
+let v2 = new Vector2D(2, 3) + { x: 4, y: 5 }; // Results in new Vector(6, 8)
+```
+
+You can also use only a number as one side of the operation, in  which case the operation will be applied to each element of the vector:
+
+```js
+let v1 = new Vector2D(2, 3) + 3; // Results in new Vector(5, 6)
+let v2 = new Vector2D(2, 3) * 3; // Results in new Vector(6, 9)
+```
+
+!!! attention
+    This only works if either side of arithmetic operation is of type `Vector2D` or `Vector3D`. That means that for example the following code will *not* result in a vector:<br>
+	`let v1 = [ 2, 3 ] + [ 4, 5 ]; // Results in the string "2, 34, 5"`
 
 ### Working with map elements
 

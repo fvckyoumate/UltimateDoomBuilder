@@ -86,6 +86,11 @@ Returns a reversed `Vector2D`.
 * v: `Vector2D` to reverse
 #### Return value
 The reversed vector as `Vector2D`
+## Properties
+### x
+The `x` value of the vector.
+### y
+The `y` value of the vector.
 ## Methods
 ### getAngle()
 Returns the angle of the `Vector2D` in degree.

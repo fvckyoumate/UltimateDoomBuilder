@@ -34,8 +34,8 @@ if(vertices.length == 0)
 
 // Jitter each vertex
 vertices.forEach(v => {
-    v.position = [
-        v.position.x + getRandomValue(ScriptOptions.min, ScriptOptions.max),
-        v.position.y + getRandomValue(ScriptOptions.min, ScriptOptions.max),
+    v.position += [
+        getRandomValue(ScriptOptions.min, ScriptOptions.max),
+        getRandomValue(ScriptOptions.min, ScriptOptions.max),
     ];
 });  

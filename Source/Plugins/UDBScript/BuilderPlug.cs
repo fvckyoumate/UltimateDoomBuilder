@@ -424,12 +424,19 @@ namespace CodeImp.DoomBuilder.UDBScript
 			if (data is Vector2D)
 				return (Vector2D)data;
 			else if (data is Vector2DWrapper)
-				return new Vector2D(((Vector2DWrapper)data).x, ((Vector2DWrapper)data).y);
+				return new Vector2D(((Vector2DWrapper)data)._x, ((Vector2DWrapper)data)._y);
 			else if (data is Vector3DWrapper)
-				return new Vector3D(((Vector3DWrapper)data).x, ((Vector3DWrapper)data).y, ((Vector3DWrapper)data).z);
+			{
+				if(allow3d)
+					return new Vector3D(((Vector3DWrapper)data)._x, ((Vector3DWrapper)data)._y, ((Vector3DWrapper)data)._z);
+				else
+					return new Vector2D(((Vector3DWrapper)data)._x, ((Vector3DWrapper)data)._y);
+			}
 			else if (data.GetType().IsArray)
+			//else if(data is double[])
 			{
 				object[] vals = (object[])data;
+				//double[] vals = (double[])data;
 
 				// Make sure all values in the array are doubles
 				foreach (object v in vals)
@@ -486,9 +493,9 @@ namespace CodeImp.DoomBuilder.UDBScript
 
 				if (allow3d)
 				{
-					if (x != double.NaN && y != double.NaN && z == double.NaN)
+					if (!double.IsNaN(x) && !double.IsNaN(y) && double.IsNaN(z))
 						return new Vector2D(x, y);
-					else if (x != double.NaN && y != double.NaN && z != double.NaN)
+					else if (!double.IsNaN(x) && !double.IsNaN(y) && !double.IsNaN(z))
 						return new Vector3D(x, y, z);
 				}
 				else
@@ -628,8 +635,8 @@ namespace CodeImp.DoomBuilder.UDBScript
 				// Check if there's a ScriptInfo in the slot and run it if so
 				if (scriptslots.ContainsKey(slot) && scriptslots[slot] != null)
 				{
-					ScriptRunner sr = new ScriptRunner(scriptslots[slot]);
-					sr.Run();
+					scriptrunner = new ScriptRunner(scriptslots[slot]);
+					scriptrunner.Run();
 				}
 			}
 		}

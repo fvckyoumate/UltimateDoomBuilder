@@ -308,70 +308,28 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 			get
 			{
 				if (thing.IsDisposed)
-					throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Thing is disposed, the position property can not be accessed.");
+					throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Vertex is disposed, the position property can not be accessed.");
 
-				dynamic eo = new ExpandoObject();
-				IDictionary<string, object> o = eo as IDictionary<string, object>;
-
-				// Create x, y, and z properties
-				o.Add("x", thing.Position.x);
-				o.Add("y", thing.Position.y);
-				o.Add("z", thing.Position.z);
-
-				// Create event that gets called when a property is changed. This moves the thing to the given position
-				((INotifyPropertyChanged)eo).PropertyChanged += new PropertyChangedEventHandler((sender, ea) => {
-					string[] allowedproperties = new string[] { "x", "y", "z" };
-
-					// Give us easier access to the variables
-					var pcea = ea as PropertyChangedEventArgs;
-					IDictionary<string, object> so = sender as IDictionary<string, object>;
-					
-					// Make sure the changed property is a valid one
-					if (!allowedproperties.Contains(pcea.PropertyName))
-						throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Invalid property '" + pcea.PropertyName + "' given. Only x, y, and z are allowed.");
-
-					if (!(so[pcea.PropertyName] is double))
-						throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Position values must be a number.");
-
-					double x = (double)so["x"];
-					double y = (double)so["y"];
-					double z = (double)so["z"];
-
-					thing.Move(x, y, z);
-
-				});
-
-				return eo;
+				return new Vector3DWrapper(thing.Position, thing);
 			}
 			set
 			{
 				if (thing.IsDisposed)
-					throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Thing is disposed, the position property can not be accessed.");
+					throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Vertex is disposed, the position property can not be accessed.");
 
-				if (value is Vector2D)
-					thing.Move((Vector2D)value);
-				else if (value is Vector3D)
-					thing.Move((Vector3D)value);
-				else if (value is Vector2DWrapper)
-					thing.Move(((Vector2DWrapper)value).AsVector2D());
-				else if (value.GetType().IsArray)
+				try
 				{
-					object[] vals = (object[])value;
+					object v = BuilderPlug.Me.GetVectorFromObject(value, true);
 
-					// Make sure all values in the array are doubles
-					foreach (object v in vals)
-						if (!(v is double))
-							throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Values in position array must be numbers.");
-
-					if (vals.Length == 2)
-						thing.Move((double)vals[0], (double)vals[1], thing.Position.z);
-					else if (vals.Length == 3)
-						thing.Move((double)vals[0], (double)vals[1], (double)vals[2]);
+					if (v is Vector2D)
+						thing.Move((Vector2D)v);
 					else
-						throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Position array must contain 2 or 3 values.");
+						thing.Move((Vector3D)v);
 				}
-				else
-					throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Position values must be a Vector2D, Vector3D, or an array of numbers.");
+				catch (CantConvertToVectorException e)
+				{
+					throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException(e.Message);
+				}
 			}
 		}
 

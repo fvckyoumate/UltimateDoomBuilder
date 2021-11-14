@@ -1012,7 +1012,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Creates a new `Thing` at the given position. The position can be a `Vector2D` or an `Array` of two numbers. A thing type can be supplied optionally.
+		/// Creates a new `Thing` at the given position. The position can be a `Vector2D`, `Vector3D`, or an `Array` of two numbers or three numbers (note that the z position only works for game configurations that support vertical pos. A thing type can be supplied optionally.
 		/// ```
 		/// var t1 = Map.createThing(new Vector2D(32, 64));
 		/// var t2 = Map.createThing([ 32, 64 ]);
