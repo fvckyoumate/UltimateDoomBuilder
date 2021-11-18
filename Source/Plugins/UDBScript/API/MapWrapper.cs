@@ -648,7 +648,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 			}
 			else
 			{
-				foreach (Vertex v in General.Map.Map.Vertices)
+				foreach (Vertex v in map.GetSelectedVertices(selected))
 					if (v.Selected == selected)
 						vertices.Add(new VertexWrapper(v));
 			}
@@ -717,7 +717,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 			}
 			else
 			{
-				foreach (Thing t in General.Map.Map.Things)
+				foreach (Thing t in map.GetSelectedThings(selected))
 					if (t.Selected == selected)
 						things.Add(new ThingWrapper(t));
 			}
@@ -775,7 +775,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 			}
 			else
 			{
-				foreach (Sector s in General.Map.Map.Sectors)
+				foreach (Sector s in map.GetSelectedSectors(selected))
 					if (s.Selected == selected)
 						sectors.Add(new SectorWrapper(s));
 			}
@@ -843,7 +843,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 			}
 			else
 			{
-				foreach (Linedef ld in General.Map.Map.Linedefs)
+				foreach (Linedef ld in map.GetSelectedLinedefs(selected))
 					if (ld.Selected == selected)
 						linedefs.Add(new LinedefWrapper(ld));
 			}
