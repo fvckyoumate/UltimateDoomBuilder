@@ -148,6 +148,11 @@ try
     assert('new Vector3D(3, 2, 1)', '[ 1, 2, 3 ]', false);
     assert('new Vector3D(3, 2, 1)', '{ x: 1, y: 2, z: 3 }', false);
 
+    let line1 = new Line2D([ 32, 32 ], [ 32, -32 ]);
+    let line2 = new Line2D([ 0, 16 ], [ 64, 16 ]);
+    let intersecting  = Line2D.areIntersecting(line1, line2);
+    assert('Line2D.areIntersecting(new Line2D([ 32, 32 ], [ 32, -32 ]), new Line2D([ 0, 16 ], [ 64, 16 ]))', 'true');
+
     showMessage(assertion_log);
 }
 catch(e)

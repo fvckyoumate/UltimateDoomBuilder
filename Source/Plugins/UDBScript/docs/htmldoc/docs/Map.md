@@ -45,7 +45,7 @@ Clears all selected `Thing`s.
 ### clearSelectedVertices()
 Clears all selected vertices.
 ### createThing(pos, type=0)
-Creates a new `Thing` at the given position. The position can be a `Vector2D` or an `Array` of two numbers. A thing type can be supplied optionally.
+Creates a new `Thing` at the given position. The position can be a `Vector2D`, `Vector3D`, or an `Array` of two numbers or three numbers (note that the z position only works for game configurations that support vertical pos. A thing type can be supplied optionally.
 
 ```js
 var t1 = Map.createThing(new Vector2D(32, 64));
@@ -229,6 +229,10 @@ Inverts the `marked` property of all `Sidedef`s.
 Inverts the `marked` property of all `Thing`s.
 ### invertMarkedVertices()
 Inverts the `marked` property of all vertices.
+### joinSectors(sectors)
+Joins `Sector`s, keeping lines shared by the `Sector`s. All `Sector`s will be joined with the first `Sector` in the array.
+#### Parameters
+* sectors: `Array` of `Sector`s
 ### markSelectedLinedefs(mark = true)
 Marks (default) or unmarks all selected `Linedef`s.
 #### Parameters
@@ -245,6 +249,10 @@ Marks (default) or unmarks all selected `Thing`s.
 Marks (default) or unmarks all selected vertices.
 #### Parameters
 * mark: `true` to mark all selected vertices (default), `false` to unmark
+### mergeSectors(sectors)
+Merges `Sector`s, deleting lines shared by the `Sector`s. All `Sector`s will be merged into the first `Sector` in the array.
+#### Parameters
+* sectors: `Array` of `Sector`s
 ### nearestLinedef(pos, maxrange = double.NaN)
 Gets the `Linedef` that's nearest to the specified position.
 #### Parameters

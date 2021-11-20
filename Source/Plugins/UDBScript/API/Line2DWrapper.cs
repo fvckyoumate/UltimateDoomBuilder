@@ -67,7 +67,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 			try
 			{
 				this.v1 = new Vector2DWrapper((Vector2D)BuilderPlug.Me.GetVectorFromObject(v1, false));
-				this.v2 = new Vector2DWrapper((Vector2D)BuilderPlug.Me.GetVectorFromObject(v1, false));
+				this.v2 = new Vector2DWrapper((Vector2D)BuilderPlug.Me.GetVectorFromObject(v2, false));
 			}
 			catch (CantConvertToVectorException e)
 			{
