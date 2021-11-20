@@ -237,6 +237,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 			engine.SetValue("Angle2D", TypeReference.CreateTypeReference(engine, typeof(Angle2DWrapper)));
 			engine.SetValue("Vector3D", TypeReference.CreateTypeReference(engine, typeof(Vector3DWrapper)));
 			engine.SetValue("Vector2D", TypeReference.CreateTypeReference(engine, typeof(Vector2DWrapper)));
+			engine.SetValue("Line2D", TypeReference.CreateTypeReference(engine, typeof(Line2DWrapper)));
 			engine.SetValue("UniValue", TypeReference.CreateTypeReference(engine, typeof(UniValue)));
 			engine.SetValue("Data", TypeReference.CreateTypeReference(engine, typeof(DataWrapper)));
 

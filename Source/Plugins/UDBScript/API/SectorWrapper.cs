@@ -63,6 +63,8 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 
 		#region ================== Properties
 
+		internal Sector Sector	{ get { return sector; } }
+
 		/// <summary>
 		/// The `Sector`'s index. Read-only.
 		/// </summary>
@@ -463,15 +465,15 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// Joins this `Sector` with another `Sector`. Lines shared between the sectors will not be removed.
 		/// </summary>
 		/// <param name="other">Sector to join with</param>
-		public void join(Sector other)
+		public void join(SectorWrapper other)
 		{
 			if (sector.IsDisposed)
 				throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Sector is disposed, the join method can not be accessed.");
 
-			if(other.IsDisposed)
+			if(other.sector.IsDisposed)
 				throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Sector to join with is disposed, the join method can not be used.");
 
-			sector.Join(other);
+			sector.Join(other.sector);
 		}
 
 		/// <summary>

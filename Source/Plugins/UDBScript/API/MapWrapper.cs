@@ -1057,5 +1057,81 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		#endregion
+
+		#region ================== Merging/Joining
+
+		/// <summary>
+		/// Joins `Sector`s, keeping lines shared by the `Sector`s. All `Sector`s will be joined with the first `Sector` in the array.
+		/// </summary>
+		/// <param name="sectors">`Array` of `Sector`s</param>
+		public void joinSectors(SectorWrapper[] sectors)
+		{
+			List<Sector> secs = new List<Sector>();
+
+			foreach (SectorWrapper sw in sectors)
+				secs.Add(sw.Sector);
+
+			JoinMergeSectors(secs, false);
+		}
+
+		/// <summary>
+		/// Merges `Sector`s, deleting lines shared by the `Sector`s. All `Sector`s will be merged into the first `Sector` in the array.
+		/// </summary>
+		/// <param name="sectors">`Array` of `Sector`s</param>
+		public void mergeSectors(SectorWrapper[] sectors)
+		{
+			List<Sector> secs = new List<Sector>();
+
+			foreach (SectorWrapper sw in sectors)
+				secs.Add(sw.Sector);
+
+			JoinMergeSectors(secs, true);
+		}
+
+		// Helper method for joining/merging sectors. Pretty much a direct copy from sectors mode
+		private void JoinMergeSectors(List<Sector> sectors, bool removelines)
+		{
+			// Remove lines in betwen joining sectors?
+			if (removelines)
+			{
+				// Go for all selected linedefs
+				List<Linedef> selectedlines = new List<Linedef>();
+				foreach (Sector s in sectors)
+					foreach (Sidedef sd in s.Sidedefs)
+						if (!selectedlines.Contains(sd.Line))
+							selectedlines.Add(sd.Line);
+
+				foreach (Linedef ld in selectedlines)
+				{
+					// Front and back side?
+					if ((ld.Front != null) && (ld.Back != null))
+					{
+						// Both a selected sector, but not the same?
+						if (sectors.Contains(ld.Front.Sector) && sectors.Contains(ld.Back.Sector) &&
+						   (ld.Front.Sector != ld.Back.Sector))
+						{
+							// Remove this line
+							ld.Dispose();
+						}
+					}
+				}
+			}
+
+			// Find the first sector that is not disposed
+			//List<Sector> orderedselection = new List<Sector>(General.Map.Map.GetSelectedSectors(true));
+			Sector first = null;
+			foreach (Sector s in sectors)
+				if (!s.IsDisposed) { first = s; break; }
+
+			// Join all selected sectors with the first
+			for (int i = 0; i < sectors.Count; i++)
+				if ((sectors[i] != first) && !sectors[i].IsDisposed)
+					sectors[i].Join(first);
+
+			// Update
+			General.Map.Map.Update();
+		}
+
+		#endregion
 	}
 }
