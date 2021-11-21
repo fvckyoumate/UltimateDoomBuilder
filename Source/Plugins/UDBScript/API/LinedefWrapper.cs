@@ -646,16 +646,28 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Splits the `Linedef` at the given `Vertex`. The result will be two lines, from the start `Vertex` of the `Linedef` to `v`, and from `v` to the end `Vertex` of the `Linedef`.
+		/// Splits the `Linedef` at the given position. This can either be a `Vector2D`, an array of numbers, or an existing `Vertex`. The result will be two lines, from the start `Vertex` of the `Linedef` to `pos`, and from `pos` to the end `Vertex` of the `Linedef`.
 		/// </summary>
-		/// <param name="v">`Vertex` to split by</param>
+		/// <param name="pos">`Vertex` to split by</param>
 		/// <returns>The newly created `Linedef`</returns>
-		public LinedefWrapper split(VertexWrapper v)
+		public LinedefWrapper split(object pos)
 		{
 			if (linedef.IsDisposed)
 				throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Linedef is disposed, the split method can not be accessed.");
 
-			return new LinedefWrapper(linedef.Split(v.Vertex));
+			if(pos is VertexWrapper)
+				return new LinedefWrapper(linedef.Split(((VertexWrapper)pos).Vertex));
+
+			try
+			{
+				Vector2D v = (Vector2D)BuilderPlug.Me.GetVectorFromObject(pos, false);
+				Vertex nv = General.Map.Map.CreateVertex(v);
+				return new LinedefWrapper(linedef.Split(nv));
+			}
+			catch (CantConvertToVectorException e)
+			{
+				throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException(e.Message);
+			}
 		}
 
 		/// <summary>

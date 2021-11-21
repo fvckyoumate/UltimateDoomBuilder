@@ -164,9 +164,9 @@ Tests which side of the `Linedef` `pos` is on. Returns < 0 for front (right) sid
 * pos: Point to check against
 #### Return value
 < 0 for front (right) side, > for back (left) side, and 0 if `pos` is on the line
-### split(v)
-Splits the `Linedef` at the given `Vertex`. The result will be two lines, from the start `Vertex` of the `Linedef` to `v`, and from `v` to the end `Vertex` of the `Linedef`.
+### split(pos)
+Splits the `Linedef` at the given position. This can either be a `Vector2D`, an array of numbers, or an existing `Vertex`. The result will be two lines, from the start `Vertex` of the `Linedef` to `pos`, and from `pos` to the end `Vertex` of the `Linedef`.
 #### Parameters
-* v: `Vertex` to split by
+* pos: `Vertex` to split by
 #### Return value
 The newly created `Linedef`

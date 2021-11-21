@@ -161,18 +161,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 		{
 			watcher.EnableRaisingEvents = false;
 
-			// Save the script option values
-			foreach (ScriptInfo si in scriptinfo)
-				si.SaveOptionValues();
-
-			// Save the script slots
-			foreach(KeyValuePair<int, ScriptInfo> kvp in scriptslots)
-			{
-				if (kvp.Value == null || string.IsNullOrWhiteSpace(kvp.Value.ScriptFile))
-					continue;
-
-				General.Settings.WritePluginSetting("scriptslots.slot" + kvp.Key, kvp.Value.ScriptFile);
-			}
+			SaveScriptSlotsAndOptions();
 		}
 
 		public override void OnShowPreferences(PreferencesController controller)
@@ -210,6 +199,22 @@ namespace CodeImp.DoomBuilder.UDBScript
 
 			// This must be called to remove bound methods for actions.
 			General.Actions.UnbindMethods(this);
+		}
+
+		internal void SaveScriptSlotsAndOptions()
+		{
+			// Save the script option values
+			foreach (ScriptInfo si in scriptinfo)
+				si.SaveOptionValues();
+
+			// Save the script slots
+			foreach (KeyValuePair<int, ScriptInfo> kvp in scriptslots)
+			{
+				if (kvp.Value == null || string.IsNullOrWhiteSpace(kvp.Value.ScriptFile))
+					continue;
+
+				General.Settings.WritePluginSetting("scriptslots.slot" + kvp.Key, kvp.Value.ScriptFile);
+			}
 		}
 
 		private void FindEditor()
@@ -277,6 +282,8 @@ namespace CodeImp.DoomBuilder.UDBScript
 
 				scriptslots[slot] = si;
 			}
+
+			SaveScriptSlotsAndOptions();
 		}
 
 		/// <summary>

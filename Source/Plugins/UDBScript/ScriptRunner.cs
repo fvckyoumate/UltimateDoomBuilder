@@ -256,6 +256,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 			try
 			{
 				General.Map.UndoRedo.CreateUndo("Run script " + scriptinfo.Name);
+				General.Map.Map.ClearAllMarks(false);
 
 				ParserOptions po = new ParserOptions(scriptinfo.ScriptFile.Remove(0, General.AppPath.Length));
 
