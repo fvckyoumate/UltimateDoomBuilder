@@ -47,15 +47,19 @@ using CodeImp.DoomBuilder.Windows;
 
 namespace CodeImp.DoomBuilder.UDBScript
 {
-	internal struct ScriptDirectoryStructure
+	internal class ScriptDirectoryStructure
 	{
 		public string Name;
+		public bool Expanded;
+		public string Hash;
 		public List<ScriptDirectoryStructure> Directories;
 		public List<ScriptInfo> Scripts;
 
-		public ScriptDirectoryStructure(string name)
+		public ScriptDirectoryStructure(string name, bool expanded, string hash)
 		{
-			this.Name = name;
+			Name = name;
+			Expanded = expanded;
+			Hash = hash;
 			Directories = new List<ScriptDirectoryStructure>();
 			Scripts = new List<ScriptInfo>();
 		}
@@ -162,6 +166,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 			watcher.EnableRaisingEvents = false;
 
 			SaveScriptSlotsAndOptions();
+			SaveScriptDirectoryExpansionStatus(scriptdirectorystructure);
 		}
 
 		public override void OnShowPreferences(PreferencesController controller)
@@ -215,6 +220,21 @@ namespace CodeImp.DoomBuilder.UDBScript
 
 				General.Settings.WritePluginSetting("scriptslots.slot" + kvp.Key, kvp.Value.ScriptFile);
 			}
+		}
+
+		internal void SaveScriptDirectoryExpansionStatus(ScriptDirectoryStructure root)
+		{
+			if(root.Expanded)
+			{
+				General.Settings.WritePluginSetting("directoryexpand." + root.Hash, true);
+			}
+			else
+			{
+				General.Settings.DeletePluginSetting("directoryexpand." + root.Hash);
+			}
+
+			foreach (ScriptDirectoryStructure sds in root.Directories)
+				SaveScriptDirectoryExpansionStatus(sds);
 		}
 
 		private void FindEditor()
@@ -359,8 +379,10 @@ namespace CodeImp.DoomBuilder.UDBScript
 		/// <returns>ScriptDirectoryStructure for the given path</returns>
 		private ScriptDirectoryStructure LoadScriptDirectoryStructure(string path)
 		{
+			string hash = SHA256Hash.Get(path);
+			bool expanded = General.Settings.ReadPluginSetting("directoryexpand." + hash, false);
 			string name = path.TrimEnd(Path.DirectorySeparatorChar).Split(Path.DirectorySeparatorChar).Last();
-			ScriptDirectoryStructure sds = new ScriptDirectoryStructure(name);
+			ScriptDirectoryStructure sds = new ScriptDirectoryStructure(name, expanded, hash);
 
 			foreach (string directory in Directory.GetDirectories(path))
 				sds.Directories.Add(LoadScriptDirectoryStructure(directory));

@@ -229,17 +229,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 		/// <returns>The hash as a string</returns>
 		public string GetScriptPathHash()
 		{
-			SHA256 hash = SHA256.Create();
-			byte[] data = hash.ComputeHash(Encoding.UTF8.GetBytes(scriptfile));
-
-			StringBuilder sb = new StringBuilder();
-
-			for (int i = 0; i < data.Length; i++)
-			{
-				sb.Append(data[i].ToString("x2"));
-			}
-
-			return sb.ToString();
+			return SHA256Hash.Get(scriptfile);
 		}
 
 		#endregion

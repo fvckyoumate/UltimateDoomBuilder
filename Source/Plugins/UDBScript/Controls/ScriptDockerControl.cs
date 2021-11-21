@@ -215,7 +215,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 
 			filetree.Nodes.Clear();
 			filetree.Nodes.AddRange(AddToTree(filtertext, BuilderPlug.Me.ScriptDirectoryStructure));
-			filetree.ExpandAll();
+			//filetree.ExpandAll();
 
 			foreach(TreeNode node in filetree.Nodes)
 			{
@@ -270,7 +270,11 @@ namespace CodeImp.DoomBuilder.UDBScript
 				TreeNode[] children = AddToTree(filtertext, subsds);
 				TreeNode tn = new TreeNode(subsds.Name, AddToTree(filtertext, subsds));
 
+				tn.Tag = subsds;
 				tn.SelectedImageKey = tn.ImageKey = "Folder";
+
+				if (subsds.Expanded)
+					tn.Expand();
 
 				newnodes.Add(tn);
 			}
@@ -419,5 +423,27 @@ namespace CodeImp.DoomBuilder.UDBScript
 		}
 
 		#endregion
+
+		private void filetree_BeforeCollapse(object sender, TreeViewCancelEventArgs e)
+		{
+			ScriptDirectoryStructure sds;
+
+			if(e.Node.Tag is ScriptDirectoryStructure)
+			{
+				sds = (ScriptDirectoryStructure)e.Node.Tag;
+				sds.Expanded = false;
+			}
+		}
+
+		private void filetree_BeforeExpand(object sender, TreeViewCancelEventArgs e)
+		{
+			ScriptDirectoryStructure sds;
+
+			if (e.Node.Tag is ScriptDirectoryStructure)
+			{
+				sds = (ScriptDirectoryStructure)e.Node.Tag;
+				sds.Expanded = true;
+			}
+		}
 	}
 }
