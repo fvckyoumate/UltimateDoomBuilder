@@ -145,11 +145,7 @@ The following types are currently available:
 - 17: angle in degrees as floating point number*
 - 18: thing type*
 - 19: thing class*
-- 20: random integer
-- 21: random floating point number 
 - 22: byte angle*
-- 23: thing radius*
-- 24: thing height*
 - 25: PolyObject number*
 
 &ast; these are quality of life type for interger, floating point numbers, and strings. Clicking into their field will show context sensitive controls. For example when using type 3 (boolean) there will be drop down list where you can choose between `true` or `false`, when using type 6 (texture) a button button that will open the texture browser, when using type 13 (sector tag) will show a drop down list of sector tags in the map etc.<br>![Script option quality of life button](scriptoptions.png)

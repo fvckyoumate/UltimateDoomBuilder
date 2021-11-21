@@ -68,11 +68,11 @@ namespace CodeImp.DoomBuilder.UDBScript
 			UniversalType.AngleDegreesFloat,
 			UniversalType.ThingType,
 			UniversalType.ThingClass,
-			UniversalType.RandomInteger,
-			UniversalType.RandomFloat,
+			//UniversalType.RandomInteger,
+			//UniversalType.RandomFloat,
 			UniversalType.AngleByte,
-			UniversalType.ThingRadius,
-			UniversalType.ThingHeight,
+			//UniversalType.ThingRadius,
+			//UniversalType.ThingHeight,
 			UniversalType.PolyobjectNumber
 		};
 
