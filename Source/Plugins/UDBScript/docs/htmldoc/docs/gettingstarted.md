@@ -2,9 +2,11 @@
 
 ## Introduction
 
-UDBScript allows the user to run custom JavaScript code on the currently opened map. This includes modifying existing map elements (like things or sectors), or creating completely new map elements (i.e. drawing lines, adding things etc.).
+UDBScript allows the user to run custom JavaScript code on the currently opened map. This allowes the user to modify existing map elements (like things or sectors), or to create completely new map elements (i.e. drawing lines, adding things etc.).
 
-It uses the [Jint](https://github.com/sebastienros/jint) interpreter.
+This guide only shows the intricacies of UDBScript and doesn't teach JavaScript. If you need a JavaScript tutorial please use your favourite search engine. UDBScript also comes with a variety of well-documented example scripts to study.
+
+UDBScript uses the [Jint](https://github.com/sebastienros/jint) interpreter.
 
 ## Directory structure
 
@@ -41,7 +43,7 @@ It is possible to set up an external script editor to edit the script from withi
 
 Scripts can be accessed, configured, and run through the provided docker. Selecting a script will show it's description (if available) and configuration options. 
 
-Default values in the script options will be shown in gray, deviating values as black. Pressing the `Reset` button will reset all values to the default. 
+Default values in the script options will be shown in gray, deviating values as black. Pressing the `Reset` button will reset all values to their defaults. 
 
 Scripts can either be run using the `Run` button, or by pressing the assigned key (see [Setting hotkeys to execute scripts](#setting-hotkeys-to-execute-scripts)). Note that scripts might rely on the mouse cursor being somewhere in the map space, in which case they will not run correctly using the `Run` button. This should be intercepted by the script.
 
@@ -186,8 +188,8 @@ let v4 = new Vector2D(v1); // From another Vector2D
 
 let v5 = new Vector3D(32, 64, 16); // From x, y, and z values
 let v6 = new Vector3D([ 32, 64, 16 ]); // From an array with three numbers
-let v7 = new Vector2D({ x: 32, y: 64, z: 16 }); // From an object with x, y, and z properties
-let v8 = new Vector3D(v4); // From another Vector3D
+let v7 = new Vector3D({ x: 32, y: 64, z: 16 }); // From an object with x, y, and z properties
+let v8 = new Vector3D(v5); // From another Vector3D
 ```
 
 API methods that accept a `Vector2D` or `Vector3D` as a parameter also accept the array notation. For example the following lines are equivalent:
@@ -195,7 +197,7 @@ API methods that accept a `Vector2D` or `Vector3D` as a parameter also accept th
 ```js
 let t1 = Map.createThing(new Vector2D(32, 64), 3001); // Create an Imp
 let t2 = Map.createThing([ 32, 64 ], 3001); // Create an Imp
-let t3 = new Map.createThing({ x: 32, y: 64 }, 3001); // Create an Imp
+let t3 = Map.createThing({ x: 32, y: 64 }, 3001); // Create an Imp
 
 let v = new Vector2D(32, 64); // Supplying the x and y values
 let t4 = Map.createThing(v, 3001); // Create an Imp
@@ -227,12 +229,12 @@ let v2 = new Vector2D(2, 3) * 3; // Results in new Vector(6, 9)
 ```
 
 !!! attention
-    This only works if either side of arithmetic operation is of type `Vector2D` or `Vector3D`. That means that for example the following code will *not* result in a vector:<br>
+    Vector arithmetic only works if either side of arithmetic operation is of type `Vector2D` or `Vector3D`. That means that for example the following code will *not* result in a vector:<br>
 	`let v1 = [ 2, 3 ] + [ 4, 5 ]; // Results in the string "2, 34, 5"`
 
 ### Working with map elements
 
-Map elements (things, sectors, sidedefs etc.) can be accessed through the global `Map` object. This object has methods that return an array of map elements, for example `Map.getSectors()` returns an array of `Sector` objects, which are are all sectors in the map. There are also methods to get all selected (for example `Map.getSelectedSectors()`) and marked (for example `Map.getMarkedSectors()`) map elements. These map elements can then be modified, see the documentation for the particular map element type in the API section.
+Map elements (things, sectors, linedefs, sidedefs, vertices) can be accessed through the global `Map` object. This object has methods that return an array of map elements, for example `Map.getSectors()` returns an array of `Sector` objects, which are are all sectors in the map. There are also methods to get all selected (for example `Map.getSelectedSectors()`) and marked (for example `Map.getMarkedSectors()`) map elements. These map elements can then be modified, see the documentation for the particular map element type in the API section.
 
 !!! note
     "Marking" a map element is a way to denote that something happened to this map element. For example when using the `Map.drawLines()` method all new geometry will be marked.
