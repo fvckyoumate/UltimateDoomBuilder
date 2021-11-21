@@ -93,7 +93,7 @@ Returns an `Array` of the `Sector`'s tags. UDMF only. Supported game configurati
 #### Return value
 `Array` of tags
 ### getTriangles()
-Gets an array of `Vector2D` arrays, representing the vertices of the triangulated sector.
+Gets an array of `Vector2D` arrays, representing the vertices of the triangulated sector. Note that for sectors with islands some triangles may not always have their points on existing vertices.
 #### Return value
 Array of `Vector2D` arrays
 ### intersect(p)

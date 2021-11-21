@@ -536,7 +536,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Gets an array of `Vector2D` arrays, representing the vertices of the triangulated sector.
+		/// Gets an array of `Vector2D` arrays, representing the vertices of the triangulated sector. Note that for sectors with islands some triangles may not always have their points on existing vertices.
 		/// </summary>
 		/// <returns>Array of `Vector2D` arrays</returns>
 		public Vector2DWrapper[][] getTriangles()

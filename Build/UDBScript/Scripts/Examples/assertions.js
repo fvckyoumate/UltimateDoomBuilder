@@ -1,6 +1,6 @@
-`#name Vector math assertion`;
+`#name Logic assertions`;
 
-`#description This script checks if all vector math operations work correctly.`;
+`#description This script checks if UDBScript's logic (like vector math operations) work correctly.`;
 
 let assertion_log = '';
 
