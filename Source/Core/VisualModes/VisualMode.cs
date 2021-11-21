@@ -307,7 +307,7 @@ namespace CodeImp.DoomBuilder.VisualModes
 		public override void OnScriptRunEnd()
 		{
 			base.OnScriptRunEnd();
-			ResourcesReloaded();
+			ResourcesReloadedPartial();
 			renderer.SetCrosshairBusy(false);
 		}
 
