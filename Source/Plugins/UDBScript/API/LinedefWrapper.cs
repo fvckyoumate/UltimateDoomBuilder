@@ -662,7 +662,11 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 			{
 				Vector2D v = (Vector2D)BuilderPlug.Me.GetVectorFromObject(pos, false);
 				Vertex nv = General.Map.Map.CreateVertex(v);
-				return new LinedefWrapper(linedef.Split(nv));
+				nv.SnapToAccuracy();
+				Linedef nld = linedef.Split(nv);
+				linedef.UpdateCache();
+				nld.UpdateCache();
+				return new LinedefWrapper(nld);
 			}
 			catch (CantConvertToVectorException e)
 			{
