@@ -160,5 +160,3 @@ catch(e)
     showMessage(e);
     exit();
 }
-
-// showMessage("No assertion failed!");

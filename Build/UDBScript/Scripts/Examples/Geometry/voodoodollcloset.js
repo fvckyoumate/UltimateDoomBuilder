@@ -1,6 +1,6 @@
 `#name Draw Voodoo Doll Closet`;
 
-`#description Draws a voodoo doll closet from the mouse cursor's position. Requires Boom actions. If linedefs are selected when the script is run, those linedefs will have actions assigned that unblock the voodoo doll (if applicable).`;
+`#description Draws a voodoo doll closet from the mouse cursor's position. Requires Boom actions. If linedefs are selected when the script is run, those linedefs will have actions assigned that unblock the voodoo doll: if they have a SW1/SW2 texture a S1 action will be applied, if they are double-sided a W1 action will be applied.`;
 
 `#scriptoptions
 
@@ -14,7 +14,7 @@ length
 direction
 {
 	description = "Direction of closet";
-	default = "North";
+	default = 0;
 	type = 11; // Enum
 	enumvalues {
 		0 = "North";

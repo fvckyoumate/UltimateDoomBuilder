@@ -1,5 +1,26 @@
 `#name Create PolyObject`;
 
+`#description Creates a poliyobject from a selected line. The anchor will be placed at the mouse cursor.`;
+
+`#scriptoptions
+
+startspottype
+{
+	description = "Start spot type";
+	type = 11;
+	default = 9301;
+	enumvalues {
+		9301 = "Regular";
+		9302 = "Crushing";
+		9303 = "Hurts to touch";
+	}
+}
+`;
+
+// Check if the mouse is in the map
+if(!Map.mousePosition.isFinite())
+	die('Mouse cursor is not at a valid map position');
+
 // Get the mouse position in the map, snapped to the grid
 var cursorpos = Map.snappedToGrid(Map.mousePosition);
 
@@ -12,8 +33,6 @@ var lines = Map.getSelectedLinedefs();
 // Make sure exactly one linedef is selected
 if(lines.length != 1)
 	throw 'You have to select exactly 1 line';
-
-log(lines[0]);
 
 // This stores polyobject numbers that are already used
 var usednumbers = []
@@ -42,7 +61,7 @@ lines[0].args[0] = polyobjectnumber;
 var anchorpos = lines[0].line.getCoordinatesAt(0.5); // Center of line
 
 // Create the polyobject start spot thing
-var t = Map.createThing(cursorpos, 9301); // 9301 = Polyobject Start Spot
+var t = Map.createThing(cursorpos, ScriptOptions.startspottype);
 t.angle = polyobjectnumber;
 
 // Create the polyobject anchor thing

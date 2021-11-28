@@ -11,9 +11,23 @@ global_x
     type = 3; // Boolean
 }
 
+global_y
+{
+    description = "Global Y Offset";
+    default = "False";
+    type = 3; // Boolean
+}
+
 upper_x
 {
 	description = "Upper X Offset";
+	default = "True";
+	type = 3; // Boolean
+}
+
+upper_y
+{
+	description = "Upper Y Offset";
 	default = "True";
 	type = 3; // Boolean
 }
@@ -25,9 +39,23 @@ middle_x
 	type = 3; // Boolean
 }
 
+middle_y
+{
+	description = "Middle Y Offset";
+	default = "True";
+	type = 3; // Boolean
+}
+
 lower_x
 {
 	description = "Lower X Offset";
+	default = "True";
+	type = 3; // Boolean
+}
+
+lower_y
+{
+	description = "Lower Y Offset";
 	default = "True";
 	type = 3; // Boolean
 }
@@ -47,7 +75,7 @@ function isValidTexture(texture)
 
 function randomizeSidedefOffsets(sd)
 {
-    // Global texture offset
+    // Global X texture offset
     if(ScriptOptions.global_x && (isValidTexture(sd.upperTexture) || isValidTexture(sd.middleTexture) || isValidTexture(sd.lowerTexture)))
     {
         let widths = [];
@@ -65,18 +93,49 @@ function randomizeSidedefOffsets(sd)
             sd.offsetX = getRandomOffset(Math.max(widths));
     }
 
-    // Local texture offsets
+    // Global Y texture offset
+    if(ScriptOptions.global_y && (isValidTexture(sd.upperTexture) || isValidTexture(sd.middleTexture) || isValidTexture(sd.lowerTexture)))
+    {
+        let heights = [];
+
+        if(isValidTexture(sd.upperTexture))
+            heights.push(Data.getTextureInfo(sd.upperTexture).height);
+
+        if(isValidTexture(sd.middleTexture))
+            heights.push(Data.getTextureInfo(sd.middleTexture).height);
+
+        if(isValidTexture(sd.lowerTexture))
+            heights.push(Data.getTextureInfo(sd.lowerTexture).height);
+
+        if(heights.length > 0)
+            sd.offsetY = getRandomOffset(Math.max(heights));
+    }    
+
+    // Local X texture offsets
     if(GameConfiguration.hasLocalSidedefTextureOffsets)
     {
         if(ScriptOptions.upper_x && isValidTexture(sd.upperTexture))
-            sd.fields.offsetx_top = getRandomOffset(Data.getTextureInfo(sd.upperTexture).width);
+            sd.fields.offsetx_top = getRandomOffset(Data.getTextureInfo(sd.upperTexture).height);
 
         if(ScriptOptions.middle_x && isValidTexture(sd.middleTexture))
-            sd.fields.offsetx_mid = getRandomOffset(Data.getTextureInfo(sd.middleTexture).width);
+            sd.fields.offsetx_mid = getRandomOffset(Data.getTextureInfo(sd.middleTexture).height);
 
         if(ScriptOptions.lower_x && isValidTexture(sd.lowerTexture))
-            sd.fields.offsetx_bottom = getRandomOffset(Data.getTextureInfo(sd.lowerTexture).width);
+            sd.fields.offsetx_bottom = getRandomOffset(Data.getTextureInfo(sd.lowerTexture).height);
     }
+
+    // Local Y texture offsets
+    if(GameConfiguration.hasLocalSidedefTextureOffsets)
+    {
+        if(ScriptOptions.upper_y && isValidTexture(sd.upperTexture))
+            sd.fields.offsety_top = getRandomOffset(Data.getTextureInfo(sd.upperTexture).height);
+
+        if(ScriptOptions.middle_y && isValidTexture(sd.middleTexture))
+            sd.fields.offsety_mid = getRandomOffset(Data.getTextureInfo(sd.middleTexture).height);
+
+        if(ScriptOptions.lower_y && isValidTexture(sd.lowerTexture))
+            sd.fields.offsety_bottom = getRandomOffset(Data.getTextureInfo(sd.lowerTexture).height);
+    }    
 }
 
 // Randomize offset of front and back sidedefs of all selected linedefs

@@ -433,6 +433,9 @@ namespace CodeImp.DoomBuilder.UDBScript
 				sds = (ScriptDirectoryStructure)e.Node.Tag;
 				sds.Expanded = false;
 			}
+
+			// Immedeiately save the status, otherwise folders will be expanded/collapsed incorrectly on hot reload
+			BuilderPlug.Me.SaveScriptDirectoryExpansionStatus(BuilderPlug.Me.ScriptDirectoryStructure);
 		}
 
 		private void filetree_BeforeExpand(object sender, TreeViewCancelEventArgs e)
@@ -444,6 +447,9 @@ namespace CodeImp.DoomBuilder.UDBScript
 				sds = (ScriptDirectoryStructure)e.Node.Tag;
 				sds.Expanded = true;
 			}
+
+			// Immedeiately save the status, otherwise folders will be expanded/collapsed incorrectly on hot reload
+			BuilderPlug.Me.SaveScriptDirectoryExpansionStatus(BuilderPlug.Me.ScriptDirectoryStructure);
 		}
 	}
 }

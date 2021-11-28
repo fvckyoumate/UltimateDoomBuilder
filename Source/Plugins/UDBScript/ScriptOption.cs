@@ -85,8 +85,24 @@ namespace CodeImp.DoomBuilder.UDBScript
 			this.name = name;
 			this.description = description;
 			this.type = type;
-			this.defaultvalue = this.value = defaultvalue;
 			this.enumvalues = enumvalues;
+
+			// If it's an enum try to get the default value from default value number
+			if(enumvalues.Count > 0)
+			{
+				foreach (DictionaryEntry de in enumvalues)
+				{
+					if(de.Key.ToString() == defaultvalue.ToString())
+					{
+						this.defaultvalue = value = de.Value;
+						break;
+					}
+				}
+			}
+			else
+			{
+				this.defaultvalue = value = defaultvalue;
+			}
 
 			typehandler = General.Types.GetFieldHandler(type, defaultvalue);
 

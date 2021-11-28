@@ -99,7 +99,7 @@ The payload consists of one or more blocks, each defining an option. The blocks 
 `;
 ```
 !!! note
-    The `eunumvalues` field is only used with the appropriate `type` value
+    - The `eunumvalues` field is only used with the appropriate `type` value
 
 Example:
 
@@ -116,7 +116,7 @@ length
 direction
 {
 	description = "Direction of closet";
-	default = "North";
+	default = 0; // North
 	type = 11; // Enum
 	enumvalues {
 		0 = "North";
@@ -125,6 +125,16 @@ direction
 		3 = "West";
 	}
 }
+`;
+```
+
+You can also write the options in a more compact form:
+
+```js
+`#scriptoptions
+
+width  { description = "Width of the sector";  type = 0; default = 256; }
+height { description = "Height of the sector"; type = 0; default = 512; }
 `;
 ```
 
