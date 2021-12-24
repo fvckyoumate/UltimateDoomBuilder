@@ -122,7 +122,8 @@ namespace CodeImp.DoomBuilder.Controls
 		private int caretoffset; //mxd. Used to modify caret position after autogenerating stuff
 		private bool expandcodeblock; //mxd. More gross hacks
 		private string highlightedword; //mxd
-		private static Encoding encoding = Encoding.GetEncoding(1251); //mxd. ASCII with cyrillic support...
+										//private static Encoding encoding = Encoding.GetEncoding(1251); //mxd. ASCII with cyrillic support...
+		private static Encoding encoding = Encoding.UTF8;
 
 		//mxd. Event propagation
 		private bool preventchanges;
@@ -601,12 +602,59 @@ namespace CodeImp.DoomBuilder.Controls
 
 		public byte[] GetText()
 		{
-			return encoding.GetBytes(scriptedit.Text); //mxd TODO: other encodings?..
+			Encoding win1252enc = Encoding.GetEncoding(1252);
+			Encoding utf8enc = Encoding.UTF8;
+
+			byte[] utf8bytes = utf8enc.GetBytes(scriptedit.Text);
+			byte[] win1252bytes = Encoding.Convert(utf8enc, win1252enc, utf8bytes);
+			string wstr = new string(win1252enc.GetChars(win1252bytes));
+
+			if (wstr == scriptedit.Text)
+				return Encoding.GetEncoding(1252).GetBytes(scriptedit.Text);
+			else
+				return Encoding.UTF8.GetBytes(scriptedit.Text);
 		}
 
 		public void SetText(byte[] text)
 		{
-			scriptedit.Text = encoding.GetString(text); //mxd TODO: other encodings?..
+			string outtext;
+
+			DetectTextEncoding(text, out outtext);
+
+			scriptedit.Text = outtext;
+		}
+
+		/// <summary>
+		/// Checks if the byte array contains an UTF-8 string and returns the correct encoding and sets the output string.
+		/// Based on https://stackoverflow.com/a/12853721, but heavily simplyfied to UDB's needs
+		/// </summary>
+		/// <param name="b">byte array of the string</param>
+		/// <param name="text">The resulting string</param>
+		/// <returns>Encoding, either UTF-8 or Windows-1252</returns>
+		public Encoding DetectTextEncoding(byte[] b, out string text)
+		{
+
+			int i = 0;
+			bool utf8 = false;
+
+			while (i < b.Length - 4)
+			{
+				if (b[i] <= 0x7F) { i += 1; continue; } // If all characters are below 0x80, then it is valid UTF-8, but UTF8 is not 'required' (and therefore the text is more desirable to be treated as the default codepage of the computer). Hence, there's no "utf8 = true;" code unlike the next three checks.
+				if (b[i] >= 0xC2 && b[i] < 0xE0 && b[i + 1] >= 0x80 && b[i + 1] < 0xC0) { i += 2; utf8 = true; continue; }
+				if (b[i] >= 0xE0 && b[i] < 0xF0 && b[i + 1] >= 0x80 && b[i + 1] < 0xC0 && b[i + 2] >= 0x80 && b[i + 2] < 0xC0) { i += 3; utf8 = true; continue; }
+				if (b[i] >= 0xF0 && b[i] < 0xF5 && b[i + 1] >= 0x80 && b[i + 1] < 0xC0 && b[i + 2] >= 0x80 && b[i + 2] < 0xC0 && b[i + 3] >= 0x80 && b[i + 3] < 0xC0) { i += 4; utf8 = true; continue; }
+				utf8 = false; break;
+			}
+
+			if (utf8 == true)
+			{
+				text = Encoding.UTF8.GetString(b);
+				return Encoding.UTF8;
+			}
+
+			// No UTF-8, use Windows-1252
+			text = Encoding.GetEncoding(1252).GetString(b);
+			return Encoding.GetEncoding(1252);
 		}
 
 		//mxd
