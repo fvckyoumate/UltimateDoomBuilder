@@ -263,11 +263,14 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 			try
 			{
 				Vector2D v = (Vector2D)BuilderPlug.Me.GetVectorFromObject(pos, false);
+				Linedef nearest;
 
 				if (double.IsNaN(maxrange))
-					return new LinedefWrapper(General.Map.Map.NearestLinedef(v));
+					nearest = General.Map.Map.NearestLinedef(v);
 				else
-					return new LinedefWrapper(General.Map.Map.NearestLinedefRange(v, maxrange));
+					nearest = General.Map.Map.NearestLinedefRange(v, maxrange);
+
+				return nearest == null ? null : new LinedefWrapper(nearest);
 			}
 			catch (CantConvertToVectorException e)
 			{

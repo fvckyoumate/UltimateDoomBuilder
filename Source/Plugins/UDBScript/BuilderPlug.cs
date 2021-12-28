@@ -670,6 +670,12 @@ namespace CodeImp.DoomBuilder.UDBScript
 			}
 		}
 
+		[BeginAction("scriptedmode")]
+		public void ScriptedMode()
+		{
+			General.Editing.ChangeMode(new ScriptedMode());
+		}
+
 		#endregion
 	}
 }
