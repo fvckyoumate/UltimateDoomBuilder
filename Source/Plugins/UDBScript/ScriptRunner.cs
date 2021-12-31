@@ -26,6 +26,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Windows.Forms;
 using CodeImp.DoomBuilder.Map;
 using CodeImp.DoomBuilder.Windows;
@@ -84,16 +85,18 @@ namespace CodeImp.DoomBuilder.UDBScript
 		/// <param name="message">Message to show</param>
 		public void ShowMessage(object message)
 		{
-			if (message == null)
-				message = string.Empty;
+			BuilderPlug.Me.ScriptRunnerForm.InvokePaused(new Action(() => {
+				if (message == null)
+					message = string.Empty;
 
-			stopwatch.Stop();
-			MessageForm mf = new MessageForm("OK", null, message.ToString());
-			DialogResult result = mf.ShowDialog();
-			stopwatch.Start();
+				stopwatch.Stop();
+				MessageForm mf = new MessageForm("OK", null, message.ToString());
+				DialogResult result = mf.ShowDialog();
+				stopwatch.Start();
 
-			if (result == DialogResult.Abort)
-				throw new UserScriptAbortException();
+				if (result == DialogResult.Abort)
+					throw new UserScriptAbortException();
+			}));
 		}
 
 		/// <summary>
@@ -103,18 +106,21 @@ namespace CodeImp.DoomBuilder.UDBScript
 		/// <returns>true if "Yes" was clicked, false if "No" was clicked</returns>
 		public bool ShowMessageYesNo(object message)
 		{
-			if (message == null)
-				message = string.Empty;
+			return (bool)BuilderPlug.Me.ScriptRunnerForm.Invoke(new Func<bool>(() =>
+			{
+				if (message == null)
+					message = string.Empty;
 
-			stopwatch.Stop();
-			MessageForm mf = new MessageForm("Yes", "No", message.ToString());
-			DialogResult result = mf.ShowDialog();
-			stopwatch.Start();
+				stopwatch.Stop();
+				MessageForm mf = new MessageForm("Yes", "No", message.ToString());
+				DialogResult result = mf.ShowDialog();
+				stopwatch.Start();
 
-			if (result == DialogResult.Abort)
-				throw new UserScriptAbortException();
+				if (result == DialogResult.Abort)
+					throw new UserScriptAbortException();
 
-			return result == DialogResult.OK ? true : false;
+				return result == DialogResult.OK ? true : false;
+			}));
 		}
 
 		/// <summary>
@@ -166,13 +172,13 @@ namespace CodeImp.DoomBuilder.UDBScript
 					ParserOptions po = new ParserOptions(file.Remove(0, General.AppPath.Length));
 					engine.Execute(File.ReadAllText(file), po);
 				}
-				catch (Esprima.ParserException e)
+				catch (ParserException e)
 				{
 					MessageBox.Show("There was an error while loading the library " + file + ":\n\n" + e.Message, "Script error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
 					return false;
 				}
-				catch (Jint.Runtime.JavaScriptException e)
+				catch (JavaScriptException e)
 				{
 					if (e.Error.Type != Jint.Runtime.Types.String)
 					{
@@ -190,17 +196,72 @@ namespace CodeImp.DoomBuilder.UDBScript
 			return true;
 		}
 
-		/// <summary>
-		/// Runs the script
-		/// </summary>
-		public void Run()
+		public void HandleExceptions(Exception e)
+		{
+			bool abort = false;
+
+			if(e is UserScriptAbortException)
+			{
+				General.Interface.DisplayStatus(StatusType.Warning, "Script aborted");
+				abort = true;
+			}
+			else if(e is ParserException)
+			{
+				MessageBox.Show("There is an error while parsing the script:\n\n" + e.Message, "Script error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				abort = true;
+			}
+			else if(e is JavaScriptException)
+			{
+				if (((JavaScriptException)e).Error.Type != Jint.Runtime.Types.String)
+				{
+					//MessageBox.Show("There is an error in the script in line " + e.LineNumber + ":\n\n" + e.Message + "\n\n" + e.StackTrace, "Script error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+					UDBScriptErrorForm sef = new UDBScriptErrorForm(e.Message, e.StackTrace);
+					sef.ShowDialog();
+				}
+				else
+					General.Interface.DisplayStatus(StatusType.Warning, e.Message); // We get here if "throw" is used in a script
+
+				abort = true;
+			}
+			else if(e is ExitScriptException)
+			{
+				if (!string.IsNullOrEmpty(e.Message))
+					General.Interface.DisplayStatus(StatusType.Ready, e.Message);
+			}
+			else if(e is DieScriptException)
+			{
+				if (!string.IsNullOrEmpty(e.Message))
+					General.Interface.DisplayStatus(StatusType.Warning, e.Message);
+
+				abort = true;
+			}
+			else if(e is ExecutionCanceledException)
+			{
+				MessageBox.Show("Script execution was canceled by the user");
+				abort = true;
+			}
+			else // Catch anything else we didn't think about
+			{
+				UDBScriptErrorForm sef = new UDBScriptErrorForm(e.Message, e.StackTrace);
+				sef.ShowDialog();
+
+				abort = true;
+			}
+
+			if (abort)
+			{
+				General.Map.UndoRedo.WithdrawUndo();
+			}
+		}
+
+		public void PreRun(CancellationToken cancellationtoken)
 		{
 			string importlibraryerrors;
-			bool abort = false;
+			//bool abort = false;
 
 			// If the script requires a higher version of UDBScript than this version ask the user if they want
 			// to execute it anyways. Remember the choice for this session if "yes" was selected.
-			if(scriptinfo.Version > BuilderPlug.UDB_SCRIPT_VERSION && !scriptinfo.IgnoreVersion)
+			if (scriptinfo.Version > BuilderPlug.UDB_SCRIPT_VERSION && !scriptinfo.IgnoreVersion)
 			{
 				if (MessageBox.Show("The script requires a higher version of the feature set than this version of UDBScript supports. Executing this script might fail\n\nRequired feature version: " + scriptinfo.Version + "\nUDBScript feature version: " + BuilderPlug.UDB_SCRIPT_VERSION + "\n\nExecute anyway?", "UDBScript feature version too low", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.No)
 					return;
@@ -209,7 +270,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 			}
 
 			// Read the current script file
-			string script = File.ReadAllText(scriptinfo.ScriptFile);
+			//string script = File.ReadAllText(scriptinfo.ScriptFile);
 
 			// Make sure the option value gets saved if an option is currently being edited
 			BuilderPlug.Me.EndOptionEdit();
@@ -218,12 +279,14 @@ namespace CodeImp.DoomBuilder.UDBScript
 
 			// Set engine options
 			Options options = new Options();
-			options.Constraint(new RuntimeConstraint(stopwatch));
+			//options.Constraint(new RuntimeConstraint(stopwatch));
+			options.CancellationToken(cancellationtoken);
 			options.AllowOperatorOverloading();
-			options.SetTypeResolver(new TypeResolver {
+			options.SetTypeResolver(new TypeResolver
+			{
 				MemberFilter = member => member.Name != nameof(GetType)
 			});
-			
+
 			// Create the script engine
 			engine = new Engine(options);
 			engine.SetValue("showMessage", new Action<object>(ShowMessage));
@@ -260,65 +323,32 @@ namespace CodeImp.DoomBuilder.UDBScript
 			// Tell the mode that a script is about to be run
 			General.Editing.Mode.OnScriptRunBegin();
 
+			General.Map.UndoRedo.CreateUndo("Run script " + scriptinfo.Name);
+			General.Map.Map.ClearAllMarks(false);
+
+			General.Map.Map.IsSafeToAccess = false;
+		}
+
+		/// <summary>
+		/// Runs the script
+		/// </summary>
+		public void Run(IProgress<int> progress, IProgress<string> status)
+		{
+			engine.SetValue("ProgressInfo", new ProgressInfo(progress, status));
+			// Read the current script file
+			string script = File.ReadAllText(scriptinfo.ScriptFile);
+
 			// Run the script file
-			try
-			{
-				General.Map.UndoRedo.CreateUndo("Run script " + scriptinfo.Name);
-				General.Map.Map.ClearAllMarks(false);
+			ParserOptions po = new ParserOptions(scriptinfo.ScriptFile.Remove(0, General.AppPath.Length));
 
-				ParserOptions po = new ParserOptions(scriptinfo.ScriptFile.Remove(0, General.AppPath.Length));
+			stopwatch.Start();
+			engine.Execute(script, po);
+			stopwatch.Stop();
+		}
 
-				stopwatch.Start();
-				engine.Execute(script, po);
-				stopwatch.Stop();
-			}
-			catch (UserScriptAbortException)
-			{
-				General.Interface.DisplayStatus(StatusType.Warning, "Script aborted");
-				abort = true;
-			}
-			catch (ParserException e)
-			{
-				MessageBox.Show("There is an error while parsing the script:\n\n" + e.Message, "Script error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-				abort = true;
-			}
-			catch (Jint.Runtime.JavaScriptException e)
-			{
-				if (e.Error.Type != Jint.Runtime.Types.String)
-				{
-					//MessageBox.Show("There is an error in the script in line " + e.LineNumber + ":\n\n" + e.Message + "\n\n" + e.StackTrace, "Script error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-					UDBScriptErrorForm sef = new UDBScriptErrorForm(e.Message, e.StackTrace);
-					sef.ShowDialog();
-				}
-				else
-					General.Interface.DisplayStatus(StatusType.Warning, e.Message); // We get here if "throw" is used in a script
-
-				abort = true;
-			}
-			catch(ExitScriptException e)
-			{
-				if (!string.IsNullOrEmpty(e.Message))
-					General.Interface.DisplayStatus(StatusType.Ready, e.Message);
-			}
-			catch(DieScriptException e)
-			{
-				if (!string.IsNullOrEmpty(e.Message))
-					General.Interface.DisplayStatus(StatusType.Warning, e.Message);
-
-				abort = true;
-			}
-			catch (Exception e) // Catch anything else we didn't think about
-			{
-				UDBScriptErrorForm sef = new UDBScriptErrorForm(e.Message, e.StackTrace);
-				sef.ShowDialog();
-
-				abort = true;
-			}
-
-			if (abort)
-			{
-				General.Map.UndoRedo.WithdrawUndo();
-			}
+		public void PostRun()
+		{
+			General.Map.Map.IsSafeToAccess = true;
 
 			// Do some updates
 			General.Map.Map.Update();
@@ -327,6 +357,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 
 			// Tell the mode that running the script ended
 			General.Editing.Mode.OnScriptRunEnd();
+
 		}
 
 		#endregion
