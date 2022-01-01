@@ -420,13 +420,11 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 			// Snap to map format accuracy
 			General.Map.Map.SnapAllToAccuracy();
 
-			// Update map
-			//General.Map.Map.Update();
-			BuilderPlug.Me.ScriptRunnerForm.RunAction(() => General.Map.Map.Update(/*true, true, false*/));
+			// Update map. This has to run on the UI thread
+			BuilderPlug.Me.ScriptRunnerForm.RunAction(() => General.Map.Map.Update());
 
 			// Update textures
-			//BuilderPlug.Me.ScriptRunnerForm.RunAction(() => General.Map.Data.UpdateUsedTextures());
-
+			General.Map.Data.UpdateUsedTextures();
 
 			return success;
 		}
@@ -1184,7 +1182,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 					sectors[i].Join(first);
 
 			// Update
-			General.Map.Map.Update();
+			BuilderPlug.Me.ScriptRunnerForm.RunAction(() => General.Map.Map.Update());
 		}
 
 		#endregion

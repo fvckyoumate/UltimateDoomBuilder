@@ -48,6 +48,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 		private ScriptInfo scriptinfo;
 		Engine engine;
 		Stopwatch stopwatch;
+		int oldprocessingcount;
 
 		#endregion
 
@@ -196,6 +197,10 @@ namespace CodeImp.DoomBuilder.UDBScript
 			return true;
 		}
 
+		/// <summary>
+		/// Handles the different exceptions we're expecting, and withdraws the undo snapshot if necessary.
+		/// </summary>
+		/// <param name="e">The exception to handle</param>
 		public void HandleExceptions(Exception e)
 		{
 			bool abort = false;
@@ -214,7 +219,6 @@ namespace CodeImp.DoomBuilder.UDBScript
 			{
 				if (((JavaScriptException)e).Error.Type != Jint.Runtime.Types.String)
 				{
-					//MessageBox.Show("There is an error in the script in line " + e.LineNumber + ":\n\n" + e.Message + "\n\n" + e.StackTrace, "Script error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 					UDBScriptErrorForm sef = new UDBScriptErrorForm(e.Message, e.StackTrace);
 					sef.ShowDialog();
 				}
@@ -237,7 +241,6 @@ namespace CodeImp.DoomBuilder.UDBScript
 			}
 			else if(e is ExecutionCanceledException)
 			{
-				MessageBox.Show("Script execution was canceled by the user");
 				abort = true;
 			}
 			else // Catch anything else we didn't think about
@@ -249,9 +252,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 			}
 
 			if (abort)
-			{
 				General.Map.UndoRedo.WithdrawUndo();
-			}
 		}
 
 		public void PreRun(CancellationToken cancellationtoken)
@@ -327,14 +328,20 @@ namespace CodeImp.DoomBuilder.UDBScript
 			General.Map.Map.ClearAllMarks(false);
 
 			General.Map.Map.IsSafeToAccess = false;
+
+			// Disable all processing. Has to be done as many times as it was enabled.
+			// Save old value since after running the script we need to enable it as many times
+			oldprocessingcount = General.Interface.ProcessingCount;
+			for (int i = 0; i < oldprocessingcount; i++)
+				General.Interface.DisableProcessing();
 		}
 
 		/// <summary>
 		/// Runs the script
 		/// </summary>
-		public void Run(IProgress<int> progress, IProgress<string> status)
+		public void Run(IProgress<int> progress, IProgress<string> status, IProgress<string> log)
 		{
-			engine.SetValue("ProgressInfo", new ProgressInfo(progress, status));
+			engine.SetValue("ProgressInfo", new ProgressInfo(progress, status, log));
 			// Read the current script file
 			string script = File.ReadAllText(scriptinfo.ScriptFile);
 
@@ -358,6 +365,9 @@ namespace CodeImp.DoomBuilder.UDBScript
 			// Tell the mode that running the script ended
 			General.Editing.Mode.OnScriptRunEnd();
 
+			// Enable processing again, if required
+			for (int i = 0; i < oldprocessingcount; i++)
+				General.Interface.EnableProcessing();
 		}
 
 		#endregion

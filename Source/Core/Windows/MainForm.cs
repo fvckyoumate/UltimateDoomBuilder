@@ -180,6 +180,7 @@ namespace CodeImp.DoomBuilder.Windows
 		public StatusInfo Status { get { return status; } }
 		public static Size ScaledIconSize = new Size(16, 16); //mxd
 		public static SizeF DPIScaler = new SizeF(1.0f, 1.0f); //mxd
+		public int ProcessingCount { get { return processingcount; } }
 		
 		#endregion
 
