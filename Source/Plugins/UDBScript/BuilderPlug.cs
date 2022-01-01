@@ -622,7 +622,6 @@ namespace CodeImp.DoomBuilder.UDBScript
 
 			scriptrunner = new ScriptRunner(currentscript);
 			scriptrunnerform.ShowDialog();
-			//scriptrunner.Run();
 		}
 
 		[BeginAction("udbscriptexecuteslot1")]
@@ -670,7 +669,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 				if (scriptslots.ContainsKey(slot) && scriptslots[slot] != null)
 				{
 					scriptrunner = new ScriptRunner(scriptslots[slot]);
-					//scriptrunner.Run();
+					scriptrunnerform.ShowDialog();
 				}
 			}
 		}

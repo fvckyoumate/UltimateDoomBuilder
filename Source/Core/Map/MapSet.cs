@@ -1080,15 +1080,10 @@ namespace CodeImp.DoomBuilder.Map
 			Update(true, true);
 		}
 
-		public void Update(bool dolines, bool dosectors)
-		{
-			Update(dolines, dosectors, true);
-		}
-
 		/// <summary>
 		/// This updates the cache of all elements where needed. It is not recommended to use this version, please use Update() instead.
 		/// </summary>
-		public void Update(bool dolines, bool dosectors, bool allocatebuffers)
+		public void Update(bool dolines, bool dosectors)
 		{
 			// Update all linedefs
 			if(dolines) foreach(Linedef l in linedefs) l.UpdateCache();
@@ -1102,12 +1097,9 @@ namespace CodeImp.DoomBuilder.Map
 					s.UpdateBBox();
 				}
 
-				if (allocatebuffers)
-				{
-					General.Map.CRenderer2D.Surfaces.AllocateBuffers();
-					foreach (Sector s in sectors) s.CreateSurfaces();
-					General.Map.CRenderer2D.Surfaces.UnlockBuffers();
-				}
+				General.Map.CRenderer2D.Surfaces.AllocateBuffers();
+				foreach (Sector s in sectors) s.CreateSurfaces();
+				General.Map.CRenderer2D.Surfaces.UnlockBuffers();
 			}
 		}
 		

@@ -107,7 +107,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 		/// <returns>true if "Yes" was clicked, false if "No" was clicked</returns>
 		public bool ShowMessageYesNo(object message)
 		{
-			return (bool)BuilderPlug.Me.ScriptRunnerForm.Invoke(new Func<bool>(() =>
+			return (bool)BuilderPlug.Me.ScriptRunnerForm.InvokePaused(new Func<bool>(() =>
 			{
 				if (message == null)
 					message = string.Empty;
@@ -183,7 +183,6 @@ namespace CodeImp.DoomBuilder.UDBScript
 				{
 					if (e.Error.Type != Jint.Runtime.Types.String)
 					{
-						//MessageBox.Show("There is an error in the script in line " + e.LineNumber + ":\n\n" + e.Message + "\n\n" + e.StackTrace, "Script error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 						UDBScriptErrorForm sef = new UDBScriptErrorForm(e.Message, e.StackTrace);
 						sef.ShowDialog();
 					}
@@ -255,10 +254,13 @@ namespace CodeImp.DoomBuilder.UDBScript
 				General.Map.UndoRedo.WithdrawUndo();
 		}
 
+		/// <summary>
+		/// Sets everything up for running the script. This has to be done on the UI thread.
+		/// </summary>
+		/// <param name="cancellationtoken">Cancellation token to cancel the running script</param>
 		public void PreRun(CancellationToken cancellationtoken)
 		{
 			string importlibraryerrors;
-			//bool abort = false;
 
 			// If the script requires a higher version of UDBScript than this version ask the user if they want
 			// to execute it anyways. Remember the choice for this session if "yes" was selected.
@@ -270,17 +272,12 @@ namespace CodeImp.DoomBuilder.UDBScript
 				scriptinfo.IgnoreVersion = true;
 			}
 
-			// Read the current script file
-			//string script = File.ReadAllText(scriptinfo.ScriptFile);
-
 			// Make sure the option value gets saved if an option is currently being edited
 			BuilderPlug.Me.EndOptionEdit();
 			General.Interface.Focus();
 
-
 			// Set engine options
 			Options options = new Options();
-			//options.Constraint(new RuntimeConstraint(stopwatch));
 			options.CancellationToken(cancellationtoken);
 			options.AllowOperatorOverloading();
 			options.SetTypeResolver(new TypeResolver
@@ -353,6 +350,9 @@ namespace CodeImp.DoomBuilder.UDBScript
 			stopwatch.Stop();
 		}
 
+		/// <summary>
+		/// Cleanups and updates after the script stopped running. Has to be called from the UI thread.
+		/// </summary>
 		public void PostRun()
 		{
 			General.Map.Map.IsSafeToAccess = true;
