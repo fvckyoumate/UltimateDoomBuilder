@@ -729,7 +729,7 @@ namespace CodeImp.DoomBuilder.GZBuilder.Data
             foreach (Thing t in things)
             {
                 GZGeneral.LightData ld = t.DynamicLightType;
-                if (ld == null) continue;
+                if (ld == null || ld.LightType == GZGeneral.LightType.SUN) continue;
 
                 if (ld.LightType != GZGeneral.LightType.SPOT)
                 {

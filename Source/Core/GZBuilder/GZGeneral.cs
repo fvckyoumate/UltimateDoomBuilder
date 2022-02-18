@@ -120,6 +120,24 @@ namespace CodeImp.DoomBuilder.GZBuilder
             [LightDefClass("vavoomlightcolor")]
             VAVOOM_COLORED,
 
+            [LightDefRenderStyle(LightRenderStyle.NORMAL)]
+            [LightDefNum(9876)]
+            [LightDefClass("staticpointlight")]
+            [LightDefModifier(LightModifier.NORMAL)]
+            POINT_STATIC,
+
+            [LightDefRenderStyle(LightRenderStyle.NORMAL)]
+            [LightDefNum(9881)]
+            [LightDefClass("staticspotlight")]
+            [LightDefModifier(LightModifier.NORMAL)]
+            SPOT_STATIC,
+
+            [LightDefRenderStyle(LightRenderStyle.NONE)]
+            [LightDefNum(9890)]
+            [LightDefClass("zdraysun")]
+            [LightDefModifier(LightModifier.NORMAL)]
+            SUN,
+
             UNKNOWN
         }
 
@@ -148,7 +166,8 @@ namespace CodeImp.DoomBuilder.GZBuilder
         {
             POINT,
             SPOT,
-            VAVOOM
+            VAVOOM,
+            SUN
         }
 
         public static LightDefNum GetLightDefNum(LightDef d)
@@ -212,17 +231,22 @@ namespace CodeImp.DoomBuilder.GZBuilder
                     case LightDef.POINT_ADDITIVE:
                     case LightDef.POINT_SUBTRACTIVE:
                     case LightDef.POINT_ATTENUATED:
+                    case LightDef.POINT_STATIC:
                         LightType = LightType.POINT;
                         break;
                     case LightDef.SPOT_NORMAL:
                     case LightDef.SPOT_ADDITIVE:
                     case LightDef.SPOT_SUBTRACTIVE:
                     case LightDef.SPOT_ATTENUATED:
+                    case LightDef.SPOT_STATIC:
                         LightType = LightType.SPOT;
                         break;
                     case LightDef.VAVOOM_GENERIC:
                     case LightDef.VAVOOM_COLORED:
                         LightType = LightType.VAVOOM;
+                        break;
+                    case LightDef.SUN:
+                        LightType = LightType.SUN;
                         break;
                 }
             }

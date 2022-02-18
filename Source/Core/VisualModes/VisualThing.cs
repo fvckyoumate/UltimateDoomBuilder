@@ -668,7 +668,7 @@ namespace CodeImp.DoomBuilder.VisualModes
 		public void UpdateLight()
 		{
             lightType = thing.DynamicLightType;
-            if (lightType == null)
+            if (lightType == null || lightType.LightType == GZGeneral.LightType.SUN)
                 return;
             GZGeneral.LightData ld = lightType;
 			if (ld.LightDef != GZGeneral.LightDef.VAVOOM_GENERIC &&
