@@ -120,13 +120,13 @@ namespace CodeImp.DoomBuilder.GZBuilder
             [LightDefClass("vavoomlightcolor")]
             VAVOOM_COLORED,
 
-            [LightDefRenderStyle(LightRenderStyle.NORMAL)]
+            [LightDefRenderStyle(LightRenderStyle.STATIC)]
             [LightDefNum(9876)]
             [LightDefClass("staticpointlight")]
             [LightDefModifier(LightModifier.NORMAL)]
             POINT_STATIC,
 
-            [LightDefRenderStyle(LightRenderStyle.NORMAL)]
+            [LightDefRenderStyle(LightRenderStyle.STATIC)]
             [LightDefNum(9881)]
             [LightDefClass("staticspotlight")]
             [LightDefModifier(LightModifier.NORMAL)]
@@ -150,6 +150,7 @@ namespace CodeImp.DoomBuilder.GZBuilder
             ATTENUATED = 98,
             VAVOOM = 50,
             ADDITIVE = 25,
+            STATIC = 98, // Same as attenuated
             NONE = 0,
         }
 
