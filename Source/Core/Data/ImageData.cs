@@ -37,7 +37,8 @@ namespace CodeImp.DoomBuilder.Data
 	public abstract unsafe class ImageData : IDisposable
 	{
 		#region ================== Constants
-		
+
+		public const int TEXTURE_INDEXED = 1;
 		#endregion
 		
 		#region ================== Variables
@@ -54,13 +55,14 @@ namespace CodeImp.DoomBuilder.Data
 		protected string shortname; //mxd. Name in uppercase and clamped to DataManager.CLASIC_IMAGE_NAME_LENGTH
 		protected string virtualname; //mxd. Path of this name is used in TextureBrowserForm
 		protected string displayname; //mxd. Name to display in TextureBrowserForm
-		protected bool isFlat; //mxd. If false, it's a texture
 		protected bool istranslucent; //mxd. If true, has pixels with alpha > 0 && < 255 
 		protected bool ismasked; //mxd. If true, has pixels with zero alpha
 		protected bool hasLongName; //mxd. Texture name is longer than DataManager.CLASIC_IMAGE_NAME_LENGTH
 		protected bool hasPatchWithSameName; //mxd
 		protected int namewidth; // biwa
 		protected int shortnamewidth; // biwa
+		protected bool wantIndexed; // volte
+		protected TextureNamespace texturenamespace;
 
 		//mxd. Hashing
 		private static int hashcounter;
@@ -78,6 +80,7 @@ namespace CodeImp.DoomBuilder.Data
 
         // GDI bitmap
         private Bitmap loadedbitmap;
+        private Bitmap uncorrectedbitmap;
         private Bitmap previewbitmap;
         private Bitmap spritepreviewbitmap;
 
@@ -85,6 +88,7 @@ namespace CodeImp.DoomBuilder.Data
         private int mipmaplevels;	// 0 = all mipmaps
 		protected bool dynamictexture;
 		private Texture texture;
+		private Texture indexedTexture;
 		
 		// Disposing
 		protected bool isdisposed;
@@ -99,13 +103,14 @@ namespace CodeImp.DoomBuilder.Data
 		public string FilePathName { get { return filepathname; } } //mxd
 		public string VirtualName { get { return virtualname; } } //mxd
 		public string DisplayName { get { return displayname; } } //mxd
-		public bool IsFlat { get { return isFlat; } } //mxd
+		public TextureNamespace TextureNamespace { get { return texturenamespace; } }
 		public bool IsTranslucent { get { return istranslucent; } } //mxd
 		public bool IsMasked { get { return ismasked; } } //mxd
 		public bool HasPatchWithSameName { get { return hasPatchWithSameName; } } //mxd
 		internal bool HasLongName { get { return hasLongName; } } //mxd
 		public bool UseColorCorrection { get { return usecolorcorrection; } set { usecolorcorrection = value; } }
-		public Texture Texture { get { return GetTexture(); } }
+		public Texture Texture { get { return GetTexture(false); } }
+		public Texture IndexedTexture { get { return GetTexture(true); } }
 		public bool IsPreviewLoaded
         {
             get
@@ -174,10 +179,13 @@ namespace CodeImp.DoomBuilder.Data
                 // Clean up
                 loadedbitmap?.Dispose();
                 previewbitmap?.Dispose();
+                uncorrectedbitmap?.Dispose();
                 spritepreviewbitmap?.Dispose();
                 texture?.Dispose();
+                indexedTexture?.Dispose();
                 loadedbitmap = null;
                 previewbitmap = null;
+                uncorrectedbitmap = null;
                 spritepreviewbitmap = null;
 				texture = null;
 					
@@ -300,6 +308,7 @@ namespace CodeImp.DoomBuilder.Data
             // Do the loading
             LocalLoadResult loadResult = LocalLoadImage();
 
+            MakeUncorrectedImage(loadResult);
             ConvertImageFormat(loadResult, usecolorcorrection);
             MakeImagePreview(loadResult);
             MakeAlphaTestImage(loadResult);
@@ -310,6 +319,8 @@ namespace CodeImp.DoomBuilder.Data
             {
                 loadResult.bitmap?.Dispose();
                 loadResult.bitmap = null;
+                loadResult.uncorrected?.Dispose();
+                loadResult.uncorrected = null;
                 onlyPreview = true;
             }
 
@@ -329,9 +340,12 @@ namespace CodeImp.DoomBuilder.Data
                     }
 
                     loadedbitmap?.Dispose();
+                    uncorrectedbitmap?.Dispose();
                     texture?.Dispose();
+                    indexedTexture?.Dispose();
                     imagestate = ImageLoadState.Ready;
                     loadedbitmap = loadResult.bitmap;
+                    uncorrectedbitmap = loadResult.uncorrected;
                     alphatest = loadResult.alphatest;
                     alphatestWidth = loadResult.alphatestWidth;
                     alphatestHeight = loadResult.alphatestHeight;
@@ -384,6 +398,7 @@ namespace CodeImp.DoomBuilder.Data
 
             public Bitmap bitmap;
             public Bitmap preview;
+            public Bitmap uncorrected;
             public BitArray alphatest;
             public int alphatestWidth;
             public int alphatestHeight;
@@ -588,6 +603,14 @@ namespace CodeImp.DoomBuilder.Data
         // Dimensions of a single preview image
         const int MAX_PREVIEW_SIZE = 256; //mxd
 
+        // This makes a copy of the image before color correction
+        private void MakeUncorrectedImage(LocalLoadResult loadResult)
+        {
+	        if (loadResult.bitmap == null)
+		        return;
+	        loadResult.uncorrected = new Bitmap(loadResult.bitmap);
+        }
+
         // This makes a preview for the given image and updates the image settings
         private void MakeImagePreview(LocalLoadResult loadResult)
         {
@@ -676,30 +699,81 @@ namespace CodeImp.DoomBuilder.Data
 			loadResult.bitmap.UnlockBits(bmpdata);
 		}
 
-		Texture GetTexture()
+		Texture GetTexture(bool indexed = false)
 		{
-            if (texture != null)
-                return texture;
-            else if (imagestate == ImageLoadState.Loading)
-                return General.Map.Data.LoadingTexture;
-            else if (loadfailed)
-                return General.Map.Data.FailedTexture;
+			if (indexed && indexedTexture != null)
+				return indexedTexture;
+			if (!indexed && texture != null)
+          return texture;
 
-            if (imagestate == ImageLoadState.None)
-            {
-                General.Map.Data.QueueLoadImage(this);
-                return General.Map.Data.LoadingTexture;
-            }
+			if (indexed && !wantIndexed)
+			{
+				// indexed texture requested, but we didn't generate it, so we have to reload the image
+				ReleaseTexture();
+				imagestate = ImageLoadState.None;
+				wantIndexed = true;
+			}
+			
+			if (imagestate == ImageLoadState.Loading)
+          return General.Map.Data.LoadingTexture;
+      if (loadfailed)
+          return General.Map.Data.FailedTexture;
+      
+      if (imagestate == ImageLoadState.None)
+      {
+	      General.Map.Data.QueueLoadImage(this);
+        return General.Map.Data.LoadingTexture;
+      }
+      
+      if (loadedbitmap == null)
+      {
+	      return General.Map.Data.LoadingTexture;
+      }
+      
+      if (wantIndexed)
+      {
+	      Bitmap indexedBitmap = CreateIndexedBitmap(uncorrectedbitmap, General.Map.Data.Palette);
+	      indexedTexture = new Texture(General.Map.Graphics, indexedBitmap);
+	      indexedTexture.UserData = TEXTURE_INDEXED;
+      }
+      
+      texture = new Texture(General.Map.Graphics, loadedbitmap);
 
-            texture = new Texture(General.Map.Graphics, loadedbitmap);
-
-            loadedbitmap.Dispose();
-            loadedbitmap = null;
+      loadedbitmap.Dispose();
+      loadedbitmap = null;
+      uncorrectedbitmap.Dispose();
+      uncorrectedbitmap = null;
 
 #if DEBUG
 			texture.Tag = name; //mxd. Helps with tracking undisposed resources...
 #endif
-            return texture;
+			
+      return indexed ? indexedTexture : texture;
+		}
+
+		Bitmap CreateIndexedBitmap(Bitmap original, Playpal palette)
+		{
+			int[] indices = new int[original.Width * original.Height];
+			
+			Bitmap indexed = new Bitmap(original.Width, original.Height, PixelFormat.Format32bppArgb);
+			BitmapData indata = original.LockBits(new Rectangle(0, 0, original.Size.Width, original.Size.Height), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+			PixelColor* inpixels = (PixelColor*)indata.Scan0.ToPointer();
+			General.Colors.QuantizeColorsToPlaypal(inpixels, indices, palette);
+
+			BitmapData outdata = indexed.LockBits(new Rectangle(0, 0, indexed.Size.Width, indexed.Size.Height), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
+			PixelColor *outpixels = (PixelColor*)outdata.Scan0.ToPointer();
+			for (int i = 0; i < indices.Length; i++)
+			{
+				outpixels[i].r = (byte)indices[i];
+				outpixels[i].g = 0;
+				outpixels[i].b = 0;
+				outpixels[i].a = inpixels[i].a;
+			}
+			
+			original.UnlockBits(indata);
+			indexed.UnlockBits(outdata);
+
+			return indexed;
 		}
 
 		// This updates a dynamic texture
@@ -718,6 +792,8 @@ namespace CodeImp.DoomBuilder.Data
 		{
 			texture?.Dispose();
 			texture = null;
+			indexedTexture?.Dispose();
+			indexedTexture = null;
 		}
 
 		// This returns a preview image

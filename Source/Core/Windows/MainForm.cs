@@ -159,6 +159,8 @@ namespace CodeImp.DoomBuilder.Windows
 
 		//mxd. Misc drawing
 		private Graphics graphics;
+
+		private CommandPaletteControl commandpalette;
 		
 		#endregion
 
@@ -180,6 +182,7 @@ namespace CodeImp.DoomBuilder.Windows
 		public StatusInfo Status { get { return status; } }
 		public static Size ScaledIconSize = new Size(16, 16); //mxd
 		public static SizeF DPIScaler = new SizeF(1.0f, 1.0f); //mxd
+		public int ProcessingCount { get { return processingcount; } }
 		
 		#endregion
 
@@ -214,6 +217,10 @@ namespace CodeImp.DoomBuilder.Windows
 				xposlabel.Width = (int)Math.Round(xposlabel.Width * DPIScaler.Width);
 				yposlabel.Width = (int)Math.Round(yposlabel.Width * DPIScaler.Width);
 				warnsLabel.Width = (int)Math.Round(warnsLabel.Width * DPIScaler.Width);
+
+				thingfilters.Size = new Size((int)(120 * DPIScaler.Width), (int)(22 * DPIScaler.Height));
+				linedefcolorpresets.Size = new Size((int)(120 * DPIScaler.Width), (int)(22 * DPIScaler.Height));
+				configlabel.Size = new Size((int)(280 * DPIScaler.Width), (int)(18 * DPIScaler.Height));
 			}
 
 			pluginbuttons = new List<PluginToolbarButton>();
@@ -460,11 +467,28 @@ namespace CodeImp.DoomBuilder.Windows
 			
 			this.Update();
 		}
-		
+
+		// We're doing it in EndAction because it'll otherwise screw with the stored keys
+		[EndAction("opencommandpalette")]
+		public void OpenCommandPalette()
+		{
+			if (commandpalette == null)
+			{
+				// We have to add the command palette control manually because trying to use the designer will make the form explode
+				commandpalette = new CommandPaletteControl();
+				Controls.Add(commandpalette);
+
+				// Send it somewhere to the background
+				Controls.SetChildIndex(commandpalette, 0xffff);
+			}
+
+			commandpalette.MakeVisible();
+		}
+
 		#endregion
-		
+
 		#region ================== Window
-		
+
 		// This locks the window for updating
 		internal void LockUpdate()
 		{
@@ -522,10 +546,11 @@ namespace CodeImp.DoomBuilder.Windows
 				if(General.AutoLoadMap != null)
 				{
 					Configuration mapsettings;
-					
+
 					// Try to find existing options in the settings file
-					string dbsfile = General.AutoLoadFile.Substring(0, General.AutoLoadFile.Length - 4) + ".dbs";
-					if(File.Exists(dbsfile))
+					//string dbsfile = General.AutoLoadFile.Substring(0, General.AutoLoadFile.Length - 4) + ".dbs";
+					string dbsfile = Path.ChangeExtension(General.AutoLoadFile, "dbs");
+					if (File.Exists(dbsfile))
 						try { mapsettings = new Configuration(dbsfile, true); }
 						catch(Exception) { mapsettings = new Configuration(true); }
 					else
@@ -533,8 +558,13 @@ namespace CodeImp.DoomBuilder.Windows
 
 					//mxd. Get proper configuration file
 					bool longtexturenamessupported = false;
-					string configfile = General.AutoLoadConfig;
-					if(string.IsNullOrEmpty(configfile)) configfile = mapsettings.ReadSetting("gameconfig", "");
+					string configfile = null;
+
+					// Make sure the config file exists
+					if(General.GetConfigurationInfo(General.AutoLoadConfig) != null)
+						configfile = General.AutoLoadConfig;
+
+					if (string.IsNullOrEmpty(configfile)) configfile = mapsettings.ReadSetting("gameconfig", "");
 					if(configfile.Trim().Length == 0)
 					{
 						showdialog = true;
@@ -1157,7 +1187,7 @@ namespace CodeImp.DoomBuilder.Windows
 			{
 				General.Plugins.OnEditMouseEnter(e);
 				General.Editing.Mode.OnMouseEnter(e);
-				if(Application.OpenForms.Count == 1 || editformopen) display.Focus(); //mxd
+				if((Application.OpenForms.Count == 1 || editformopen) && (commandpalette == null ? true : !commandpalette.Visible)) display.Focus(); //mxd
 			}
 		}
 
@@ -1352,22 +1382,26 @@ namespace CodeImp.DoomBuilder.Windows
 			if(alt) mod |= (int)Keys.Alt;
 			if(shift) mod |= (int)Keys.Shift;
 			if(ctrl) mod |= (int)Keys.Control;
-			
-			// Scrollwheel up?
-			if(e.Delta > 0)
+
+			// Only send key events when the main window can be focused (i.e. no modal dialogs are open)
+			if (CanFocus)
 			{
-				// Invoke actions for scrollwheel
-				//for(int i = 0; i < e.Delta; i += 120)
-				General.Actions.KeyPressed((int)SpecialKeys.MScrollUp | mod);
-				General.Actions.KeyReleased((int)SpecialKeys.MScrollUp | mod);
-			}
-			// Scrollwheel down?
-			else if(e.Delta < 0)
-			{
-				// Invoke actions for scrollwheel
-				//for(int i = 0; i > e.Delta; i -= 120)
-				General.Actions.KeyPressed((int)SpecialKeys.MScrollDown | mod);
-				General.Actions.KeyReleased((int)SpecialKeys.MScrollDown | mod);
+				// Scrollwheel up?
+				if (e.Delta > 0)
+				{
+					// Invoke actions for scrollwheel
+					//for(int i = 0; i < e.Delta; i += 120)
+					General.Actions.KeyPressed((int)SpecialKeys.MScrollUp | mod);
+					General.Actions.KeyReleased((int)SpecialKeys.MScrollUp | mod);
+				}
+				// Scrollwheel down?
+				else if (e.Delta < 0)
+				{
+					// Invoke actions for scrollwheel
+					//for(int i = 0; i > e.Delta; i -= 120)
+					General.Actions.KeyPressed((int)SpecialKeys.MScrollDown | mod);
+					General.Actions.KeyReleased((int)SpecialKeys.MScrollDown | mod);
+				}
 			}
 			
 			// Let the base know
@@ -1415,7 +1449,7 @@ namespace CodeImp.DoomBuilder.Windows
 			if(alt) mod |= (int)Keys.Alt;
 			if(shift) mod |= (int)Keys.Shift;
 			if(ctrl) mod |= (int)Keys.Control;
-			
+
 			// Don't process any keys when they are meant for other input controls
 			if((e.KeyData != Keys.None) && ((ActiveControl == null) || (ActiveControl == display)))
 			{
@@ -1471,7 +1505,7 @@ namespace CodeImp.DoomBuilder.Windows
 		private void MainForm_KeyUp(object sender, KeyEventArgs e)
 		{
 			int mod = 0;
-			
+
 			// Keep key modifiers
 			alt = e.Alt;
 			shift = e.Shift;
@@ -2159,6 +2193,7 @@ namespace CodeImp.DoomBuilder.Windows
 			buttonsplitjoinedsectors.Checked = General.Settings.SplitJoinedSectors; //mxd
 			buttonautoclearsidetextures.Visible = General.Settings.ToolbarGeometry && maploaded; //mxd
 			buttontest.Visible = General.Settings.ToolbarTesting && maploaded;
+			buttontoggleclassicrendering.Visible = General.Settings.ToolbarViewModes && maploaded;
 
 			//mxd
 			modelrendermode.Visible = General.Settings.GZToolbarGZDoom && maploaded;
@@ -2325,6 +2360,7 @@ namespace CodeImp.DoomBuilder.Windows
 				
 				buttontogglefog.Checked = General.Settings.GZDrawFog;
 				buttontogglesky.Checked = General.Settings.GZDrawSky;
+				buttontoggleclassicrendering.Checked = General.Settings.ClassicRendering;
 				buttontoggleeventlines.Checked = General.Settings.GZShowEventLines;
 				buttontogglevisualvertices.Visible = General.Map.UDMF;
 				buttontogglevisualvertices.Checked = General.Settings.GZShowVisualVertices;
@@ -2944,6 +2980,19 @@ namespace CodeImp.DoomBuilder.Windows
 			// Redraw display to show changes
 			RedrawDisplay();
 		}
+		
+		//mxd. Action to toggle fixed things scale
+		[BeginAction("togglealwaysshowvertices")]
+		internal void ToggleAlwaysShowVertices()
+		{
+			General.Settings.AlwaysShowVertices = !General.Settings.AlwaysShowVertices;
+			itemtogglealwaysshowvertices.Checked = General.Settings.AlwaysShowVertices;
+			
+			DisplayStatus(StatusType.Action, "Always show vertices is " + (General.Settings.AlwaysShowVertices ? "ENABLED" : "DISABLED"));
+
+			// Redraw display to show changes
+			RedrawDisplay();
+		}
 
 		// Action to toggle snap to grid
 		[BeginAction("togglesnap")]
@@ -3136,6 +3185,7 @@ namespace CodeImp.DoomBuilder.Windows
 			itemtogglefixedthingsscale.Checked = General.Settings.FixedThingsScale; //mxd
 			itemtogglefog.Checked = General.Settings.GZDrawFog;
 			itemtogglesky.Checked = General.Settings.GZDrawSky;
+			itemtoggleclassicrendering.Checked = General.Settings.ClassicRendering;
 			itemtoggleeventlines.Checked = General.Settings.GZShowEventLines;
 			itemtogglevisualverts.Visible = (General.Map != null && General.Map.UDMF);
 			itemtogglevisualverts.Checked = General.Settings.GZShowVisualVertices;
@@ -3206,6 +3256,20 @@ namespace CodeImp.DoomBuilder.Windows
 			buttontogglesky.Checked = General.Settings.GZDrawSky;
 
 			General.MainWindow.DisplayStatus(StatusType.Action, "Sky rendering is " + (General.Settings.GZDrawSky ? "ENABLED" : "DISABLED"));
+			General.MainWindow.RedrawDisplay();
+			General.MainWindow.UpdateGZDoomPanel();
+		}
+		
+		//mxd
+		[BeginAction("toggleclassicrendering")]
+		internal void ToggleClassicRendering()
+		{
+			General.Settings.ClassicRendering = !General.Settings.ClassicRendering;
+
+			itemtoggleclassicrendering.Checked = General.Settings.ClassicRendering;
+			buttontoggleclassicrendering.Checked = General.Settings.ClassicRendering;
+
+			General.MainWindow.DisplayStatus(StatusType.Action, "Classic rendering is " + (General.Settings.ClassicRendering ? "ENABLED" : "DISABLED"));
 			General.MainWindow.RedrawDisplay();
 			General.MainWindow.UpdateGZDoomPanel();
 		}
@@ -4394,7 +4458,7 @@ namespace CodeImp.DoomBuilder.Windows
                     OnMouseHWheel(delta);
 					m.Result = new IntPtr(delta);
 					break;
-					
+
 				default:
 					// Let the base handle the message
 					base.WndProc(ref m);

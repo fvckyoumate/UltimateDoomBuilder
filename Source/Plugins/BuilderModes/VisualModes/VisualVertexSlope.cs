@@ -314,6 +314,13 @@ namespace CodeImp.DoomBuilder.VisualModes
 				}
 			}
 
+			// Can't pivot around itself
+			if (pivothandle == this)
+			{
+				General.Interface.DisplayStatus(Windows.StatusType.Warning, "Slope handle to modify can't be the same as the pivot handle");
+				return;
+			}
+
 			// User didn't set a pivot handle, try to find the smart pivot handle
 			if (pivothandle == null)
 				pivothandle = GetSmartPivotHandle();
@@ -321,10 +328,6 @@ namespace CodeImp.DoomBuilder.VisualModes
 			// Still no pivot handle, cancle
 			if (pivothandle == null)
 				return;
-
-			mode.CreateUndo("Change slope");
-
-			Plane originalplane = level.plane;
 
 			Vector3D p1, p2, p3;
 
@@ -336,18 +339,27 @@ namespace CodeImp.DoomBuilder.VisualModes
 				p3 = pivothandle.GetPivotPoint();
 				Vector2D perp = new Line2D(vertex.Position, p3).GetPerpendicular();
 
-				p1 = new Vector3D(vertex.Position, originalplane.GetZ(vertex.Position) + amount);
-				p2 = new Vector3D(vertex.Position + perp, originalplane.GetZ(vertex.Position + perp) + amount);
+				p1 = new Vector3D(vertex.Position, level.plane.GetZ(vertex.Position) + amount);
+				p2 = new Vector3D(vertex.Position + perp, level.plane.GetZ(vertex.Position + perp) + amount);
 			}
 			else // VisualSidedefSlope
 			{
 				List<Vector3D> pivotpoints = ((VisualSidedefSlope)pivothandle).GetPivotPoints();
-				p1 = new Vector3D(vertex.Position, originalplane.GetZ(vertex.Position) + amount);
+				p1 = new Vector3D(vertex.Position, level.plane.GetZ(vertex.Position) + amount);
 				p2 = pivotpoints[0];
 				p3 = pivotpoints[1];
 			}
 
 			Plane plane = new Plane(p1, p2, p3, true);
+
+			// Completely vertical planes are not possible
+			if (Math.Abs(plane.a) == 1.0 || Math.Abs(plane.b) == 1.0)
+			{
+				General.Interface.DisplayStatus(Windows.StatusType.Warning, "Resulting plane is completely vertical, which is impossible. Aborting");
+				return;
+			}
+
+			mode.CreateUndo("Change slope");
 
 			// Apply slope to surfaces
 			foreach (SectorLevel l in levels)
@@ -355,6 +367,70 @@ namespace CodeImp.DoomBuilder.VisualModes
 
 			mode.SetActionResult("Changed slope.");
 		}
+
+		public override void OnSelectEnd()
+		{
+			// The base's OnSelectEnd might not change the selection status if the user tries to select
+			// a pivot handle, so we have to check if the selection status changed
+			bool oldselected = selected;
+
+			base.OnSelectEnd();
+
+			if (selected != oldselected && BuilderPlug.Me.SelectAdjacentVisualVertexSlopeHandles)
+			{
+				HashSet<Sector> sectors = new HashSet<Sector>();
+
+				// Get the z position of this vertex slope handle. By comparing the t position of
+				// other vertex slope handles we can find the ones that are really adjacent, since
+				// there can be many vertex slope handles on one vertex on different heights especially 
+				// with 3D floors. The rounding is done since there can be the tiniest differences in
+				// the planes, which lead to different z positions even when they are the "same".
+				double z = Math.Round(level.plane.GetZ(vertex.Position), 5);
+
+				// Get all sectors around the this slope handle's vertex
+				foreach (Linedef ld in vertex.Linedefs)
+				{
+					if (ld.Front != null)
+						sectors.Add(ld.Front.Sector);
+					if (ld.Back != null)
+						sectors.Add(ld.Back.Sector);
+				}
+
+				foreach (Sector s in sectors)
+				{
+					foreach (VisualVertexSlope vs in mode.VertexSlopeHandles[s])
+					{
+						if (vs.vertex != vertex || vs == this)
+							continue;
+
+						// See above for the explanation of the rounding
+						double z1 = Math.Round(vs.level.plane.GetZ(vertex.Position), 5);
+
+						if (z == z1)
+						{
+							if (selected)
+							{
+								if (!vs.selected)
+								{
+									vs.selected = true;
+									mode.AddSelectedObject(vs);
+									mode.UsedSlopeHandles.Add(vs);
+								}
+							}
+							else
+							{
+								if (vs.selected)
+								{
+									vs.selected = false;
+									mode.RemoveSelectedObject(vs);
+									mode.UsedSlopeHandles.Remove(vs);
+								}
+							}
+						}
+					}
+				}
+			}
+		} 
 
 		#endregion
 	}

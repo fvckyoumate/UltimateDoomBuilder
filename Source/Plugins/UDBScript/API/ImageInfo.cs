@@ -28,7 +28,7 @@ using CodeImp.DoomBuilder.UDBScript.Wrapper;
 
 #endregion
 
-namespace CodeImp.DoomBuilder.UDBScript.API
+namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 {
 	struct ImageInfo
 	{
@@ -96,7 +96,7 @@ namespace CodeImp.DoomBuilder.UDBScript.API
 			_width = image.Width;
 			_height = image.Height;
 			_scale = new Vector2DWrapper(image.Scale);
-			_isflat = image.IsFlat;
+			_isflat = image.TextureNamespace == TextureNamespace.FLAT;
 		}
 
 		#endregion

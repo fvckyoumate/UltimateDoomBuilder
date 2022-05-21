@@ -146,6 +146,11 @@ namespace CodeImp.DoomBuilder.Config
 		private bool dynamicgridsize;
 		private int ignoredremoterevision;
 		
+		//volte
+		private bool classicRendering;
+		private bool flatShadeVertices;
+		private bool alwaysShowVertices;
+		
 		// These are not stored in the configuration, only used at runtime
 		private int defaultbrightness;
 		private int defaultfloorheight;
@@ -270,6 +275,13 @@ namespace CodeImp.DoomBuilder.Config
 		public bool RenderGrid { get { return rendergrid; } internal set { rendergrid = value; } } //mxd
 		public bool DynamicGridSize { get { return dynamicgridsize; } internal set { dynamicgridsize = value; } } //mxd
 		internal int IgnoredRemoteRevision { get { return ignoredremoterevision; } set { ignoredremoterevision = value; } } //mxd
+		
+		//volte
+		public bool ClassicRendering { get { return classicRendering; } internal set { classicRendering = value; } }
+
+		public bool FlatShadeVertices {  get { return flatShadeVertices; } internal set { flatShadeVertices = value;  } }
+
+		public bool AlwaysShowVertices {  get { return alwaysShowVertices; } internal set { alwaysShowVertices = value; } }
 
 		//mxd. Left here for compatibility reasons...
 		public string DefaultTexture { get { return General.Map != null ? General.Map.Options.DefaultWallTexture : "-"; } set { if(General.Map != null) General.Map.Options.DefaultWallTexture = value; } }
@@ -404,6 +416,11 @@ namespace CodeImp.DoomBuilder.Config
 				dynamicgridsize = cfg.ReadSetting("dynamicgridsize", true); //mxd
 				ignoredremoterevision = cfg.ReadSetting("ignoredremoterevision", 0); //mxd
 
+				// volte
+				classicRendering = cfg.ReadSetting("classicrendering", false);
+				alwaysShowVertices = cfg.ReadSetting("alwaysshowvertices", true);
+				flatShadeVertices = cfg.ReadSetting("flatshadevertices", false);
+				
 				//mxd. Sector defaults
 				defaultceilheight = cfg.ReadSetting("defaultceilheight", 128);
 				defaultfloorheight = cfg.ReadSetting("defaultfloorheight", 0);
@@ -544,6 +561,11 @@ namespace CodeImp.DoomBuilder.Config
 			cfg.WriteSetting("dynamicgridsize", dynamicgridsize); //mxd
 			cfg.WriteSetting("ignoredremoterevision", ignoredremoterevision); //mxd
 
+			//volte
+			cfg.WriteSetting("classicrendering", classicRendering);
+			cfg.WriteSetting("alwaysshowvertices", alwaysShowVertices);
+			cfg.WriteSetting("flatshadevertices", flatShadeVertices);
+			
 			//mxd. Sector defaults
 			cfg.WriteSetting("defaultceilheight", defaultceilheight);
 			cfg.WriteSetting("defaultfloorheight", defaultfloorheight);

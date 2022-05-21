@@ -51,7 +51,6 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		// Object picking
 		private const long PICK_INTERVAL = 80;
 		private const long PICK_INTERVAL_PAINT_SELECT = 10; // biwa
-		private const float PICK_RANGE = 0.98f;
 
 		// Gravity
 		private const float GRAVITY = -0.06f;
@@ -1615,6 +1614,8 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		// This draws a frame
 		public override void OnRedrawDisplay()
 		{
+			renderer.SetClassicLightingColorMap(General.Map.Data.MainColorMap);
+
 			// Start drawing
 			if(renderer.Start())
 			{
@@ -2719,9 +2720,33 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			PostAction();
 	    }
 
+		[BeginAction("raisemapelementbygridsize")]
+		public void RaiseMapElementByGridSize()
+		{
+			PreAction(UndoGroup.SectorHeightChange);
+			List<IVisualEventReceiver> objs = GetSelectedObjects(true, true, true, true, true);
+			bool hasvisualslopehandles = objs.Any(o => o is VisualSlope);
+			foreach (IVisualEventReceiver i in objs) // If slope handles are selected only apply the action to them
+				if (!hasvisualslopehandles || (hasvisualslopehandles && i is VisualSlope))
+					i.OnChangeTargetHeight(General.Map.Grid.GridSize);
+			PostAction();
+		}
 
-        //mxd
-        [BeginAction("raisesectortonearest")]
+		[BeginAction("lowermapelementbygridsize")]
+		public void LowerMapElementByGridSize()
+		{
+			PreAction(UndoGroup.SectorHeightChange);
+			List<IVisualEventReceiver> objs = GetSelectedObjects(true, true, true, true, true);
+			bool hasvisualslopehandles = objs.Any(o => o is VisualSlope);
+			foreach (IVisualEventReceiver i in objs) // If slope handles are selected only apply the action to them
+				if (!hasvisualslopehandles || (hasvisualslopehandles && i is VisualSlope))
+					i.OnChangeTargetHeight(-General.Map.Grid.GridSize);
+			PostAction();
+		}
+
+
+		//mxd
+		[BeginAction("raisesectortonearest")]
 		public void RaiseSectorToNearest() 
 		{
 			List<VisualSidedefSlope> selectedhandles = GetSelectedSlopeHandles();
@@ -3825,8 +3850,11 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			List<IVisualEventReceiver> objs = GetSelectedObjects(true, true, true, true, false);
             foreach (IVisualEventReceiver i in objs)
             {
-                if (i is BaseVisualThing)
-                    visiblethings.Remove((BaseVisualThing)i); // [ZZ] if any
+				if (i is BaseVisualThing)
+				{
+					visiblethings.Remove((BaseVisualThing)i); // [ZZ] if any
+					allthings.Remove(((BaseVisualThing)i).Thing);
+				}
                 i.OnDelete();
             }
             PostAction();
@@ -4469,6 +4497,20 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			}
 		}
 
+		[BeginAction("togglevisualvertexslopeadjacentselection")]
+		public void ToggleVisualVertexSlopeAdjacentSelection()
+		{
+			if (!General.Map.UDMF)
+			{
+				General.Interface.DisplayStatus(StatusType.Warning, "Visual sloping is supported in UDMF only!");
+				return;
+			}
+
+			BuilderPlug.Me.SelectAdjacentVisualVertexSlopeHandles = !BuilderPlug.Me.SelectAdjacentVisualVertexSlopeHandles;
+
+			General.Interface.DisplayStatus(StatusType.Action, "Adjacant selection of visual vertex slop handles is " + (BuilderPlug.Me.SelectAdjacentVisualVertexSlopeHandles ? "ENABLED" : "DISABLED"));
+		}
+
 
 		[BeginAction("resetslope")]
 		public void ResetSlope()
@@ -4670,6 +4712,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			{
 				t.Rotate(General.Map.VisualCamera.AngleXY - Angle2D.PI);
 				t.SetPitch((int)Angle2D.RadToDeg(General.Map.VisualCamera.AngleZ - Angle2D.PI));
+				((BaseVisualThing)allthings[t]).Rebuild();
 			}
 		}
 

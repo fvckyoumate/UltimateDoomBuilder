@@ -66,6 +66,8 @@ namespace CodeImp.DoomBuilder.BuilderModes
 
 		public override object HighlightedObject { get { return highlighted; } }
 
+		public override bool AlwaysShowVertices { get { return true;  } }
+
 		#endregion
 
 		#region ================== Constructor / Disposer
@@ -759,7 +761,17 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			
 			return base.OnCopyBegin();
 		}
-		
+
+		/// <summary>
+		/// If map elements have changed the blockmap needs to be recreated.
+		/// </summary>
+		public override void OnMapElementsChanged()
+		{
+			base.OnMapElementsChanged();
+
+			CreateBlockmap();
+		}
+
 		#endregion
 
 		#region ================== Actions

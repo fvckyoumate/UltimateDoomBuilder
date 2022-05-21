@@ -144,6 +144,7 @@ namespace CodeImp.DoomBuilder
         internal const int WM_UIACTION = WM_USER + 1;
 		internal const int WM_SYSCOMMAND = 0x112;
         internal const int WM_MOUSEHWHEEL = 0x020E; // [ZZ]
+		internal const int WM_MOUSEWHEEL = 0x20A;
         internal const int SC_KEYMENU = 0xF100;
 		internal const int CB_SETITEMHEIGHT = 0x153;
 		//internal const int CB_SHOWDROPDOWN = 0x14F;
@@ -830,7 +831,7 @@ namespace CodeImp.DoomBuilder
 				else if(string.Compare(curarg, "-MAP", true) == 0)
 				{
 					// Store next arg as map name information
-					autoloadmap = argslist.Dequeue();
+					autoloadmap = argslist.Dequeue()?.ToUpperInvariant();
 				}
 				// Config name info?
 				else if((string.Compare(curarg, "-CFG", true) == 0) ||

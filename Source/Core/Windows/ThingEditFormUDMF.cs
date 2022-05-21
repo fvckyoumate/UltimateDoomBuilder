@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 using CodeImp.DoomBuilder.Config;
 using CodeImp.DoomBuilder.Controls;
@@ -329,6 +330,18 @@ namespace CodeImp.DoomBuilder.Windows
 				thingprops.Add(new ThingProperties(t));
 			}
 
+			// Remove unused thing type specific fields
+			foreach(UniversalFieldInfo ufi in  General.Map.Config.ThingFields)
+			{
+				if (!ufi.ThingTypeSpecific)
+					continue;
+
+				if(!things.Any(t => { ThingTypeInfo tti = General.Map.Data.GetThingInfoEx(t.Type); return (tti != null && tti.HasAddUniversalField(ufi.Name)); }))
+				{
+					fieldslist.RemoveField(ufi.Name);
+				}
+			}
+
 			preventchanges = false;
 
 			//mxd. Update "Reset" button
@@ -571,9 +584,10 @@ namespace CodeImp.DoomBuilder.Windows
 				if (ti != null && ti.Actor != null)
 				{
 					Dictionary<string, UniversalType> uservars = ti.Actor.GetAllUserVars();
+					Dictionary<string, object> uservardefaults = ti.Actor.GetAllUserVarDefaults();
 
 					if(uservars.Count > 0)
-						fieldslist.ApplyUserVars(uservars, t.Fields);
+						fieldslist.ApplyUserVars(uservars, uservardefaults, t.Fields);
 				}
 
 				color.ApplyTo(t.Fields, t.Fields.GetValue("fillcolor", 0));

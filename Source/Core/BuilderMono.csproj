@@ -177,6 +177,12 @@
     <Compile Include="Controls\ArgumentBox.Designer.cs">
       <DependentUpon>ArgumentBox.cs</DependentUpon>
     </Compile>
+    <Compile Include="Controls\CommandPaletteControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\CommandPaletteControl.Designer.cs">
+      <DependentUpon>CommandPaletteControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="Controls\ExternalCommandControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -188,6 +194,12 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Controls\Scripting\TextEditorControl.cs" />
+    <Compile Include="Controls\SidedefPartLightControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\SidedefPartLightControl.Designer.cs">
+      <DependentUpon>SidedefPartLightControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="Controls\TransparentTrackBar.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -206,6 +218,7 @@
     <Compile Include="Controls\Scripting\ScriptLumpDocumentTab.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Data\ColorMap.cs" />
     <Compile Include="Data\DirectoryReader.cs" />
     <Compile Include="Data\FileImage.cs" />
     <Compile Include="Data\FlatImage.cs" />
@@ -654,11 +667,17 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Controls\CommandPaletteControl.resx">
+      <DependentUpon>CommandPaletteControl.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Controls\ExternalCommandControl.resx">
       <DependentUpon>ExternalCommandControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Controls\PairedFloatControl.resx">
       <DependentUpon>PairedFloatControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\SidedefPartLightControl.resx">
+      <DependentUpon>SidedefPartLightControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Windows\PreAndPostCommandsForm.resx">
       <DependentUpon>PreAndPostCommandsForm.cs</DependentUpon>

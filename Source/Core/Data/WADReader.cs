@@ -26,6 +26,7 @@ using CodeImp.DoomBuilder.Config;
 using CodeImp.DoomBuilder.Data.Scripting;
 using CodeImp.DoomBuilder.GZBuilder.Data;
 using CodeImp.DoomBuilder.IO;
+using CodeImp.DoomBuilder.Rendering;
 using CodeImp.DoomBuilder.ZDoom;
 
 #endregion
@@ -308,6 +309,21 @@ namespace CodeImp.DoomBuilder.Data
 			return null; // No palette
 		}
 
+		public override ColorMap LoadMainColorMap(Playpal palette)
+		{
+			// Error when suspended
+			if(issuspended) throw new Exception("Data reader is suspended");
+			
+			// Look for a lump named COLORMAP
+			Lump lump = file.FindLump("COLORMAP");
+			if (lump != null) 
+			{
+				using (Stream s = lump.GetSafeStream())
+					return new ColorMap(s, palette);
+			}
+			return null; // No palette
+		}
+
 		#endregion
 
 		#region ================== Colormaps
@@ -454,6 +470,9 @@ namespace CodeImp.DoomBuilder.Data
 					// Make the textures
 					foreach(TextureStructure t in cachedparsers[fullpath].Textures)
 						images.Add(t.MakeImage());
+
+					foreach (TextureStructure t in cachedparsers[fullpath].WallTextures)
+						images.Add(t.MakeImage());
 				}
 				else
 				{
@@ -509,12 +528,13 @@ namespace CodeImp.DoomBuilder.Data
 			parser.Parse(data, false);
 			if(parser.HasError) parser.LogError(); //mxd
 
-			// Make the textures
-			foreach(TextureStructure t in parser.Textures)
-			{
-				// Add the texture
+			// Make and add the textures
+			foreach (TextureStructure t in parser.Textures)
 				images.Add(t.MakeImage());
-			}
+
+			// Make and add the wall textures
+			foreach (TextureStructure t in parser.WallTextures)
+				images.Add(t.MakeImage());
 
 			//mxd. Add to text resources collection
 			if(!General.Map.Data.ScriptResources.ContainsKey(parser.ScriptType))

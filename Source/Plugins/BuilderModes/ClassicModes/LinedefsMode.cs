@@ -23,13 +23,11 @@ using System.Linq;
 using System.Windows.Forms;
 using CodeImp.DoomBuilder.Actions;
 using CodeImp.DoomBuilder.BuilderModes.Interface;
-using CodeImp.DoomBuilder.Config;
 using CodeImp.DoomBuilder.Data;
 using CodeImp.DoomBuilder.Editing;
 using CodeImp.DoomBuilder.Geometry;
 using CodeImp.DoomBuilder.Map;
 using CodeImp.DoomBuilder.Rendering;
-using CodeImp.DoomBuilder.Types;
 using CodeImp.DoomBuilder.Windows;
 
 #endregion
@@ -79,7 +77,9 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		#region ================== Properties
 
 		public override object HighlightedObject { get { return highlighted; } }
-		
+
+		public override bool AlwaysShowVertices { get { return true; } }
+
 		#endregion
 
 		#region ================== Constructor / Disposer
@@ -366,8 +366,14 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		//mxd. This sets up new labels
 		private void SetupSectorLabels()
 		{
+			// Dummy label we need for the font
+			TextLabel dummylabel = new TextLabel();
+
+			// The "+" is always shown if the space for the label isn't big enough to show the full text
+			textlabelsizecache["+"] = General.Interface.MeasureString("+", dummylabel.Font).Width;
+
 			// Dispose old labels
-			if(sectorlabels != null)
+			if (sectorlabels != null)
 			{
 				foreach(TextLabel[] larr in sectorlabels.Values)
 					foreach(TextLabel l in larr) l.Dispose();
@@ -395,6 +401,12 @@ namespace CodeImp.DoomBuilder.BuilderModes
 					tagdescarr[0] = "Tag " + s.Tag;
 					tagdescarr[1] = "T" + s.Tag;
 				}
+
+				// Add string lengths to the label size cache
+				if (!textlabelsizecache.ContainsKey(tagdescarr[0]))
+					textlabelsizecache[tagdescarr[0]] = General.Interface.MeasureString(tagdescarr[0], dummylabel.Font).Width;
+				if (!textlabelsizecache.ContainsKey(tagdescarr[1]))
+					textlabelsizecache[tagdescarr[1]] = General.Interface.MeasureString(tagdescarr[1], dummylabel.Font).Width;
 
 				// Add to collection
 				sectortexts.Add(s, tagdescarr);
@@ -464,6 +476,103 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			RectangleF area = MapSet.CreateArea(General.Map.Map.Vertices);
 			blockmap = new BlockMap<BlockEntry>(area);
 			blockmap.AddLinedefsSet(General.Map.Map.Linedefs);
+		}
+
+		/// <summary>
+		/// Renders the overlay with the (selection) labels and insert vertex preview.
+		/// </summary>
+		private void RenderOverlay()
+		{
+			if (General.Map.Map.IsSafeToAccess && renderer.StartOverlay(true))
+			{
+				if (!selecting) //mxd
+				{
+					if ((highlighted != null) && !highlighted.IsDisposed) highlightasso.Render(); //mxd
+				}
+				else
+				{
+					RenderMultiSelection();
+				}
+
+				//mxd. Render vertex insert preview
+				if (insertpreview.IsFinite())
+				{
+					double dist = Math.Min(Vector2D.Distance(mousemappos, insertpreview), BuilderPlug.Me.HighlightRange);
+					byte alpha = (byte)(255 - (dist / BuilderPlug.Me.HighlightRange) * 128);
+					float vsize = (renderer.VertexSize + 1.0f) / renderer.Scale;
+					renderer.RenderRectangleFilled(new RectangleF((float)(insertpreview.x - vsize), (float)(insertpreview.y - vsize), vsize * 2.0f, vsize * 2.0f), General.Colors.InfoLine.WithAlpha(alpha), true);
+				}
+
+				//mxd. Render sector tag labels
+				if (BuilderPlug.Me.ViewSelectionEffects)
+				{
+					List<ITextLabel> torender = new List<ITextLabel>(sectorlabels.Count);
+					foreach (KeyValuePair<Sector, string[]> group in sectortexts)
+					{
+						// Pick which text variant to use
+						TextLabel[] labelarray = sectorlabels[group.Key];
+						for (int i = 0; i < group.Key.Labels.Count; i++)
+						{
+							// Only process this label if it's actually in view
+							if (!labelarray[i].IsInViewport())
+								continue;
+
+							TextLabel l = labelarray[i];
+
+							// Render only when enough space for the label to see
+							float requiredsize = textlabelsizecache[group.Value[0]] / 2 / renderer.Scale;
+
+							if (requiredsize > group.Key.Labels[i].radius)
+							{
+								requiredsize = textlabelsizecache[group.Value[1]] / 2 / renderer.Scale;
+
+								string newtext;
+
+								if (requiredsize > group.Key.Labels[i].radius)
+									newtext = (requiredsize > group.Key.Labels[i].radius * 4 ? string.Empty : "+");
+								else
+									newtext = group.Value[1];
+
+								if (l.Text != newtext)
+									l.Text = newtext;
+							}
+							else
+							{
+								if (group.Value[0] != l.Text)
+									l.Text = group.Value[0];
+							}
+
+							if (!string.IsNullOrEmpty(l.Text)) torender.Add(l);
+						}
+					}
+
+					// Render labels
+					renderer.RenderText(torender);
+				}
+
+				//mxd. Render selection labels
+				if (BuilderPlug.Me.ViewSelectionNumbers)
+				{
+					List<ITextLabel> torender = new List<ITextLabel>(labels.Count);
+					foreach (KeyValuePair<Linedef, SelectionLabel> group in labels)
+					{
+						// Render only when enough space for the label to see
+						group.Value.Move(group.Key.Start.Position, group.Key.End.Position);
+						float requiredsize = (group.Value.TextSize.Width) / renderer.Scale;
+						if (group.Key.Length > requiredsize)
+						{
+							torender.Add(group.Value.TextLabel);
+						}
+					}
+
+					renderer.RenderText(torender);
+				}
+
+				//mxd. Render comments
+				if (General.Map.UDMF && General.Settings.RenderComments) foreach (Linedef l in General.Map.Map.Linedefs) RenderComment(l);
+
+				renderer.Finish();
+			}
 		}
 
 		#endregion
@@ -600,99 +709,8 @@ namespace CodeImp.DoomBuilder.BuilderModes
 				renderer.Finish();
 			}
 
-			// Render selection
-			if(renderer.StartOverlay(true))
-			{
-				if(!selecting) //mxd
-				{ 
-					if ((highlighted != null) && !highlighted.IsDisposed) highlightasso.Render(); //mxd
-				}
-				else
-				{
-					RenderMultiSelection();
-				}
-
-				//mxd. Render vertex insert preview
-				if(insertpreview.IsFinite())
-				{
-					double dist = Math.Min(Vector2D.Distance(mousemappos, insertpreview), BuilderPlug.Me.HighlightRange);
-					byte alpha = (byte)(255 - (dist / BuilderPlug.Me.HighlightRange) * 128);
-					float vsize = (renderer.VertexSize + 1.0f) / renderer.Scale;
-					renderer.RenderRectangleFilled(new RectangleF((float)(insertpreview.x - vsize), (float)(insertpreview.y - vsize), vsize * 2.0f, vsize * 2.0f), General.Colors.InfoLine.WithAlpha(alpha), true);
-				}
-
-				//mxd. Render sector tag labels
-				if(BuilderPlug.Me.ViewSelectionEffects)
-				{
-					List<ITextLabel> torender = new List<ITextLabel>(sectorlabels.Count);
-					foreach(KeyValuePair<Sector, string[]> group in sectortexts)
-					{
-						// Pick which text variant to use
-						TextLabel[] labelarray = sectorlabels[group.Key];
-						for(int i = 0; i < group.Key.Labels.Count; i++)
-						{
-							TextLabel l = labelarray[i];
-
-							// Render only when enough space for the label to see
-							if (!textlabelsizecache.ContainsKey(group.Value[0]))
-								textlabelsizecache[group.Value[0]] = General.Interface.MeasureString(group.Value[0], l.Font).Width;
-
-							float requiredsize = textlabelsizecache[group.Value[0]] / 2 / renderer.Scale;
-
-							if (requiredsize > group.Key.Labels[i].radius)
-							{
-								if (!textlabelsizecache.ContainsKey(group.Value[1]))
-									textlabelsizecache[group.Value[1]] = General.Interface.MeasureString(group.Value[1], l.Font).Width;
-
-								requiredsize = textlabelsizecache[group.Value[1]] / 2 / renderer.Scale;
-
-								string newtext;
-
-								if (requiredsize > group.Key.Labels[i].radius)
-									newtext = (requiredsize > group.Key.Labels[i].radius * 4 ? string.Empty : "+");
-								else
-									newtext = group.Value[1];
-
-								if (l.Text != newtext)
-									l.Text = newtext;
-							}
-							else
-							{
-								if (group.Value[0] != l.Text)
-									l.Text = group.Value[0];
-							}
-
-							if(!string.IsNullOrEmpty(l.Text)) torender.Add(l);
-						}
-					}
-
-					// Render labels
-					renderer.RenderText(torender);
-				}
-
-				//mxd. Render selection labels
-				if(BuilderPlug.Me.ViewSelectionNumbers)
-				{
-					List<ITextLabel> torender = new List<ITextLabel>(labels.Count);
-					foreach(KeyValuePair<Linedef, SelectionLabel> group in labels)
-					{
-						// Render only when enough space for the label to see
-						group.Value.Move(group.Key.Start.Position, group.Key.End.Position);
-						float requiredsize = (group.Value.TextSize.Width) / renderer.Scale;
-						if(group.Key.Length > requiredsize)
-						{
-							torender.Add(group.Value.TextLabel);
-						}
-					}
-
-					renderer.RenderText(torender);
-				}
-
-				//mxd. Render comments
-				if(General.Map.UDMF && General.Settings.RenderComments) foreach(Linedef l in General.Map.Map.Linedefs) RenderComment(l);
-
-				renderer.Finish();
-			}
+			// Render the overlay with the text labels and ve
+			RenderOverlay();
 
 			renderer.Present();
 		}
@@ -921,6 +939,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		public override void OnMouseMove(MouseEventArgs e)
 		{
 			base.OnMouseMove(e);
+
 			if(panning) return; //mxd. Skip all this jazz while panning
 
 			//mxd
@@ -978,22 +997,31 @@ namespace CodeImp.DoomBuilder.BuilderModes
 				{
 					bool snaptogrid = General.Interface.ShiftState ^ General.Interface.SnapToGrid;
 					bool snaptonearest = General.Interface.CtrlState ^ General.Interface.AutoMerge;
-					Vector2D v = DrawGeometryMode.GetCurrentPosition(mousemappos, snaptonearest, snaptogrid, false, false, renderer, new List<DrawnVertex>()).pos;
 
-					if(v != insertpreview)
+					Vector2D v = DrawGeometryMode.GetCurrentPosition(mousemappos, snaptonearest, snaptogrid, false, false, renderer, new List<DrawnVertex>(), blockmap).pos;
+
+					if (v != insertpreview)
 					{
 						insertpreview = v;
-						General.Interface.RedrawDisplay();
+
+						// Render overlay to show the new insert preview. Do not redraw the whole display for performance reasons.
+						// We need to present ourselves because RenderOverlay does not do it
+						RenderOverlay();
+						renderer.Present();
 					}
 				} 
 				else if(insertpreview.IsFinite()) 
 				{
 					insertpreview.x = float.NaN;
-					General.Interface.RedrawDisplay();
+
+					// Render overlay to show the new insert preview. Do not redraw the whole display for performance reasons
+					// We need to present ourselves because RenderOverlay does not do it
+					RenderOverlay();
+					renderer.Present();
 				}
 
 				// Highlight if not the same
-				if(l != highlighted) Highlight(l);
+				if (l != highlighted) Highlight(l);
 
 				//mxd. Show tooltip?
 				if(General.Map.UDMF && General.Settings.RenderComments && mouselastpos != mousepos && highlighted != null && !highlighted.IsDisposed && highlighted.Fields.ContainsKey("comment"))
@@ -1023,7 +1051,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		protected override void BeginViewPan() 
 		{
 			// We don't want vertex preview while panning
-			insertpreview.x = float.NaN;
+			insertpreview.x = double.NaN;
 			base.BeginViewPan();
 		}
 
@@ -1215,6 +1243,16 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			}
 
 			return base.OnCopyBegin();
+		}
+
+		/// <summary>
+		/// If map elements have changed the blockmap needs to be recreated.
+		/// </summary>
+		public override void OnMapElementsChanged()
+		{
+			base.OnMapElementsChanged();
+
+			CreateBlockmap();
 		}
 
 		//mxd

@@ -66,7 +66,8 @@ namespace CodeImp.DoomBuilder.Data
 		
 		// Palette
 		private Playpal palette;
-		
+		private ColorMap mainColormap;
+
 		// Textures, Flats and Sprites
 		private Dictionary<long, ImageData> textures;
 		private Dictionary<long, long> texturenamesshorttofull; //mxd
@@ -79,6 +80,8 @@ namespace CodeImp.DoomBuilder.Data
 		private List<MatchingTextureSet> texturesets;
 		private List<ResourceTextureSet> resourcetextures;
 		private AllTextureSet alltextures;
+		private AllTextureSet walltextureset;
+		private AllTextureSet flattextureset;
 
 		//mxd 
 		private Dictionary<int, ModelData> modeldefentries; //Thing.Type, Model entry
@@ -163,6 +166,7 @@ namespace CodeImp.DoomBuilder.Data
 		internal IEnumerable<DataReader> Containers { get { return containers; } }
 
 		public Playpal Palette { get { return palette; } }
+		public ColorMap MainColorMap { get { return mainColormap; } }		
 		public ICollection<ImageData> Textures { get { return textures.Values; } }
 		public ICollection<ImageData> Flats { get { return flats.Values; } }
 		public List<string> TextureNames { get { return texturenames; } }
@@ -190,6 +194,8 @@ namespace CodeImp.DoomBuilder.Data
 		internal ICollection<MatchingTextureSet> TextureSets { get { return texturesets; } }
 		internal ICollection<ResourceTextureSet> ResourceTextureSets { get { return resourcetextures; } }
 		internal AllTextureSet AllTextureSet { get { return alltextures; } }
+		internal AllTextureSet WallTextureSet { get { return walltextureset; } }
+		internal AllTextureSet FlatTextureSet { get { return flattextureset; } }
 		
 		public bool IsLoading
 		{
@@ -362,6 +368,8 @@ namespace CodeImp.DoomBuilder.Data
 			
 			// Special textures sets
 			alltextures = new AllTextureSet();
+			walltextureset = new AllTextureSet();
+			flattextureset = new AllTextureSet();
 			resourcetextures = new List<ResourceTextureSet>();
 			
 			// Go for all locations
@@ -428,6 +436,7 @@ namespace CodeImp.DoomBuilder.Data
 			// Load stuff
 			LoadX11R6RGB(); //mxd
 			LoadPalette();
+			LoadMainColorMap();
 			Dictionary<string, TexturesParser> cachedparsers = new Dictionary<string, TexturesParser>(); //mxd
 			int texcount = LoadTextures(texturesonly, texturenamesshorttofull, cachedparsers);
 			int flatcount = LoadFlats(flatsonly, flatnamesshorttofull, cachedparsers);
@@ -508,7 +517,7 @@ namespace CodeImp.DoomBuilder.Data
 						if(t.Value.HasLongName) flatnames.Add(t.Value.ShortName);
 						flatnames.Add(t.Value.Name);
 					}
-					else if(t.Value is TEXTURESImage || t.Value is SimpleTextureImage) //mxd. Textures defined in TEXTURES or placed between TX_START and TX_END markers override "regular" flats in ZDoom
+					else if(t.Value.TextureNamespace == TextureNamespace.TEXTURE)
 					{
 						//TODO: check this!
 						flats[t.Key] = t.Value;
@@ -530,8 +539,8 @@ namespace CodeImp.DoomBuilder.Data
 						textures.Add(f.Key, f.Value);
 
 						//mxd. Add both short and long names?
-						if(f.Value.HasLongName) texturenames.Add(f.Value.ShortName);
-						texturenames.Add(f.Value.Name);
+						if(f.Value.HasLongName && !texturenames.Contains(f.Value.ShortName)) texturenames.Add(f.Value.ShortName);
+						if(!texturenames.Contains(f.Value.Name)) texturenames.Add(f.Value.Name);
 					}
 				}
 
@@ -579,6 +588,7 @@ namespace CodeImp.DoomBuilder.Data
 
 				// Add to all
 				alltextures.AddTexture(img.Value);
+				walltextureset.AddTexture(img.Value);
 			}
 			
 			// Add flat names to texture sets
@@ -590,6 +600,7 @@ namespace CodeImp.DoomBuilder.Data
 				
 				// Add to all
 				alltextures.AddFlat(img.Value);
+				flattextureset.AddFlat(img.Value);
 			}
 
 			//mxd. Create skybox texture(s)
@@ -839,6 +850,24 @@ namespace CodeImp.DoomBuilder.Data
 			}
 		}
 
+        private void LoadMainColorMap() 
+        {
+	        // Go for all opened containers
+	        for(int i = containers.Count - 1; i >= 0; i--)
+	        {
+		        // Load palette
+		        mainColormap = containers[i].LoadMainColorMap(palette);
+		        if(mainColormap != null) break;
+	        }
+
+	        // Make empty palette when still no palette found
+	        if(mainColormap == null)
+	        {
+		        General.ErrorLogger.Add(ErrorType.Warning, "None of the loaded resources define a colormap. Did you forget to configure an IWAD for this game configuration?");
+		        mainColormap = new ColorMap();
+	        }
+        }
+
 		#endregion
 
 		#region ================== Colormaps
@@ -990,11 +1019,10 @@ namespace CodeImp.DoomBuilder.Data
 		public ImageData GetTextureImage(long longname)
 		{
 			// Does this texture exist?
-			if(textures.ContainsKey(longname) 
-				&& (textures[longname] is TEXTURESImage || textures[longname] is HiResImage))
-				return textures[longname]; //TEXTURES and HiRes textures should still override regular ones...
-			if(texturenamesshorttofull.ContainsKey(longname)) return textures[texturenamesshorttofull[longname]]; //mxd
-			if(textures.ContainsKey(longname)) return textures[longname];
+			if (textures.ContainsKey(longname))
+				return textures[longname];
+			if (texturenamesshorttofull.ContainsKey(longname)) return textures[texturenamesshorttofull[longname]]; //mxd
+			if (textures.ContainsKey(longname)) return textures[longname];
 
 			// Return null image
 			return unknownimage; //mxd
@@ -1193,13 +1221,13 @@ namespace CodeImp.DoomBuilder.Data
 		public ImageData GetFlatImage(long longname)
 		{
 			// Does this flat exist?
-			if(flats.ContainsKey(longname) && (flats[longname] is TEXTURESImage || flats[longname] is HiResImage))
+			if (flats.ContainsKey(longname) && (flats[longname] is TEXTURESImage || flats[longname] is HiResImage))
 				return flats[longname]; //TEXTURES and HiRes flats should still override regular ones...
-			if(flatnamesshorttofull.ContainsKey(longname))
-                return flats[flatnamesshorttofull[longname]]; //mxd
-            if (flats.ContainsKey(longname))
-                return flats[longname];
-			
+			if (flatnamesshorttofull.ContainsKey(longname))
+				return flats[flatnamesshorttofull[longname]]; //mxd
+			if (flats.ContainsKey(longname))
+				return flats[longname];
+
 			// Return null image
 			return unknownimage; //mxd
 		}
@@ -1838,20 +1866,30 @@ namespace CodeImp.DoomBuilder.Data
             Dictionary<string, ActorStructure> mergedAllActorsByClass = decorate.AllActorsByClass.Concat(zscript.AllActorsByClass.Where(x => !decorate.AllActorsByClass.ContainsKey(x.Key))).ToDictionary(k => k.Key, v => v.Value);
             zdoomclasses = mergedAllActorsByClass;
 
+			// Dictionary of replaced actors that have to be recategorized
+			Dictionary<int, ActorStructure> recategorizeactors = new Dictionary<int, ActorStructure>();
+
             // Step 1. Go for all actors in the decorate to make things or update things
             foreach (ActorStructure actor in mergedActors)
             {
                 //mxd. Apply "replaces" DECORATE override...
                 if (!string.IsNullOrEmpty(actor.ReplacesClass) && thingtypesbyclass.ContainsKey(actor.ReplacesClass))
                 {
-                    // Update info
-                    thingtypesbyclass[actor.ReplacesClass].ModifyByDecorateActor(actor);
+					// Update info
+					thingtypesbyclass[actor.ReplacesClass].ModifyByDecorateActor(actor);
 
-                    // Count
-                    counter++;
+					// A replaced actor might have to go to another category. Only store the last one in case the same actor is replaced multiple times
+					if (actor.HasPropertyWithValue("$category"))
+						recategorizeactors[thingtypesbyclass[actor.ReplacesClass].Index] = actor;
+					else
+						recategorizeactors.Remove(thingtypesbyclass[actor.ReplacesClass].Index);
+
+					// Count
+					counter++;
                 }
+
                 // Check if we want to add this actor
-                else if (actor.DoomEdNum > 0)
+                if (actor.DoomEdNum > 0)
                 {
                     // Check if we can find this thing in our existing collection
                     if (thingtypes.ContainsKey(actor.DoomEdNum))
@@ -1865,8 +1903,16 @@ namespace CodeImp.DoomBuilder.Data
                         ThingCategory cat = GetThingCategory(null, thingcategories, GetCategoryInfo(actor)); //mxd
 
                         // Add new thing
-                        ThingTypeInfo t = new ThingTypeInfo(cat, actor);
-                        cat.AddThing(t);
+                        ThingTypeInfo t;
+
+						// If the thing inherits from another actor use the base actor's thing type info, otherwise create a new one
+						// This makes sure that inherited actors get all properties like the icon color
+						if (!string.IsNullOrEmpty(actor.InheritsClass) && thingtypesbyclass.ContainsKey(actor.InheritsClass))
+							t = new ThingTypeInfo(cat, actor, thingtypesbyclass[actor.InheritsClass]);
+						else
+							t = new ThingTypeInfo(cat, actor);
+
+						cat.AddThing(t);
                         thingtypes.Add(t.Index, t);
                     }
 
@@ -1874,6 +1920,26 @@ namespace CodeImp.DoomBuilder.Data
                     counter++;
                 }
             }
+
+			// Step 1.1. Recategorize actors that replace other actors
+			foreach(KeyValuePair<int, ActorStructure> kvp in recategorizeactors)
+			{
+				int i = kvp.Key;
+				ActorStructure actor = kvp.Value;
+
+				// Remove the thing from its old thing category
+				thingtypes[i].Category.RemoveThing(thingtypes[i]);
+
+				// Get the new thing category
+				ThingCategory tc = GetThingCategory(null, thingcategories, GetCategoryInfo(actor));
+
+				// Remove the existing ThingTypeInfo and create a new one (with the new DoomEdNum)
+				thingtypes.Remove(thingtypesbyclass[actor.ReplacesClass].Index);
+				thingtypes[i] = new ThingTypeInfo(i, thingtypesbyclass[actor.ReplacesClass]);
+
+				// Re-add the ThingTypeInfo to the ThingCategory
+				tc.AddThing(thingtypes[i]);
+			}
 
             //mxd. Step 2. Apply DoomEdNum MAPINFO overrides, remove actors disabled in MAPINFO
             if (doomednumsoverride.Count > 0)

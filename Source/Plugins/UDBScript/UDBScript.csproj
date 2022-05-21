@@ -78,6 +78,7 @@
     <Compile Include="API\DataWrapper.cs" />
     <Compile Include="API\GameConfigurationWrapper.cs" />
     <Compile Include="API\ImageInfo.cs" />
+    <Compile Include="API\UDBWrapper.cs" />
     <Compile Include="API\Vector3DWrapper.cs" />
     <Compile Include="API\VisualCameraWrapper.cs" />
     <Compile Include="BuilderPlug.cs" />
@@ -93,6 +94,7 @@
     <Compile Include="Controls\ScriptOptionsControl.Designer.cs">
       <DependentUpon>ScriptOptionsControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="ProgressInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -123,6 +125,12 @@
     </Compile>
     <Compile Include="Windows\QueryOptionsForm.Designer.cs">
       <DependentUpon>QueryOptionsForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Windows\ScriptRunnerForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Windows\ScriptRunnerForm.Designer.cs">
+      <DependentUpon>ScriptRunnerForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Windows\UDBScriptErrorForm.cs">
       <SubType>Form</SubType>
@@ -162,6 +170,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Windows\QueryOptionsForm.resx">
       <DependentUpon>QueryOptionsForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Windows\ScriptRunnerForm.resx">
+      <DependentUpon>ScriptRunnerForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Windows\UDBScriptErrorForm.resx">
       <DependentUpon>UDBScriptErrorForm.cs</DependentUpon>

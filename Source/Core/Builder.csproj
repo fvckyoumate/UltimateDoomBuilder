@@ -180,6 +180,12 @@
     <Compile Include="Controls\ArgumentBox.Designer.cs">
       <DependentUpon>ArgumentBox.cs</DependentUpon>
     </Compile>
+    <Compile Include="Controls\CommandPaletteControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\CommandPaletteControl.Designer.cs">
+      <DependentUpon>CommandPaletteControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="Controls\ExternalCommandControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -191,6 +197,12 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Controls\Scripting\TextEditorControl.cs" />
+    <Compile Include="Controls\SidedefPartLightControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\SidedefPartLightControl.Designer.cs">
+      <DependentUpon>SidedefPartLightControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="Controls\TransparentTrackBar.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -209,6 +221,7 @@
     <Compile Include="Controls\Scripting\ScriptLumpDocumentTab.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Data\ColorMap.cs" />
     <Compile Include="Data\DirectoryReader.cs" />
     <Compile Include="Data\FileImage.cs" />
     <Compile Include="Data\FlatImage.cs" />
@@ -662,11 +675,17 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Controls\CommandPaletteControl.resx">
+      <DependentUpon>CommandPaletteControl.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Controls\ExternalCommandControl.resx">
       <DependentUpon>ExternalCommandControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Controls\PairedFloatControl.resx">
       <DependentUpon>PairedFloatControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\SidedefPartLightControl.resx">
+      <DependentUpon>SidedefPartLightControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Windows\PreAndPostCommandsForm.resx">
       <DependentUpon>PreAndPostCommandsForm.cs</DependentUpon>
@@ -1307,6 +1326,7 @@
     <None Include="Resources\Angle6.png" />
     <None Include="Resources\Angle7.png" />
     <None Include="Resources\AboutBack.png" />
+    <Content Include="Resources\ClassicRendering.png" />
     <Content Include="Resources\DB2.ico" />
     <None Include="Resources\GZDB2.ico" />
     <None Include="Resources\UDB.ico" />
@@ -1365,6 +1385,7 @@
     <None Include="Resources\ScriptError.png" />
     <None Include="Resources\ScriptConstant.png" />
     <None Include="Resources\Sky.png" />
+    <None Include="Resources\ClassicRendering.png" />
     <None Include="Resources\Update.png" />
     <None Include="Resources\Reload.png" />
     <None Include="Resources\Preferences.png" />

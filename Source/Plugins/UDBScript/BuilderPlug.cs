@@ -49,14 +49,16 @@ namespace CodeImp.DoomBuilder.UDBScript
 {
 	internal class ScriptDirectoryStructure
 	{
+		public string Path;
 		public string Name;
 		public bool Expanded;
 		public string Hash;
 		public List<ScriptDirectoryStructure> Directories;
 		public List<ScriptInfo> Scripts;
 
-		public ScriptDirectoryStructure(string name, bool expanded, string hash)
+		public ScriptDirectoryStructure(string path, string name, bool expanded, string hash)
 		{
+			Path = path;
 			Name = name;
 			Expanded = expanded;
 			Hash = hash;
@@ -70,7 +72,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 		#region ================== Constants
 
 		private static readonly string SCRIPT_FOLDER = "udbscript";
-		public static readonly uint UDB_SCRIPT_VERSION = 3;
+		public static readonly uint UDB_SCRIPT_VERSION = 4;
 
 		#endregion
 
@@ -97,6 +99,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 		private Dictionary<int, ScriptInfo> scriptslots;
 		private string editorexepath;
 		private PreferencesForm preferencesform;
+		private ScriptRunnerForm scriptrunnerform;
 
 		#endregion
 
@@ -108,6 +111,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 		internal ScriptRunner ScriptRunner { get { return scriptrunner; } }
 		internal ScriptDirectoryStructure ScriptDirectoryStructure { get { return scriptdirectorystructure; } }
 		internal string EditorExePath { get { return editorexepath; } }
+		public ScriptRunnerForm ScriptRunnerForm { get { return scriptrunnerform; } }
 
 		#endregion
 
@@ -137,6 +141,8 @@ namespace CodeImp.DoomBuilder.UDBScript
 			watcher.Renamed += OnWatcherEvent;
 
 			editorexepath = General.Settings.ReadPluginSetting("externaleditor", string.Empty);
+
+			scriptrunnerform = new ScriptRunnerForm();
 
 			FindEditor();
 		}
@@ -382,7 +388,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 			string hash = SHA256Hash.Get(path);
 			bool expanded = General.Settings.ReadPluginSetting("directoryexpand." + hash, true);
 			string name = path.TrimEnd(Path.DirectorySeparatorChar).Split(Path.DirectorySeparatorChar).Last();
-			ScriptDirectoryStructure sds = new ScriptDirectoryStructure(name, expanded, hash);
+			ScriptDirectoryStructure sds = new ScriptDirectoryStructure(path, name, expanded, hash);
 
 			foreach (string directory in Directory.GetDirectories(path))
 				sds.Directories.Add(LoadScriptDirectoryStructure(directory));
@@ -617,7 +623,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 				return;
 
 			scriptrunner = new ScriptRunner(currentscript);
-			scriptrunner.Run();
+			scriptrunnerform.ShowDialog();
 		}
 
 		[BeginAction("udbscriptexecuteslot1")]
@@ -665,7 +671,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 				if (scriptslots.ContainsKey(slot) && scriptslots[slot] != null)
 				{
 					scriptrunner = new ScriptRunner(scriptslots[slot]);
-					scriptrunner.Run();
+					scriptrunnerform.ShowDialog();
 				}
 			}
 		}

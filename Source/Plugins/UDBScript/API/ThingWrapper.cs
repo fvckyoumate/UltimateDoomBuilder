@@ -297,8 +297,8 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// ```
 		/// It's also possible to set all fields immediately by assigning either a `Vector2D`, `Vector3D`, or an array of numbers:
 		/// ```
-		/// t.position = new Vector2D(32, 64);
-		/// t.position = new Vector3D(32, 64, 128);
+		/// t.position = new UDB.Vector2D(32, 64);
+		/// t.position = new UDB.Vector3D(32, 64, 128);
 		/// t.position = [ 32, 64 ];
 		/// t.position = [ 32, 64, 128 ];
 		/// ```
@@ -452,7 +452,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// Gets the squared distance between this `Thing` and the given point.
 		/// The point can be either a `Vector2D` or an array of numbers.
 		/// ```
-		/// t.distanceToSq(new Vector2D(32, 64));
+		/// t.distanceToSq(new UDB.Vector2D(32, 64));
 		/// t.distanceToSq([ 32, 64 ]);
 		/// ```
 		/// </summary>
@@ -477,7 +477,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// <summary>
 		/// Gets the distance between this `Thing` and the given point. The point can be either a `Vector2D` or an array of numbers.
 		/// ```
-		/// t.distanceToSq(new Vector2D(32, 64));
+		/// t.distanceToSq(new UDB.Vector2D(32, 64));
 		/// t.distanceToSq([ 32, 64 ]);
 		/// ```
 		/// </summary>
@@ -519,6 +519,47 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		{
 			thing.DetermineSector();
 			return new SectorWrapper(thing.Sector);
+		}
+
+		#endregion
+
+		#region ================== Management
+
+		/// <summary>
+		/// Adds fields to the dictionary that are handled directly by UDB, but changing them is emulated through the UDMF fields.
+		/// </summary>
+		/// <param name="fields">UniFields of the map element</param>
+		internal override void AddManagedFields(IDictionary<string, object> fields)
+		{
+			if (thing.ScaleX != 1.0)
+				fields.Add("scalex", thing.ScaleX);
+
+			if (thing.ScaleY != 1.0)
+				fields.Add("scaley", thing.ScaleY);
+		}
+
+		/// <summary>
+		/// Processed a managed UDMF field, setting the managed value to what the user set in the UDMF field.
+		/// </summary>
+		/// <param name="fields">UniFields of the map element</param>
+		/// <param name="pname">field property name</param>
+		/// <param name="newvalue">field value</param>
+		/// <returns>true if the field needed to be processed, false if it didn't</returns>
+		internal override bool ProcessManagedField(UniFields fields, string pname, object newvalue)
+		{
+			switch(pname)
+			{
+				case "scalex":
+					if (newvalue == null) thing.SetScale(1.0, thing.ScaleY);
+					else thing.SetScale((double)newvalue, thing.ScaleY);
+					return true;
+				case "scaley":
+					if(newvalue == null) thing.SetScale(thing.ScaleX, 1.0);
+					else thing.SetScale(thing.ScaleX, (double)newvalue);
+					return true;
+			}
+
+			return false;
 		}
 
 		#endregion
