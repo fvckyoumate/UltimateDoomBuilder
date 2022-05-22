@@ -44,10 +44,13 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		private VisualCameraWrapper visualcamera;
 		private Vector2D mousemappos;
 		private object highlightedobject;
+		private bool staticmouse;
 
 		#endregion
 
 		#region ================== Properties
+
+		internal bool StaticMouse { get { return staticmouse; } set { staticmouse = value; } }
 
 		/// <summary>
 		/// `true` if the map is in Doom format, `false` if it isn't. Read-only.
@@ -89,7 +92,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		{
 			get
 			{
-				return mousemappos;
+				return staticmouse ? mousemappos : ((ClassicMode)General.Editing.Mode).MouseMapPos;
 			}
 		}
 
@@ -115,6 +118,8 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 
 			// If the main window loses focus before the script is running General.Editing.Mode.HighlightedObject will always be null, so cache it here
 			highlightedobject = General.Editing.Mode.HighlightedObject;
+
+			staticmouse = true;
 
 			if (General.Editing.Mode is ClassicMode)
 				mousemappos = ((ClassicMode)General.Editing.Mode).MouseMapPos;

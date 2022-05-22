@@ -59,6 +59,8 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		private TypeReference thing;
 		private TypeReference vertex;
 
+		private ModeWrapper mode;
+
 		private IProgress<int> progress;
 		private IProgress<string> status;
 		private IProgress<string> logger;
@@ -198,6 +200,14 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 			}
 		}
 
+		public ModeWrapper Mode
+		{
+			get
+			{
+				return mode;
+			}
+		}
+
 		public TypeReference Linedef { get { return linedef; } }
 		public TypeReference Sector { get { return sector; } }
 		public TypeReference Sidedef { get { return sidedef; } }
@@ -208,11 +218,18 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 
 		#region ================== Constructors
 
+		internal UDBWrapper(Engine engine, ScriptedMode scriptedmode) : this(engine, null, null, null, null)
+		{
+			mode = new ModeWrapper(scriptedmode);
+			map.StaticMouse = false;
+		}
+
 		internal UDBWrapper(Engine engine, ScriptInfo scriptinfo, IProgress<int> progress, IProgress<string> status, IProgress<string> logger)
 		{
 			gameconfiguration = new GameConfigurationWrapper();
 			queryoptions = TypeReference.CreateTypeReference(engine, typeof(QueryOptions));
-			scriptoptions = scriptinfo.GetScriptOptionsObject();
+
+			scriptoptions = scriptinfo?.GetScriptOptionsObject();
 
 			angle2d = TypeReference.CreateTypeReference(engine, typeof(Angle2DWrapper));
 			data = TypeReference.CreateTypeReference(engine, typeof(DataWrapper));
@@ -245,7 +262,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// <param name="value">Number between 0 and 100</param>
 		public void setProgress(int value)
 		{
-			progress.Report(value);
+			progress?.Report(value);
 		}
 
 		/*
@@ -264,7 +281,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 			if (text == null)
 				return;
 
-			logger.Report(text.ToString());
+			logger?.Report(text.ToString());
 		}
 
 		/// <summary>

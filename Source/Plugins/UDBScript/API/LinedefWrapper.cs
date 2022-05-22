@@ -65,6 +65,8 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 
 		#region ================== Properties
 
+		internal Linedef Linedef { get { return linedef; } }
+
 		/// <summary>
 		/// The linedef's index. Read-only.
 		/// </summary>
