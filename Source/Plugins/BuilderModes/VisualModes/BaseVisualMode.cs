@@ -3850,8 +3850,11 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			List<IVisualEventReceiver> objs = GetSelectedObjects(true, true, true, true, false);
             foreach (IVisualEventReceiver i in objs)
             {
-                if (i is BaseVisualThing)
-                    visiblethings.Remove((BaseVisualThing)i); // [ZZ] if any
+				if (i is BaseVisualThing)
+				{
+					visiblethings.Remove((BaseVisualThing)i); // [ZZ] if any
+					allthings.Remove(((BaseVisualThing)i).Thing);
+				}
                 i.OnDelete();
             }
             PostAction();
@@ -4709,6 +4712,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			{
 				t.Rotate(General.Map.VisualCamera.AngleXY - Angle2D.PI);
 				t.SetPitch((int)Angle2D.RadToDeg(General.Map.VisualCamera.AngleZ - Angle2D.PI));
+				((BaseVisualThing)allthings[t]).Rebuild();
 			}
 		}
 

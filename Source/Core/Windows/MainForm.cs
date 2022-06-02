@@ -159,6 +159,8 @@ namespace CodeImp.DoomBuilder.Windows
 
 		//mxd. Misc drawing
 		private Graphics graphics;
+
+		private CommandPaletteControl commandpalette;
 		
 		#endregion
 
@@ -215,6 +217,10 @@ namespace CodeImp.DoomBuilder.Windows
 				xposlabel.Width = (int)Math.Round(xposlabel.Width * DPIScaler.Width);
 				yposlabel.Width = (int)Math.Round(yposlabel.Width * DPIScaler.Width);
 				warnsLabel.Width = (int)Math.Round(warnsLabel.Width * DPIScaler.Width);
+
+				thingfilters.Size = new Size((int)(120 * DPIScaler.Width), (int)(22 * DPIScaler.Height));
+				linedefcolorpresets.Size = new Size((int)(120 * DPIScaler.Width), (int)(22 * DPIScaler.Height));
+				configlabel.Size = new Size((int)(280 * DPIScaler.Width), (int)(18 * DPIScaler.Height));
 			}
 
 			pluginbuttons = new List<PluginToolbarButton>();
@@ -461,11 +467,28 @@ namespace CodeImp.DoomBuilder.Windows
 			
 			this.Update();
 		}
-		
+
+		// We're doing it in EndAction because it'll otherwise screw with the stored keys
+		[EndAction("opencommandpalette")]
+		public void OpenCommandPalette()
+		{
+			if (commandpalette == null)
+			{
+				// We have to add the command palette control manually because trying to use the designer will make the form explode
+				commandpalette = new CommandPaletteControl();
+				Controls.Add(commandpalette);
+
+				// Send it somewhere to the background
+				Controls.SetChildIndex(commandpalette, 0xffff);
+			}
+
+			commandpalette.MakeVisible();
+		}
+
 		#endregion
-		
+
 		#region ================== Window
-		
+
 		// This locks the window for updating
 		internal void LockUpdate()
 		{
@@ -523,10 +546,11 @@ namespace CodeImp.DoomBuilder.Windows
 				if(General.AutoLoadMap != null)
 				{
 					Configuration mapsettings;
-					
+
 					// Try to find existing options in the settings file
-					string dbsfile = General.AutoLoadFile.Substring(0, General.AutoLoadFile.Length - 4) + ".dbs";
-					if(File.Exists(dbsfile))
+					//string dbsfile = General.AutoLoadFile.Substring(0, General.AutoLoadFile.Length - 4) + ".dbs";
+					string dbsfile = Path.ChangeExtension(General.AutoLoadFile, "dbs");
+					if (File.Exists(dbsfile))
 						try { mapsettings = new Configuration(dbsfile, true); }
 						catch(Exception) { mapsettings = new Configuration(true); }
 					else
@@ -534,8 +558,13 @@ namespace CodeImp.DoomBuilder.Windows
 
 					//mxd. Get proper configuration file
 					bool longtexturenamessupported = false;
-					string configfile = General.AutoLoadConfig;
-					if(string.IsNullOrEmpty(configfile)) configfile = mapsettings.ReadSetting("gameconfig", "");
+					string configfile = null;
+
+					// Make sure the config file exists
+					if(General.GetConfigurationInfo(General.AutoLoadConfig) != null)
+						configfile = General.AutoLoadConfig;
+
+					if (string.IsNullOrEmpty(configfile)) configfile = mapsettings.ReadSetting("gameconfig", "");
 					if(configfile.Trim().Length == 0)
 					{
 						showdialog = true;
@@ -1158,7 +1187,7 @@ namespace CodeImp.DoomBuilder.Windows
 			{
 				General.Plugins.OnEditMouseEnter(e);
 				General.Editing.Mode.OnMouseEnter(e);
-				if(Application.OpenForms.Count == 1 || editformopen) display.Focus(); //mxd
+				if((Application.OpenForms.Count == 1 || editformopen) && (commandpalette == null ? true : !commandpalette.Visible)) display.Focus(); //mxd
 			}
 		}
 
@@ -1420,7 +1449,7 @@ namespace CodeImp.DoomBuilder.Windows
 			if(alt) mod |= (int)Keys.Alt;
 			if(shift) mod |= (int)Keys.Shift;
 			if(ctrl) mod |= (int)Keys.Control;
-			
+
 			// Don't process any keys when they are meant for other input controls
 			if((e.KeyData != Keys.None) && ((ActiveControl == null) || (ActiveControl == display)))
 			{
@@ -1476,7 +1505,7 @@ namespace CodeImp.DoomBuilder.Windows
 		private void MainForm_KeyUp(object sender, KeyEventArgs e)
 		{
 			int mod = 0;
-			
+
 			// Keep key modifiers
 			alt = e.Alt;
 			shift = e.Shift;
@@ -1977,6 +2006,8 @@ namespace CodeImp.DoomBuilder.Windows
 			
 			// Bind visible changed event
 			if(!(button is ToolStripSeparator)) button.VisibleChanged += buttonvisiblechangedhandler;
+
+			if (button is ToolStripActionButton) ((ToolStripActionButton)button).UpdateToolTip();
 			
 			// Insert the button in the right section
 			switch(section)
@@ -2175,6 +2206,12 @@ namespace CodeImp.DoomBuilder.Windows
 			buttontogglevisualvertices.Visible = General.Settings.GZToolbarGZDoom && maploaded && General.Map.UDMF;
 			separatorgzmodes.Visible = General.Settings.GZToolbarGZDoom && maploaded;
 
+			foreach (ToolStripItem item in toolbar.Items)
+			{
+				if (item is ToolStripActionButton)
+					((ToolStripActionButton)item).UpdateToolTip();
+			}
+
 			//mxd. Show/hide additional panels
 			modestoolbar.Visible = maploaded;
 			panelinfo.Visible = maploaded;
@@ -2206,6 +2243,10 @@ namespace CodeImp.DoomBuilder.Windows
 					case ToolbarSection.Geometry: p.button.Visible = General.Settings.ToolbarGeometry; break;
 					case ToolbarSection.Testing: p.button.Visible = General.Settings.ToolbarTesting; break;
 				}
+
+				// Update the tooltips of all buttons added by plugins
+				if (p.button is ToolStripActionButton)
+					((ToolStripActionButton)p.button).UpdateToolTip();
 			}
 
 			preventupdateseperators = false;
@@ -2283,11 +2324,12 @@ namespace CodeImp.DoomBuilder.Windows
 			string controlname = modeinfo.ButtonDesc.Replace("&", "&&");
 			
 			// Create a button
-			ToolStripItem item = new ToolStripButton(modeinfo.ButtonDesc, modeinfo.ButtonImage, EditModeButtonHandler);
+			ToolStripItem item = new ToolStripActionButton(modeinfo.ButtonDesc, modeinfo.ButtonImage, EditModeButtonHandler);
 			item.DisplayStyle = ToolStripItemDisplayStyle.Image;
 			item.Padding = new Padding(0, 2, 0, 2);
 			item.Margin = new Padding();
 			item.Tag = modeinfo;
+			((ToolStripActionButton)item).UpdateToolTip();
 			modestoolbar.Items.Add(item); //mxd
 			editmodeitems.Add(item);
 			
@@ -3010,6 +3052,9 @@ namespace CodeImp.DoomBuilder.Windows
 		[BeginAction("togglegrid")]
 		protected void ToggleGrid()
 		{
+			if (General.Map == null)
+				return;
+
 			General.Settings.RenderGrid = !General.Settings.RenderGrid;
 			itemtogglegrid.Checked = General.Settings.RenderGrid;
 			buttontogglegrid.Checked = General.Settings.RenderGrid;
@@ -3061,6 +3106,9 @@ namespace CodeImp.DoomBuilder.Windows
 		[BeginAction("resetgrid")]
 		protected void ResetGrid()
 		{
+			if (General.Map == null)
+				return;
+
 			General.Map.Grid.SetGridRotation(0.0f);
 			General.Map.Grid.SetGridOrigin(0, 0);
 			General.Map.CRenderer2D.GridVisibilityChanged();
@@ -3095,6 +3143,9 @@ namespace CodeImp.DoomBuilder.Windows
 		[BeginAction("viewusedtags")]
 		internal void ViewUsedTags() 
 		{
+			if (General.Map == null)
+				return;
+
 			TagStatisticsForm f = new TagStatisticsForm();
 			f.ShowDialog(this);
 		}
@@ -3103,6 +3154,9 @@ namespace CodeImp.DoomBuilder.Windows
 		[BeginAction("viewthingtypes")]
 		internal void ViewThingTypes()
 		{
+			if (General.Map == null)
+				return;
+
 			ThingStatisticsForm f = new ThingStatisticsForm();
 			f.ShowDialog(this);
 		}
