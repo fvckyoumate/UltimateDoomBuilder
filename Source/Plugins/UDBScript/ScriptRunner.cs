@@ -26,6 +26,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using System.Threading;
 using System.Windows.Forms;
 using CodeImp.DoomBuilder.Map;
@@ -254,6 +255,22 @@ namespace CodeImp.DoomBuilder.UDBScript
 		}
 
 		/// <summary>
+		/// Makes sure that only properties for the currect feature version are available to scripts.
+		/// </summary>
+		/// <param name="info">MemberInfo about the property that's being accessed</param>
+		/// <returns>true if property can be accessed, false otherwise</returns>
+		private bool MemberFilter(MemberInfo info)
+		{
+			if (info.Name == nameof(GetType))
+				return false;
+
+			if(info.GetCustomAttribute(typeof(UDBScriptSettingsAttribute)) is UDBScriptSettingsAttribute sa)
+				return sa.MinVersion <= scriptinfo.Version;
+
+			return true;
+		}
+
+		/// <summary>
 		/// Sets everything up for running the script. This has to be done on the UI thread.
 		/// </summary>
 		/// <param name="cancellationtoken">Cancellation token to cancel the running script</param>
@@ -279,9 +296,10 @@ namespace CodeImp.DoomBuilder.UDBScript
 			Options options = new Options();
 			options.CancellationToken(cancellationtoken);
 			options.AllowOperatorOverloading();
+
 			options.SetTypeResolver(new TypeResolver
 			{
-				MemberFilter = member => member.Name != nameof(GetType)
+				MemberFilter = MemberFilter// member => member.Name != nameof(GetType)
 			});
 
 			options.CatchClrExceptions(e => e is ScriptRuntimeException || e is CantConvertToVectorException);

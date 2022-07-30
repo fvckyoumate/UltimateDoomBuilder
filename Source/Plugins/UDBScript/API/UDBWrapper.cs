@@ -207,6 +207,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		public TypeReference Thing { get { return thing; } }
 		public TypeReference Vertex { get { return vertex; } }
 
+		[UDBScriptSettings(MinVersion = 5)]
 		public TypeReference Plane { get { return plane; } }
 
 		#endregion

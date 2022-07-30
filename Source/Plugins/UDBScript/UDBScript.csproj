@@ -82,6 +82,7 @@
     <Compile Include="API\UDBWrapper.cs" />
     <Compile Include="API\Vector3DWrapper.cs" />
     <Compile Include="API\VisualCameraWrapper.cs" />
+    <Compile Include="UDBScriptSettingsAttribute.cs" />
     <Compile Include="BuilderPlug.cs" />
     <Compile Include="Controls\ScriptDockerControl.cs">
       <SubType>UserControl</SubType>
