@@ -147,9 +147,9 @@ namespace CodeImp.DoomBuilder.UDBScript
 			throw new DieScriptException(s);
 		}
 
-		public JavaScriptException CreateRuntimeException(string message)
+		public ScriptRuntimeException CreateRuntimeException(string message)
 		{
-			return new JavaScriptException(engine.Realm.Intrinsics.Error, message);
+			return new ScriptRuntimeException(message);
 		}
 
 		/// <summary>
@@ -213,15 +213,15 @@ namespace CodeImp.DoomBuilder.UDBScript
 				MessageBox.Show("There is an error while parsing the script:\n\n" + e.Message, "Script error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				abort = true;
 			}
-			else if(e is JavaScriptException)
+			else if(e is JavaScriptException jse)
 			{
-				if (((JavaScriptException)e).Error.Type != Jint.Runtime.Types.String)
+				if (jse.Error.Type != Jint.Runtime.Types.String)
 				{
-					UDBScriptErrorForm sef = new UDBScriptErrorForm(e.Message, e.StackTrace);
+					UDBScriptErrorForm sef = new UDBScriptErrorForm(jse.Message, jse.JavaScriptStackTrace);
 					sef.ShowDialog();
 				}
 				else
-					General.Interface.DisplayStatus(StatusType.Warning, e.Message); // We get here if "throw" is used in a script
+					General.Interface.DisplayStatus(StatusType.Warning, jse.Message); // We get here if "throw" is used in a script
 
 				abort = true;
 			}
@@ -283,6 +283,8 @@ namespace CodeImp.DoomBuilder.UDBScript
 			{
 				MemberFilter = member => member.Name != nameof(GetType)
 			});
+
+			options.CatchClrExceptions(e => e is ScriptRuntimeException || e is CantConvertToVectorException);
 
 			// Create the script engine
 			engine = new Engine(options);

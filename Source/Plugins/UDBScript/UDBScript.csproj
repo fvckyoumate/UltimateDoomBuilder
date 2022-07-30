@@ -78,6 +78,7 @@
     <Compile Include="API\DataWrapper.cs" />
     <Compile Include="API\GameConfigurationWrapper.cs" />
     <Compile Include="API\ImageInfo.cs" />
+    <Compile Include="API\PlaneWrapper.cs" />
     <Compile Include="API\UDBWrapper.cs" />
     <Compile Include="API\Vector3DWrapper.cs" />
     <Compile Include="API\VisualCameraWrapper.cs" />
@@ -195,7 +196,12 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>xcopy $(ProjectDir)Jint.dll $(TargetDir)Dependencies\ /y
-xcopy $(ProjectDir)Esprima.dll $(TargetDir)Dependencies\ /y</PostBuildEvent>
+xcopy $(ProjectDir)Esprima.dll $(TargetDir)Dependencies\ /y
+xcopy $(ProjectDir)System.Buffers.dll $(TargetDir)Dependencies\ /y
+xcopy $(ProjectDir)System.Memory.dll $(TargetDir)Dependencies\ /y
+xcopy $(ProjectDir)System.Numerics.Vectors.dll $(TargetDir)Dependencies\ /y
+xcopy $(ProjectDir)System.Runtime.CompilerServices.Unsafe.dll $(TargetDir)Dependencies\ /y
+</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

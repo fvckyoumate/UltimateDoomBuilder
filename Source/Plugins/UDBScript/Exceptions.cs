@@ -76,4 +76,15 @@ namespace CodeImp.DoomBuilder.UDBScript
 		{
 		}
 	}
+
+	public class ScriptRuntimeException : Exception
+	{
+		public ScriptRuntimeException()
+		{
+		}
+
+		public ScriptRuntimeException(string message) : base(message)
+		{
+		}
+	}
 }
