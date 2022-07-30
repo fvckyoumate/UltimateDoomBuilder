@@ -183,7 +183,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 				{
 					if (e.Error.Type != Jint.Runtime.Types.String)
 					{
-						UDBScriptErrorForm sef = new UDBScriptErrorForm(e.Message, e.StackTrace);
+						UDBScriptErrorForm sef = new UDBScriptErrorForm(e.Message, e.JavaScriptStackTrace, e.StackTrace);
 						sef.ShowDialog();
 					}
 					else
@@ -218,7 +218,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 			{
 				if (jse.Error.Type != Jint.Runtime.Types.String)
 				{
-					UDBScriptErrorForm sef = new UDBScriptErrorForm(jse.Message, jse.JavaScriptStackTrace);
+					UDBScriptErrorForm sef = new UDBScriptErrorForm(jse.Message, jse.JavaScriptStackTrace, jse.StackTrace);
 					sef.ShowDialog();
 				}
 				else
@@ -244,7 +244,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 			}
 			else // Catch anything else we didn't think about
 			{
-				UDBScriptErrorForm sef = new UDBScriptErrorForm(e.Message, e.StackTrace);
+				UDBScriptErrorForm sef = new UDBScriptErrorForm(e.Message, string.Empty, e.StackTrace);
 				sef.ShowDialog();
 
 				abort = true;
