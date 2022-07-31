@@ -27,6 +27,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Dynamic;
+using System.Linq;
 using CodeImp.DoomBuilder.BuilderModes;
 using CodeImp.DoomBuilder.Editing;
 using CodeImp.DoomBuilder.Geometry;
@@ -746,6 +747,26 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 			{
 				throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException(e.Message);
 			}
+		}
+
+		/// <summary>
+		/// Returns an `Array` of `Vector2D` of label positions for the `Sector`. This are the positions where for example selection number or tags are shown.
+		/// 
+		/// This example adds an imp to the label position of each sector in the map:
+		/// ```
+		/// UDB.Map.getSectors().forEach(s => {
+		///		const positions = s.getLabelPositions();
+		///		if(positions.length > 0)
+        ///			UDB.Map.createThing(positions[0], 3001);
+		///	});
+		///	```
+		/// </summary>
+		/// <returns>`Array` of `Vector2D` of all label positions</returns>
+		/// <version>5</version>
+		[UDBScriptSettings(MinVersion = 5)]
+		public Vector2DWrapper[] getLabelPositions()
+		{
+			return Tools.FindLabelPositions(sector).Select(lpi => new Vector2DWrapper(lpi.position)).ToArray();
 		}
 
 		#endregion
