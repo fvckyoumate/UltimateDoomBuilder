@@ -1,3 +1,4 @@
+from multiprocessing.forkserver import connect_to_new_process
 import xmltodict
 import glob
 import pprint
@@ -7,6 +8,8 @@ pp = pprint.PrettyPrinter(indent=4)
 
 def determine_text_type(text):
     signature = text.replace('public ', '').replace ('static ', '').replace('Wrapper', '')
+    if 'internal' in signature:
+        return 'internal', None
     if 'class ' in text or 'struct ' in text:
         return 'global', None
     if '(' not in text:
@@ -29,6 +32,9 @@ def get_sorted_comment_texts(texts):
 topics = {
     'GameConfiguration': [ '../API/GameConfigurationWrapper.cs' ],
     'Angle2D': [ '../API/Angle2DWrapper.cs' ],
+    'BlockEntry' : [ '../API/BlockEntryWrapper.cs' ],
+    'BlockMapQueryResult' : [ '../API/BlockMapQueryResult.cs' ],
+    'BlockMap' : [ '../API/BlockMapWrapper.cs' ],
     'Data': [ '../API/DataWrapper.cs' ],
     'ImageInfo': [ '../API/ImageInfo.cs' ],
     'Line2D': [ '../API/Line2DWrapper.cs' ],
@@ -62,9 +68,11 @@ for topic in topics:
             incodeblock = False
             for line in file:
                 line = line.strip()
-                if line.startswith('///'):
+                if line.startswith('['):
+                    continue
+                elif line.startswith('///'):
                     parsingcomment = True
-                    line = re.sub(r'^\t', r'', line.lstrip('/').lstrip(' '))
+                    line = re.sub(r'^\s', r'', line.lstrip('/'))
                     if line.startswith('```'):
                         if incodeblock:
                             xmltext += '```\n'
@@ -81,7 +89,7 @@ for topic in topics:
                     texttype, signature = determine_text_type(line)
                     if texttype == 'global':
                         texts['global'] = f'{summary}\n'
-                    else:
+                    elif texttype != 'internal':
                         commenttext += '\n---\n'
                         if 'version' in d:
                             commenttext += f'<span style="float:right;font-weight:normal;font-size:66%">Version: {d["version"]}</span>\n'

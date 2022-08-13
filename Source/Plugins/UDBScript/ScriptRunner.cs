@@ -302,6 +302,18 @@ namespace CodeImp.DoomBuilder.UDBScript
 				MemberFilter = MemberFilter// member => member.Name != nameof(GetType)
 			});
 
+			/*
+			options.SetWrapObjectHandler((eng, obj) =>
+			{
+				var wrapper = new ObjectWrapper(eng, obj);
+				if (wrapper.IsArrayLike || obj is BlockMapQueryResult)
+				{
+					wrapper.SetPrototypeOf(eng.Realm.Intrinsics.Array.PrototypeObject);
+				}
+				return wrapper;
+			});
+			*/
+
 			options.CatchClrExceptions(e => e is ScriptRuntimeException || e is CantConvertToVectorException);
 
 			// Create the script engine
@@ -374,6 +386,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 			// Run the script file
 			ParserOptions po = new ParserOptions(scriptinfo.ScriptFile.Remove(0, General.AppPath.Length));
 
+			stopwatch.Reset();
 			stopwatch.Start();
 			engine.Execute(script, po);
 			stopwatch.Stop();
@@ -397,6 +410,11 @@ namespace CodeImp.DoomBuilder.UDBScript
 			// Enable processing again, if required
 			for (int i = 0; i < oldprocessingcount; i++)
 				General.Interface.EnableProcessing();
+		}
+
+		public string GetRuntimeString()
+		{
+			return string.Format("{0:D2}:{1:D2}:{2:D2}.{3:D}", stopwatch.Elapsed.Hours, stopwatch.Elapsed.Minutes, stopwatch.Elapsed.Seconds, stopwatch.Elapsed.Milliseconds);
 		}
 
 		#endregion

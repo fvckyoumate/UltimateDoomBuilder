@@ -21,6 +21,8 @@
     <PlatformTarget>x64</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <DocumentationFile>
+    </DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
     <OutputPath>..\..\..\Build\Plugins\</OutputPath>
@@ -76,6 +78,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="API\Angle2DWrapper.cs" />
+    <Compile Include="API\BlockEntryWrapper.cs" />
+    <Compile Include="API\BlockMapContentBase.cs" />
+    <Compile Include="API\BlockMapQueryResult.cs" />
+    <Compile Include="API\BlockMapWrapper.cs" />
     <Compile Include="API\DataWrapper.cs" />
     <Compile Include="API\GameConfigurationWrapper.cs" />
     <Compile Include="API\ImageInfo.cs" />

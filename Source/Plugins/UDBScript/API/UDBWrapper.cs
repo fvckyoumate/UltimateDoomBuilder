@@ -61,6 +61,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 
 		// Version 5
 		private TypeReference plane;
+		private TypeReference blockmap;
 
 		private IProgress<int> progress;
 		private IProgress<string> status;
@@ -210,6 +211,9 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		[UDBScriptSettings(MinVersion = 5)]
 		public TypeReference Plane { get { return plane; } }
 
+		[UDBScriptSettings(MinVersion = 5)]
+		public TypeReference BlockMap { get { return blockmap; } }
+
 		#endregion
 
 		#region ================== Constructors
@@ -236,7 +240,9 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 			thing = TypeReference.CreateTypeReference(engine, typeof(ThingWrapper));
 			vertex = TypeReference.CreateTypeReference(engine, typeof(VertexWrapper));
 
+			// Version 5
 			plane = TypeReference.CreateTypeReference(engine, typeof(PlaneWrapper));
+			blockmap = TypeReference.CreateTypeReference(engine, typeof(BlockMapWrapper));
 
 			this.progress = progress;
 			this.status = status;

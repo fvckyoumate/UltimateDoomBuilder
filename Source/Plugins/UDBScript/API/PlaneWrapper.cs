@@ -127,6 +127,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// ```
 		/// let plane1 = new UDB.Plane(new Vector3D(0.0, -0.707, 0.707), 32);
 		/// let plane2 = new UDB.Plane([ 0.0, -0.707, 0.707 ], 32);
+		/// ```
 		/// </summary>
 		/// <param name="normal">Normal vector of the plane</param>
 		/// <param name="offset">Distance of the plane from the origin</param>

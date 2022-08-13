@@ -146,6 +146,23 @@ Gets the floor's slope vector.
 The floor's slope normal as a `Vector3D`
 
 ---
+<span style="float:right;font-weight:normal;font-size:66%">Version: 5</span>
+### getLabelPositions()
+Returns an `Array` of `Vector2D` of label positions for the `Sector`. This are the positions where for example selection number or tags are shown.
+
+This example adds an imp to the label position of each sector in the map:
+
+```js
+UDB.Map.getSectors().forEach(s => {
+	const positions = s.getLabelPositions();
+	if(positions.length > 0)
+		UDB.Map.createThing(positions[0], 3001);
+});
+```
+#### Return value
+`Array` of `Vector2D` of all label positions
+
+---
 ### getSidedefs()
 Returns an `Array` of all `Sidedef`s of the `Sector`.
 #### Return value

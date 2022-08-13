@@ -206,7 +206,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 			running = false;
 
 			Text = "Script finished";
-			lbStatus.Text = "Script finished.";
+			lbStatus.Text = "Script finished. Runtime: " + BuilderPlug.Me.ScriptRunner.GetRuntimeString();
 			btnAction.Text = "Close";
 			btnAction.Enabled = true;
 
