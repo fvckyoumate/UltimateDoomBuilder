@@ -115,7 +115,7 @@ Type of the `Thing`.
 Clears all flags.
 
 ---
-### copyPropertiesTo(t)
+### copyPropertiesTo(t: Thing)
 Copies the properties from this `Thing` to another.
 #### Parameters
 * t: The `Thing` to copy the properties to
@@ -125,7 +125,7 @@ Copies the properties from this `Thing` to another.
 Deletes the `Thing`.
 
 ---
-### distanceTo(pos)
+### distanceTo(pos: object)
 Gets the distance between this `Thing` and the given point. The point can be either a `Vector2D` or an array of numbers.
 
 ```js
@@ -138,7 +138,7 @@ t.distanceToSq([ 32, 64 ]);
 Distance to `pos`
 
 ---
-### distanceToSq(pos)
+### distanceToSq(pos: object)
 Gets the squared distance between this `Thing` and the given point.
 The point can be either a `Vector2D` or an array of numbers.
 

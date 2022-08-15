@@ -7,21 +7,37 @@ import re
 pp = pprint.PrettyPrinter(indent=4)
 
 def determine_text_type(text):
+    print('----------')
+    print(f'text: {text}')
     signature = text.replace('public ', '').replace ('static ', '').replace('Wrapper', '')
+    #print(f'signature: {signature}')
+    parameters = []
     if 'internal' in signature:
-        return 'internal', None
+        return 'internal', None, None
     if 'class ' in text or 'struct ' in text:
-        return 'global', None
+        return 'global', None, None
     if '(' not in text:
-        return 'properties', re.sub(r'[^\s]+\s+', r'', signature).rstrip(';')
+        return 'properties', re.sub(r'[^\s]+\s+', r'', signature).rstrip(';'), None
     signaturefields = signature.split('(')
+    if signaturefields[1] != ')':
+        for sf in signaturefields[1].rstrip(')').split(','):
+            ptype, pname = sf.split(' ')
+            parameters.append({ 'name': pname, 'type': ptype })
+    #print('parametertypes:')
+    #for pt in parametertypes:
+    #    print(f'\t{pt}')
+    name = re.sub(r'[^\s]+\s+', r'', signaturefields[0])
+    print(f'name: {name}')
+    for p in parameters:
+        print(f'pname: {p["name"]}, ptype: {p["type"]}')
     signature = re.sub(r'[^\s]+\s+', r'', signaturefields[0]) + '(' + re.sub(r'([^\s]+) ([^,]+)(,?\s*)', r'\2\3', signaturefields[1])
+    #print(f'signature: {signature}')
     fields = text.split()
     if fields[0] == 'public' and ('Wrapper(' in fields[1] or 'QueryOptions(' in fields[1]):
-        return 'constructors', signature
+        return 'constructors', name, parameters
     elif fields[1] == 'static':
-        return 'staticmethods', signature
-    return 'methods', signature
+        return 'staticmethods', name, parameters
+    return 'methods', name, parameters
 
 def get_sorted_comment_texts(texts):
     text = ''
@@ -30,25 +46,25 @@ def get_sorted_comment_texts(texts):
     return text
 
 topics = {
-    'GameConfiguration': [ '../API/GameConfigurationWrapper.cs' ],
-    'Angle2D': [ '../API/Angle2DWrapper.cs' ],
-    'BlockEntry' : [ '../API/BlockEntryWrapper.cs' ],
-    'BlockMapQueryResult' : [ '../API/BlockMapQueryResult.cs' ],
-    'BlockMap' : [ '../API/BlockMapWrapper.cs' ],
-    'Data': [ '../API/DataWrapper.cs' ],
-    'ImageInfo': [ '../API/ImageInfo.cs' ],
-    'Line2D': [ '../API/Line2DWrapper.cs' ],
-    'Linedef': [ '../API/LinedefWrapper.cs', '../API/MapElementWrapper.cs' ],
-    'Map': [ '../API/MapWrapper.cs' ],
-    'Sector': [ '../API/SectorWrapper.cs', '../API/MapElementWrapper.cs' ],
-    'Sidedef': [ '../API/SidedefWrapper.cs', '../API/MapElementWrapper.cs' ],
-    'Thing': [ '../API/ThingWrapper.cs', '../API/MapElementWrapper.cs' ],
-    'UDB': [ '../API/UDBWrapper.cs' ],
-    'Vector2D': [ '../API/Vector2DWrapper.cs' ],
-    'Vector3D': [ '../API/Vector3DWrapper.cs' ],
+#    'GameConfiguration': [ '../API/GameConfigurationWrapper.cs' ],
+#    'Angle2D': [ '../API/Angle2DWrapper.cs' ],
+#    'BlockEntry' : [ '../API/BlockEntryWrapper.cs' ],
+#    'BlockMapQueryResult' : [ '../API/BlockMapQueryResult.cs' ],
+#    'BlockMap' : [ '../API/BlockMapWrapper.cs' ],
+#    'Data': [ '../API/DataWrapper.cs' ],
+#    'ImageInfo': [ '../API/ImageInfo.cs' ],
+#    'Line2D': [ '../API/Line2DWrapper.cs' ],
+#    'Linedef': [ '../API/LinedefWrapper.cs', '../API/MapElementWrapper.cs' ],
+#    'Map': [ '../API/MapWrapper.cs' ],
+#    'Sector': [ '../API/SectorWrapper.cs', '../API/MapElementWrapper.cs' ],
+#    'Sidedef': [ '../API/SidedefWrapper.cs', '../API/MapElementWrapper.cs' ],
+#    'Thing': [ '../API/ThingWrapper.cs', '../API/MapElementWrapper.cs' ],
+#    'UDB': [ '../API/UDBWrapper.cs' ],
+#    'Vector2D': [ '../API/Vector2DWrapper.cs' ],
+#    'Vector3D': [ '../API/Vector3DWrapper.cs' ],
     'Vertex': [ '../API/VertexWrapper.cs', '../API/MapElementWrapper.cs' ],
-    'VisualCamera': [ '../API/VisualCameraWrapper.cs' ],
-    'QueryOptions': [ '../QueryOptions.cs' ],
+#    'VisualCamera': [ '../API/VisualCameraWrapper.cs' ],
+#    'QueryOptions': [ '../QueryOptions.cs' ],
 }
 
 for topic in topics:
@@ -86,15 +102,20 @@ for topic in topics:
                     commenttext = ''
                     d = xmltodict.parse('<d>' + xmltext + '</d>')['d']
                     summary = d['summary']
-                    texttype, signature = determine_text_type(line)
+                    texttype, signature, parameters = determine_text_type(line)
                     if texttype == 'global':
                         texts['global'] = f'{summary}\n'
                     elif texttype != 'internal':
                         commenttext += '\n---\n'
                         if 'version' in d:
                             commenttext += f'<span style="float:right;font-weight:normal;font-size:66%">Version: {d["version"]}</span>\n'
-                        commenttext += f'### {signature}\n'
-
+                        commenttext += f'### {signature}('
+                        if parameters is not None:
+                            for param in parameters:
+                                commenttext += f'{param["name"]}: {param["type"]}, '
+                            if commenttext.endswith(', '):
+                                commenttext = commenttext[:-2]
+                        commenttext += ')\n'
                         commenttext += f'{summary}\n'
                         if 'param' in d:
                             commenttext += '#### Parameters\n'

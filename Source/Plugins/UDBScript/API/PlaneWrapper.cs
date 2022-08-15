@@ -123,7 +123,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		#region ================== Constructors
 
 		/// <summary>
-		/// Creates a new `Plane` from a normal and an offset.
+		/// Creates a new `Plane` from a normal and an offset. The normal vector has to be `Vector3D`, `Array`s of 3 numbers, or an object with x, y, and z properties.
 		/// ```
 		/// let plane1 = new UDB.Plane(new Vector3D(0.0, -0.707, 0.707), 32);
 		/// let plane2 = new UDB.Plane([ 0.0, -0.707, 0.707 ], 32);
@@ -136,6 +136,17 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 			plane = new Plane((Vector3D)BuilderPlug.Me.GetVectorFromObject(normal, true), offset);
 		}
 
+		/// <summary>
+		/// Creates a new `Plane` from 3 points. The points have to be `Vector3D`, `Array`s of 3 numbers, or an object with x, y, and z properties.
+		/// ```
+		/// let plane1 = new UDB.Plane(new Vector3D(0, 0, 0), new Vector3D(64, 0, 0), new Vector3D(64, 64, 32), true);
+		/// let plane2 = new UDB.Plane([ 0, 0, 0 ], [ 64, 0, 0 ], [ 64, 64, 32 ], true);
+		/// ```
+		/// </summary>
+		/// <param name="p1">First point</param>
+		/// <param name="p2">Second point</param>
+		/// <param name="p3">Thrid point</param>
+		/// <param name="up">`true` if plane is pointing up, `false` if pointing down</param>
 		public PlaneWrapper(object p1, object p2, object p3, bool up)
 		{
 			Vector3D v1 = (Vector3D)BuilderPlug.Me.GetVectorFromObject(p1, true);
@@ -144,21 +155,6 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 
 			plane = new Plane(v1, v2, v3, up);
 		}
-
-		/*
-		public PlaneWrapper(object center, double anglexy, double anglez, bool up)
-		{
-			try
-			{
-				Vector3D c = (Vector3D)BuilderPlug.Me.GetVectorFromObject(center, true);
-				plane = new Plane(c, anglexy, anglez, up);
-			}
-			catch (CantConvertToVectorException e)
-			{
-				throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException(e.Message);
-			}
-		}
-		*/
 
 		#endregion
 
@@ -229,7 +225,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// UDB.log(plane.getZ([ 16, 16 ])); // Prints '8'
 		/// ```
 		/// </summary>
-		/// <param name="p"></param>
+		/// <param name="p">Point to get the z position from</param>
 		/// <returns></returns>
 		public double getZ(object p)
 		{

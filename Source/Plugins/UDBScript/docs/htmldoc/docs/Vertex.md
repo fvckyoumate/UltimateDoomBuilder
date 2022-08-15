@@ -70,7 +70,7 @@ If the `Vertex` is selected or not.
 ## Methods
 
 ---
-### copyPropertiesTo(v)
+### copyPropertiesTo(v: Vertex)
 Copies the properties from this `Vertex` to another.
 #### Parameters
 * v: the vertex to copy the properties to
@@ -80,7 +80,7 @@ Copies the properties from this `Vertex` to another.
 Deletes the `Vertex`. Note that this can result in unclosed sectors.
 
 ---
-### distanceTo(pos)
+### distanceTo(pos: object)
 Gets the distance between this `Vertex` and the given point.
 The point can be either a `Vector2D` or an array of numbers.
 
@@ -94,7 +94,7 @@ v.distanceTo([ 32, 64 ]);
 Distance to `pos`
 
 ---
-### distanceToSq(pos)
+### distanceToSq(pos: object)
 Gets the squared distance between this `Vertex` and the given point.
 The point can be either a `Vector2D` or an array of numbers.
 
@@ -114,13 +114,13 @@ Gets all `Linedefs` that are connected to this `Vertex`.
 Array of linedefs
 
 ---
-### join(other)
+### join(other: Vertex)
 Joins this `Vertex` with another `Vertex`, deleting this `Vertex` and keeping the other.
 #### Parameters
 * other: `Vertex` to join with
 
 ---
-### nearestLinedef(pos)
+### nearestLinedef(pos: object)
 Returns the `Linedef` that is connected to this `Vertex` that is closest to the given point.
 #### Parameters
 * pos: Point to get the nearest `Linedef` connected to this `Vertex` from

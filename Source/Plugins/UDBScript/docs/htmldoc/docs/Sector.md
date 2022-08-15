@@ -112,7 +112,7 @@ The `Sector`'s tag.
 ## Methods
 
 ---
-### addTag(tag)
+### addTag(tag: int)
 Adds a tag to the `Sector`. UDMF only. Supported game configurations only.
 #### Parameters
 * tag: Tag to add
@@ -124,7 +124,7 @@ Adds a tag to the `Sector`. UDMF only. Supported game configurations only.
 Clears all flags.
 
 ---
-### copyPropertiesTo(s)
+### copyPropertiesTo(s: Sector)
 Copies the properties from this `Sector` to another.
 #### Parameters
 * s: the `Sector` to copy the properties to
@@ -181,7 +181,7 @@ Gets an array of `Vector2D` arrays, representing the vertices of the triangulate
 Array of `Vector2D` arrays
 
 ---
-### intersect(p)
+### intersect(p: object)
 Checks if the given point is in this `Sector` or not. The given point can be a `Vector2D` or an `Array` of two numbers.
 
 ```js
@@ -197,13 +197,13 @@ if(s.intersect([ 32, 64 ]))
 `true` if the point is in the `Sector`, `false` if it isn't
 
 ---
-### join(other)
+### join(other: Sector)
 Joins this `Sector` with another `Sector`. Lines shared between the sectors will not be removed.
 #### Parameters
 * other: Sector to join with
 
 ---
-### removeTag(tag)
+### removeTag(tag: int)
 Removes a tag from the `Sector`. UDMF only. Supported game configurations only.
 #### Parameters
 * tag: Tag to remove
@@ -211,13 +211,13 @@ Removes a tag from the `Sector`. UDMF only. Supported game configurations only.
 `true` when the tag was removed successfully, `false` when the tag did not exist
 
 ---
-### setCeilingSlope(normal)
+### setCeilingSlope(normal: object)
 Sets the ceiling's slope vector. The vector has to be normalized.
 #### Parameters
 * normal: The new slope vector as `Vector3D`
 
 ---
-### setFloorSlope(normal)
+### setFloorSlope(normal: object)
 Sets the floor's slope vector. The vector has to be normalized.
 #### Parameters
 * normal: The new slope vector as `Vector3D`

@@ -117,7 +117,7 @@ The linedef's start `Vertex`.
 ## Methods
 
 ---
-### addTag(tag)
+### addTag(tag: int)
 Adds a tag to the `Linedef`. UDMF only. Supported game configurations only.
 #### Parameters
 * tag: Tag to add
@@ -133,7 +133,7 @@ Automatically sets the blocking and two-sided flags based on the existing `Sided
 Clears all flags.
 
 ---
-### copyPropertiesTo(other)
+### copyPropertiesTo(other: Linedef)
 Copies the properties of this `Linedef` to another `Linedef`.
 #### Parameters
 * other: The `Linedef` to copy the properties to
@@ -143,7 +143,7 @@ Copies the properties of this `Linedef` to another `Linedef`.
 Deletes the `Linedef`. Note that this will result in unclosed `Sector`s unless it has the same `Sector`s on both sides.
 
 ---
-### distanceTo(pos, bounded)
+### distanceTo(pos: object, bounded: bool)
 Gets the shortest distance from `pos` to the line.
 #### Parameters
 * pos: Point to check against
@@ -152,7 +152,7 @@ Gets the shortest distance from `pos` to the line.
 Distance to the line
 
 ---
-### distanceToSq(pos, bounded)
+### distanceToSq(pos: object, bounded: bool)
 Gets the shortest squared distance from `pos` to the line.
 #### Parameters
 * pos: Point to check against
@@ -179,7 +179,7 @@ Gets a `Vector2D` that's in the center of the `Linedef`.
 `Vector2D` in the center of the `Linedef`
 
 ---
-### getSidePoint(front)
+### getSidePoint(front: bool)
 Gets a `Vector2D` for testing on one side. The `Vector2D` is on the front when `true` is passed, otherwise on the back.
 #### Parameters
 * front: `true` for front, `false` for back
@@ -193,7 +193,7 @@ Returns an `Array` of the `Linedef`'s tags. UDMF only. Supported game configurat
 `Array` of tags
 
 ---
-### nearestOnLine(pos)
+### nearestOnLine(pos: object)
 Get a `Vector2D` that's *on* the line, closest to `pos`. `pos` can either be a `Vector2D`, or an array of numbers.
 
 ```js
@@ -206,7 +206,7 @@ var v2 = ld.nearestOnLine([ 32, 64 ]);
 `Vector2D` that's on the linedef
 
 ---
-### removeTag(tag)
+### removeTag(tag: int)
 Removes a tag from the `Linedef`. UDMF only. Supported game configurations only.
 #### Parameters
 * tag: Tag to remove
@@ -214,7 +214,7 @@ Removes a tag from the `Linedef`. UDMF only. Supported game configurations only.
 `true` when the tag was removed successfully, `false` when the tag did not exist
 
 ---
-### safeDistanceTo(pos, bounded)
+### safeDistanceTo(pos: object, bounded: bool)
 Gets the shortest "safe" distance from `pos` to the line. If `bounded` is `true` that means that the not the whole line's length will be used, but `lengthInv` less at the start and end.
 #### Parameters
 * pos: Point to check against
@@ -223,7 +223,7 @@ Gets the shortest "safe" distance from `pos` to the line. If `bounded` is `true`
 Distance to the line
 
 ---
-### safeDistanceToSq(pos, bounded)
+### safeDistanceToSq(pos: object, bounded: bool)
 Gets the shortest "safe" squared distance from `pos` to the line. If `bounded` is `true` that means that the not the whole line's length will be used, but `lengthInv` less at the start and end.
 #### Parameters
 * pos: Point to check against
@@ -232,7 +232,7 @@ Gets the shortest "safe" squared distance from `pos` to the line. If `bounded` i
 Squared distance to the line
 
 ---
-### sideOfLine(pos)
+### sideOfLine(pos: object)
 Tests which side of the `Linedef` `pos` is on. Returns < 0 for front (right) side, > for back (left) side, and 0 if `pos` is on the line.
 #### Parameters
 * pos: Point to check against
@@ -240,7 +240,7 @@ Tests which side of the `Linedef` `pos` is on. Returns < 0 for front (right) sid
 < 0 for front (right) side, > for back (left) side, and 0 if `pos` is on the line
 
 ---
-### split(pos)
+### split(pos: object)
 Splits the `Linedef` at the given position. This can either be a `Vector2D`, an array of numbers, or an existing `Vertex`. The result will be two lines, from the start `Vertex` of the `Linedef` to `pos`, and from `pos` to the end `Vertex` of the `Linedef`.
 #### Parameters
 * pos: `Vertex` to split by

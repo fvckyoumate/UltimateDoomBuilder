@@ -45,7 +45,7 @@ const blockmap = new UDB.BlockMap();
 ```
 
 ---
-### BlockMap(lines, things, sectors, vertices)
+### BlockMap(lines: bool, things: bool, sectors: bool, vertices: bool)
 Creates a blockmap that only includes certain map element types.
 
 ```js
@@ -60,25 +60,7 @@ const blockmap = new UDB.BlockMap(false, false, true, false);
 ## Methods
 
 ---
-### CreateBlockmap(lines, things, sectors, vertices)
-Generates the blockmap and adds the wanted map elements.
-#### Parameters
-* lines: If linedefs should be added or not
-* things: If thigs should be added or not
-* sectors: If sectors should be added or not
-* vertices: If vertices should be added or not
-
----
-### IsOptionSet(object> options, name)
-Checks if a dictionary contains a given key and if it's set to true or false.
-#### Parameters
-* options: The dictionary to check
-* name: Name of the option to check
-#### Return value
-true if the option exists and is set to true, false if the option doesn't exist or is set to false
-
----
-### getBlockAt(pos)
+### getBlockAt(pos: object)
 Gets the `BlockEntry` at a point. The given point can be a `Vector2D` or an `Array` of two numbers.
 
 ```js
@@ -91,7 +73,7 @@ const blockentry = blockmap.getBlockAt([ 64, 128 ]);
 The `BlockEntry` on the given point
 
 ---
-### getLineBlocks(v1, v2)
+### getLineBlocks(v1: object, v2: object)
 Gets a `BlockMapQueryResult` for the blockmap along a line between two points. The given points can be `Vector2D`s or an `Array`s of two numbers.
 
 ```js
@@ -105,7 +87,7 @@ const result = blockmap.getLineBlocks([ 0, 0 ], [ 512, 256 ]);
 The `BlockMapQueryResult` for the line between the two points
 
 ---
-### getRectangleBlocks(x, y, width, height)
+### getRectangleBlocks(x: int, y: int, width: int, height: int)
 Gets a `BlockMapQueryResult` for the blockmap in a rectangle.
 
 ```js

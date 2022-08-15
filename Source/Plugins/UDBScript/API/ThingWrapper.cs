@@ -146,6 +146,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// <summary>
 		/// `Array` of arguments of the `Thing`. Number of arguments depends on game config (usually 5). Hexen format and UDMF only.
 		/// </summary>
+		/// <fakedtstype>number[]</fakedtstype>
 		public MapElementArgumentsWrapper args
 		{
 			get

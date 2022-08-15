@@ -38,6 +38,27 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 {
 	internal class MapWrapper
 	{
+		#region ================== Enums
+
+		/// <summary>
+		/// How geometry should be merged when geometry is stitched.
+		/// ```
+		/// UDB.Map.stitchGeometry(UDB.Map.MergeometryMode.MERGE);
+		/// ```
+		/// </summary>
+		/// <enum name="CLASSIC">Merge vertices only</enum>
+		/// <enum name="MERGE">Merge vertices and lines</enum>
+		/// <enum name="REPLACE">Merge vertices and lines, replacing sector geometry</enum>
+		[UDBScriptSettings(MinVersion = 5)]
+		public enum MergeGeometryMode
+		{
+			CLASSIC = Map.MergeGeometryMode.CLASSIC,
+			MERGE = Map.MergeGeometryMode.MERGE,
+			REPLACE = Map.MergeGeometryMode.REPLACE
+		}
+
+		#endregion
+
 		#region ================== Variables
 
 		private MapSet map;
@@ -221,11 +242,18 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// <summary>
 		/// Stitches marked geometry with non-marked geometry.
 		/// </summary>
-		/// <param name="mergemode">Mode to merge by</param>
+		/// <param name="mergemode">Mode to merge by as `MergeGeometryMode`</param>
 		/// <returns>`true` if successful, `false` if failed</returns>
 		public bool stitchGeometry(MergeGeometryMode mergemode = MergeGeometryMode.CLASSIC)
 		{
-			return General.Map.Map.StitchGeometry(mergemode);
+			if(mergemode == MergeGeometryMode.CLASSIC)
+				return General.Map.Map.StitchGeometry(Map.MergeGeometryMode.CLASSIC);
+			else if(mergemode == MergeGeometryMode.MERGE)
+				return General.Map.Map.StitchGeometry(Map.MergeGeometryMode.MERGE);
+			else if(mergemode == MergeGeometryMode.REPLACE)
+				return General.Map.Map.StitchGeometry(Map.MergeGeometryMode.REPLACE);
+
+			throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Unknown MergeGeometryMode value");
 		}
 
 		/// <summary>
