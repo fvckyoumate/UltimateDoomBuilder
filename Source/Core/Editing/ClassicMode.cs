@@ -1063,6 +1063,15 @@ namespace CodeImp.DoomBuilder.Editing
 			General.Settings.UseHighlight = !General.Settings.UseHighlight;
 			General.Interface.DisplayStatus(StatusType.Action, "Highlight is now " + (General.Settings.UseHighlight ? "ON" : "OFF") + ".");
 
+			string text = "Highlight is now " + (General.Settings.UseHighlight ? "ON" : "OFF") + ".";
+
+			string key = Actions.Action.GetShortcutKeyDesc(General.Actions.Current.ShortcutKey);
+
+			if (!string.IsNullOrEmpty(key))
+				text += $" Press '{key}' to toggle.";
+
+			General.Interface.AddToast(ToastType.INFO, "Changed highlight", text);
+
 			// Redraw display to show changes
 			General.Interface.RedrawDisplay();
 		}

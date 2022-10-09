@@ -1,6 +1,30 @@
-﻿using System;
+﻿#region ================== Copyright (c) 2022 Boris Iwanski
+
+/*
+ * This program is free software: you can redistribute it and/or modify
+ *
+ * it under the terms of the GNU General Public License as published by
+ * 
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
+ * 
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program.If not, see<http://www.gnu.org/licenses/>.
+ */
+
+#endregion
+
+using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 using CodeImp.DoomBuilder.Controls;
 
@@ -13,27 +37,30 @@ namespace CodeImp.DoomBuilder
 		ERROR
 	}
 
-	public enum ToastAnchor
+	internal enum ToastAnchor
 	{
-		TOPLEFT,
+		TOPLEFT = 1,
 		TOPRIGHT,
 		BOTTOMRIGHT,
 		BOTTOMLEFT
 	}
 
-	public class ToastManager
+	internal class ToastManager
 	{
+		#region ================== Variables
+
 		private List<ToastControl> toasts;
 		private Control bindcontrol;
 		private Timer timer;
+		private Dictionary<string, bool> registeredactions;
 
-		public ToastAnchor Anchor { get; set; }
+		#endregion
+
+		#region ================== Constructors
 
 		public ToastManager(Control bindcontrol)
 		{
 			toasts = new List<ToastControl>();
-
-			Anchor = ToastAnchor.TOPLEFT;
 
 			this.bindcontrol = bindcontrol;
 
@@ -41,7 +68,18 @@ namespace CodeImp.DoomBuilder
 			timer = new Timer();
 			timer.Interval = 1;
 			timer.Tick += UpdateEvent;
+
+			// Find actions that are registered for toasts and load their visibility setting
+			registeredactions = new Dictionary<string, bool>();
+			foreach (Actions.Action action in General.Actions.GetAllActions().Where(a => a.RegisterToast))
+			{
+				registeredactions[action.Name] = General.Settings.ReadSetting($"toasts.visibility.{action.Name}", true);
+			}
 		}
+
+		#endregion
+
+		#region ================== Events
 
 		private void UpdateEvent(object sender, EventArgs args)
 		{
@@ -68,12 +106,13 @@ namespace CodeImp.DoomBuilder
 			}
 
 			ToastControl ft = toasts[0];
+			ToastAnchor anchor = GetAnchorFromNumber(General.Settings.ToastPosition);
 
 			// We only need to update the first toasts if it didn't reach it end position yet
 			bool needsupdate =
-				((Anchor == ToastAnchor.TOPLEFT || Anchor == ToastAnchor.TOPRIGHT) && ft.Location.Y != ft.Margin.Top)
+				((anchor == ToastAnchor.TOPLEFT || anchor == ToastAnchor.TOPRIGHT) && ft.Location.Y != ft.Margin.Top)
 				||
-				((Anchor == ToastAnchor.BOTTOMLEFT || Anchor == ToastAnchor.BOTTOMRIGHT) && ft.Location.Y != bindcontrol.Height - ft.Height - ft.Margin.Bottom)
+				((anchor == ToastAnchor.BOTTOMLEFT || anchor == ToastAnchor.BOTTOMRIGHT) && ft.Location.Y != bindcontrol.Height - ft.Height - ft.Margin.Bottom)
 			;
 
 			if(needsupdate)
@@ -81,14 +120,14 @@ namespace CodeImp.DoomBuilder
 				int left;
 				int top;
 
-				if (Anchor == ToastAnchor.TOPLEFT || Anchor == ToastAnchor.BOTTOMLEFT)
+				if (anchor == ToastAnchor.TOPLEFT || anchor == ToastAnchor.BOTTOMLEFT)
 					left = ft.Margin.Right;
 				else
 					left = bindcontrol.Width - ft.Width - ft.Margin.Right;
 
 				// This moves the toast up or down a bit, depending on its anchor position. How fast this happens depends on
 				// the control's height, i.e. no matter the height a toast will always take the same time to slide in
-				if (Anchor == ToastAnchor.TOPLEFT || Anchor == ToastAnchor.TOPRIGHT)
+				if (anchor == ToastAnchor.TOPLEFT || anchor == ToastAnchor.TOPRIGHT)
 					top = ft.Location.Y + ft.Height / 5;
 				else
 					top = ft.Location.Y - ft.Height / 5;
@@ -96,9 +135,9 @@ namespace CodeImp.DoomBuilder
 				Point newLocation = new Point(left, top);
 
 				// If the movement overshot the final position snap it back to the final position
-				if ((Anchor == ToastAnchor.BOTTOMLEFT || Anchor == ToastAnchor.BOTTOMRIGHT) && newLocation.Y < bindcontrol.Height - ft.Height - ft.Margin.Bottom)
+				if ((anchor == ToastAnchor.BOTTOMLEFT || anchor == ToastAnchor.BOTTOMRIGHT) && newLocation.Y < bindcontrol.Height - ft.Height - ft.Margin.Bottom)
 					newLocation.Y = bindcontrol.Height - ft.Height - ft.Margin.Bottom;
-				else if ((Anchor == ToastAnchor.TOPLEFT || Anchor == ToastAnchor.TOPRIGHT) && newLocation.Y > ft.Margin.Top)
+				else if ((anchor == ToastAnchor.TOPLEFT || anchor == ToastAnchor.TOPRIGHT) && newLocation.Y > ft.Margin.Top)
 					newLocation.Y = ft.Margin.Top;
 
 				ft.Location = newLocation;
@@ -111,7 +150,7 @@ namespace CodeImp.DoomBuilder
 				{
 					int top;
 
-					if (Anchor == ToastAnchor.TOPLEFT || Anchor == ToastAnchor.TOPRIGHT)
+					if (anchor == ToastAnchor.TOPLEFT || anchor == ToastAnchor.TOPRIGHT)
 						top = toasts[i - 1].Bottom + toasts[i - 1].Margin.Bottom;
 					else
 						top = toasts[i - 1].Location.Y - toasts[i].Height - toasts[i].Margin.Bottom;
@@ -124,6 +163,20 @@ namespace CodeImp.DoomBuilder
 			}
 		}
 
+		#endregion
+
+		#region ================== Methods
+
+		/// <summary>
+		/// Gets the ToastAnchor from a number. Makes sure the input is valid, otherwise returns a default.
+		/// </summary>
+		/// <param name="number">The number</param>
+		/// <returns>The appropriate ToastAnchor, or BOTTOMRIGHT if input is not valid</returns>
+		private ToastAnchor GetAnchorFromNumber(int number)
+		{
+			return Enum.IsDefined(typeof(ToastAnchor), number) ? (ToastAnchor)number : ToastAnchor.BOTTOMRIGHT;
+		}
+
 		/// <summary>
 		/// Adds a new toast.
 		/// </summary>
@@ -131,6 +184,9 @@ namespace CodeImp.DoomBuilder
 		/// <param name="text">The message body of the toast</param>
 		public void AddToast(ToastType type, string text)
 		{
+			if (!General.Settings.ToastsEnabled)
+				return;
+
 			string title = "Information";
 
 			if (type == ToastType.WARNING)
@@ -149,11 +205,21 @@ namespace CodeImp.DoomBuilder
 		/// <param name="text">The message body of the toast</param>
 		public void AddToast(ToastType type, string title, string text)
 		{
-			ToastControl tc = new ToastControl(type, title, text);
+			if (!General.Settings.ToastsEnabled)
+				return;
+
+			if(General.Actions.Current != null)
+			{
+				if (General.Settings.ToastActionsEnabled.ContainsKey(General.Actions.Current.Name) && General.Settings.ToastActionsEnabled[General.Actions.Current.Name] == false)
+					return;
+			}
+
+			ToastControl tc = new ToastControl(type, title, text, General.Settings.ToastDuration);
+			ToastAnchor anchor = GetAnchorFromNumber(General.Settings.ToastPosition);
 
 			// Set the initial y position of the control so that it's outside of the control the toast manager is bound to.
 			// No need to care about the x position, since that will be set in the update event anyway
-			if (Anchor == ToastAnchor.TOPLEFT || Anchor == ToastAnchor.TOPRIGHT)
+			if (anchor == ToastAnchor.TOPLEFT || anchor == ToastAnchor.TOPRIGHT)
 				tc.Location = new Point(0, -tc.Height);
 			else
 				tc.Location = new Point(0, bindcontrol.Height);
@@ -169,5 +235,7 @@ namespace CodeImp.DoomBuilder
 			if (!timer.Enabled)
 				timer.Start();
 		}
+
+		#endregion
 	}
 }

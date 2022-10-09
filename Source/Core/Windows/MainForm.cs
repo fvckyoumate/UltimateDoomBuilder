@@ -186,6 +186,8 @@ namespace CodeImp.DoomBuilder.Windows
 		public static SizeF DPIScaler = new SizeF(1.0f, 1.0f); //mxd
 		public int ProcessingCount { get { return processingcount; } }
 
+		internal ToastManager ToastManager { get { return toastmanager; } }
+
 		#endregion
 
 		#region ================== Constructor / Disposer
@@ -757,11 +759,22 @@ namespace CodeImp.DoomBuilder.Windows
 
 		#region ================== Toasts
 
+		/// <summary>
+		/// Adds a new toast.
+		/// </summary>
+		/// <param name="type">Toast type</param>
+		/// <param name="text">The message body of the toast</param>
 		public void AddToast(ToastType type, string text)
 		{
 			toastmanager.AddToast(type, text);
 		}
 
+		/// <summary>
+		/// Adds a new toast.
+		/// </summary>
+		/// <param name="type">Toast type</param>
+		/// <param name="title">Title of the toast</param>
+		/// <param name="text">The message body of the toast</param>
 		public void AddToast(ToastType type, string title, string text)
 		{
 			toastmanager.AddToast(type, title, text);
