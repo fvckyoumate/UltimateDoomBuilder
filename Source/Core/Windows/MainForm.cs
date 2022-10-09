@@ -161,6 +161,8 @@ namespace CodeImp.DoomBuilder.Windows
 		private Graphics graphics;
 
 		private CommandPaletteControl commandpalette;
+
+		private ToastManager toastmanager;
 		
 		#endregion
 
@@ -183,7 +185,7 @@ namespace CodeImp.DoomBuilder.Windows
 		public static Size ScaledIconSize = new Size(16, 16); //mxd
 		public static SizeF DPIScaler = new SizeF(1.0f, 1.0f); //mxd
 		public int ProcessingCount { get { return processingcount; } }
-		
+
 		#endregion
 
 		#region ================== Constructor / Disposer
@@ -289,6 +291,8 @@ namespace CodeImp.DoomBuilder.Windows
 			//mxd. Hints
 			hintsPanel = new HintsPanel();
 			hintsDocker = new Docker("hints", "Help", hintsPanel);
+
+			toastmanager = new ToastManager(display);
 
 			KeyPreview = true;
 			PreviewKeyDown += new PreviewKeyDownEventHandler(MainForm_PreviewKeyDown);
@@ -750,9 +754,23 @@ namespace CodeImp.DoomBuilder.Windows
 		}
 
 		#endregion
-		
+
+		#region ================== Toasts
+
+		public void AddToast(ToastType type, string text)
+		{
+			toastmanager.AddToast(type, text);
+		}
+
+		public void AddToast(ToastType type, string title, string text)
+		{
+			toastmanager.AddToast(type, title, text);
+		}
+
+		#endregion
+
 		#region ================== Statusbar
-		
+
 		// This updates the status bar
 		private void UpdateStatusbar()
 		{

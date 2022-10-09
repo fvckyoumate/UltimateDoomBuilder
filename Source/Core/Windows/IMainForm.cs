@@ -228,5 +228,20 @@ namespace CodeImp.DoomBuilder.Windows
 		/// This selected the previously selected docker in the side panel.
 		/// </summary>
 		void SelectPreviousDocker();
+
+		/// <summary>
+		/// Adds a new toast.
+		/// </summary>
+		/// <param name="type">Toast type</param>
+		/// <param name="text">The message body of the toast</param>
+		void AddToast(ToastType type, string text);
+
+		/// <summary>
+		/// Adds a new toast.
+		/// </summary>
+		/// <param name="type">Toast type</param>
+		/// <param name="title">Title of the toast</param>
+		/// <param name="text">The message body of the toast</param>
+		void AddToast(ToastType type, string title, string text);
 	}
 }
