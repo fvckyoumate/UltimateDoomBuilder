@@ -1060,17 +1060,19 @@ namespace CodeImp.DoomBuilder.Editing
 		[BeginAction("togglehighlight", BaseAction = true)]
 		protected virtual void ToggleHighlight()
 		{
+			//System.Reflection.MethodBase mb = ToastManager.GCM(); // System.Reflection.MethodBase.GetCurrentMethod();
 			General.Settings.UseHighlight = !General.Settings.UseHighlight;
-			General.Interface.DisplayStatus(StatusType.Action, "Highlight is now " + (General.Settings.UseHighlight ? "ON" : "OFF") + ".");
+			//General.Interface.DisplayStatus(StatusType.Action, "Highlight is now " + (General.Settings.UseHighlight ? "ON" : "OFF") + ".");
 
-			string text = "Highlight is now " + (General.Settings.UseHighlight ? "ON" : "OFF") + ".";
+			string shortmessage = "Highlight is now " + (General.Settings.UseHighlight ? "ON" : "OFF") + ".";
+			string message = "Highlight is now " + (General.Settings.UseHighlight ? "ON" : "OFF") + ".";
 
 			string key = Actions.Action.GetShortcutKeyDesc(General.Actions.Current.ShortcutKey);
 
 			if (!string.IsNullOrEmpty(key))
-				text += $" Press '{key}' to toggle.";
+				message += $" Press '{key}' to toggle.";
 
-			General.Interface.AddToast(ToastType.INFO, "Changed highlight", text);
+			General.Interface.ToastManager.AddToast(ToastType.INFO, "Changed highlight", message, new StatusInfo(StatusType.Action, shortmessage));
 
 			// Redraw display to show changes
 			General.Interface.RedrawDisplay();

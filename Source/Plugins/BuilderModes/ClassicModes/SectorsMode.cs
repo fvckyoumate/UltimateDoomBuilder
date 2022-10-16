@@ -1932,8 +1932,9 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			}
 			else //mxd
 			{
-				General.Interface.DisplayStatus(StatusType.Warning, "This action requires a highlight or selection!");
-				General.Interface.AddToast(ToastType.WARNING, "Couldn't create door", "You need to highlight or select at least one sector to create a door.");
+				//General.Interface.DisplayStatus(StatusType.Warning, "This action requires a highlight or selection!");
+				string message = "You need to highlight or select at least one sector to create a door.";
+				General.Interface.AddToast(ToastType.WARNING, "Couldn't create door", message, message);
 			}
 		}
 		

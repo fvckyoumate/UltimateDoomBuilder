@@ -186,7 +186,7 @@ namespace CodeImp.DoomBuilder.Windows
 		public static SizeF DPIScaler = new SizeF(1.0f, 1.0f); //mxd
 		public int ProcessingCount { get { return processingcount; } }
 
-		internal ToastManager ToastManager { get { return toastmanager; } }
+		public ToastManager ToastManager { get { return toastmanager; } }
 
 		#endregion
 
@@ -763,10 +763,22 @@ namespace CodeImp.DoomBuilder.Windows
 		/// Adds a new toast.
 		/// </summary>
 		/// <param name="type">Toast type</param>
-		/// <param name="text">The message body of the toast</param>
-		public void AddToast(ToastType type, string text)
+		/// <param name="message">The message body of the toast</param>
+		/// <param name="shortmessage">The message to show in the status line when toasts are disabled</param>
+		public void AddToast(ToastType type, string message, string shortmessage)
 		{
-			toastmanager.AddToast(type, text);
+			toastmanager.AddToast(type, message, shortmessage);
+		}
+
+		/// <summary>
+		/// Adds a new toast.
+		/// </summary>
+		/// <param name="type">Toast type</param>
+		/// <param name="message">The message body of the toast</param>
+		/// <param name="statusinfo">The StatusInfo to show when toasts are disabled</param>
+		public void AddToast(ToastType type, string message, StatusInfo statusinfo)
+		{
+			toastmanager.AddToast(type, message, statusinfo);
 		}
 
 		/// <summary>
@@ -774,10 +786,23 @@ namespace CodeImp.DoomBuilder.Windows
 		/// </summary>
 		/// <param name="type">Toast type</param>
 		/// <param name="title">Title of the toast</param>
-		/// <param name="text">The message body of the toast</param>
-		public void AddToast(ToastType type, string title, string text)
+		/// <param name="message">The message body of the toast</param>
+		/// <param name="shortmessage">The message to show in the status line when toasts are disabled</param>
+		public void AddToast(ToastType type, string title, string message, string shortmessage)
 		{
-			toastmanager.AddToast(type, title, text);
+			toastmanager.AddToast(type, title, message, shortmessage);
+		}
+
+		/// <summary>
+		/// Adds a new toast.
+		/// </summary>
+		/// <param name="type">Toast type</param>
+		/// <param name="title">Title of the toast</param>
+		/// <param name="message">The message body of the toast</param>
+		/// <param name="statusinfo">The StatusInfo to show when toasts are disabled</param>
+		public void AddToast(ToastType type, string title, string message, StatusInfo statusinfo)
+		{
+			toastmanager.AddToast(type, title, message, statusinfo);
 		}
 
 		#endregion

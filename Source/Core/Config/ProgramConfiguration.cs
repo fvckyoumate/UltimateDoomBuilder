@@ -152,11 +152,14 @@ namespace CodeImp.DoomBuilder.Config
 		private bool alwaysShowVertices;
 
 		// Toast settings
+		/*
 		private bool toastsenabled;
 		private int toastposition;
 		private long toastduration;
 		private Dictionary<string, bool> toastactionsenabled;
-		
+		*/
+		private ToastSettings toastsettings;
+
 		// These are not stored in the configuration, only used at runtime
 		private int defaultbrightness;
 		private int defaultfloorheight;
@@ -290,10 +293,13 @@ namespace CodeImp.DoomBuilder.Config
 		public bool AlwaysShowVertices {  get { return alwaysShowVertices; } internal set { alwaysShowVertices = value; } }
 
 		// Toasts
+		/*
 		public bool ToastsEnabled { get { return toastsenabled; } internal set { toastsenabled = value; } }
 		public int ToastPosition { get { return toastposition; } internal set { toastposition = value; } }
 		public long ToastDuration { get { return toastduration; } internal set { toastduration = value; } }
 		internal Dictionary<string, bool> ToastActionsEnabled { get { return toastactionsenabled; } set { toastactionsenabled = value; } }
+		*/
+		public ToastSettings ToastSettings { get { return toastsettings; } internal set { toastsettings = value; } }
 
 		//mxd. Left here for compatibility reasons...
 		public string DefaultTexture { get { return General.Map != null ? General.Map.Options.DefaultWallTexture : "-"; } set { if(General.Map != null) General.Map.Options.DefaultWallTexture = value; } }
@@ -434,18 +440,7 @@ namespace CodeImp.DoomBuilder.Config
 				flatShadeVertices = cfg.ReadSetting("flatshadevertices", false);
 
 				// Toasts
-				toastsenabled = cfg.ReadSetting("toasts.enabled", true);
-				toastposition = cfg.ReadSetting("toasts.position", 3);
-				toastduration = cfg.ReadSetting("toasts.duration", 3000);
-
-				toastactionsenabled = new Dictionary<string, bool>();
-				IDictionary toastactionenableddict = cfg.ReadSetting("toasts.visibility", new Hashtable());
-				foreach(DictionaryEntry de in toastactionenableddict)
-				{
-					string key = de.Key.ToString();
-
-					toastactionsenabled[key] = cfg.ReadSetting($"toasts.visibility.{key}", true);
-				}
+				toastsettings = new ToastSettings(cfg, "toasts");
 	
 				//mxd. Sector defaults
 				defaultceilheight = cfg.ReadSetting("defaultceilheight", 128);
@@ -593,18 +588,7 @@ namespace CodeImp.DoomBuilder.Config
 			cfg.WriteSetting("flatshadevertices", flatShadeVertices);
 
 			// Toasts
-			cfg.WriteSetting("toasts.enabled", toastsenabled);
-			cfg.WriteSetting("toasts.position", toastposition);
-			cfg.WriteSetting("toasts.duration", toastduration);
-
-			foreach(string key in toastactionsenabled.Keys)
-			{
-				// true is the default value, so we only need to save it if it's false
-				if (toastactionsenabled[key] == false)
-					cfg.WriteSetting($"toasts.visibility.{key}", false);
-				else
-					cfg.DeleteSetting($"toasts.visibility.{key}");
-			}
+			toastsettings.WriteSettings(cfg, "toasts");
 			
 			//mxd. Sector defaults
 			cfg.WriteSetting("defaultceilheight", defaultceilheight);

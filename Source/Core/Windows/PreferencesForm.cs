@@ -270,9 +270,9 @@ namespace CodeImp.DoomBuilder.Windows
 			pasteoptions.Setup(General.Settings.PasteOptions.Copy());
 
 			// Toasts
-			cbToastsEnabled.Checked = General.Settings.ToastsEnabled;
-			tbToastDuration.Text = (General.Settings.ToastDuration / 1000).ToString();
-			RadioButton rb = gbToastPosition.Controls.OfType<RadioButton>().FirstOrDefault(r => (string)r.Tag == General.Settings.ToastPosition.ToString());
+			cbToastsEnabled.Checked = General.Settings.ToastSettings.Enabled;
+			tbToastDuration.Text = (General.Settings.ToastSettings.Duration / 1000).ToString();
+			RadioButton rb = gbToastPosition.Controls.OfType<RadioButton>().FirstOrDefault(r => (string)r.Tag == ((int)General.Settings.ToastSettings.Anchor).ToString());
 			if (rb != null)
 				rb.Checked = true;
 
@@ -284,7 +284,7 @@ namespace CodeImp.DoomBuilder.Windows
 			foreach (Action action in General.Actions.GetAllActions().Where(a => a.RegisterToast))
 			{
 				ListViewItem lvi = lvToastActions.Items.Add(action.Title);
-				lvi.Checked = General.Settings.ToastActionsEnabled.ContainsKey(action.Name) ? General.Settings.ToastActionsEnabled[action.Name] : true;
+				lvi.Checked = General.Settings.ToastSettings.Actions.ContainsKey(action.Name) ? General.Settings.ToastSettings.Actions[action.Name] : true;
 				lvi.Tag = action;
 			}
 
@@ -446,14 +446,14 @@ namespace CodeImp.DoomBuilder.Windows
 			General.Settings.PasteOptions = pasteoptions.GetOptions();
 
 			// Toasts
-			General.Settings.ToastsEnabled = cbToastsEnabled.Checked;
-			General.Settings.ToastPosition = int.Parse((string)gbToastPosition.Controls.OfType<RadioButton>().FirstOrDefault(rb => rb.Checked).Tag);
-			General.Settings.ToastDuration = tbToastDuration.GetResult(1) * 1000;
+			General.Settings.ToastSettings.Enabled = cbToastsEnabled.Checked;
+			General.Settings.ToastSettings.Anchor = (ToastAnchor)int.Parse((string)gbToastPosition.Controls.OfType<RadioButton>().FirstOrDefault(rb => rb.Checked).Tag);
+			General.Settings.ToastSettings.Duration = tbToastDuration.GetResult(1) * 1000;
 
 			foreach(ListViewItem lvi in lvToastActions.Items)
 			{
 				if(lvi.Tag is Action action)
-					General.Settings.ToastActionsEnabled[action.Name] = lvi.Checked;
+					General.Settings.ToastSettings.Actions[action.Name] = lvi.Checked;
 			}
 			
 			// Let the plugins know we're closing

@@ -21,12 +21,20 @@
 
 #endregion
 
+#region ================== Namespaces
+
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Windows.Forms;
 using CodeImp.DoomBuilder.Controls;
+using CodeImp.DoomBuilder.Windows;
+
+#endregion
 
 namespace CodeImp.DoomBuilder
 {
@@ -37,7 +45,7 @@ namespace CodeImp.DoomBuilder
 		ERROR
 	}
 
-	internal enum ToastAnchor
+	public enum ToastAnchor
 	{
 		TOPLEFT = 1,
 		TOPRIGHT,
@@ -45,7 +53,7 @@ namespace CodeImp.DoomBuilder
 		BOTTOMLEFT
 	}
 
-	internal class ToastManager
+	public class ToastManager
 	{
 		#region ================== Variables
 
@@ -55,6 +63,8 @@ namespace CodeImp.DoomBuilder
 		private Dictionary<string, bool> registeredactions;
 
 		#endregion
+
+		public static Func<MethodBase> GCM = MethodBase.GetCurrentMethod;
 
 		#region ================== Constructors
 
@@ -106,7 +116,7 @@ namespace CodeImp.DoomBuilder
 			}
 
 			ToastControl ft = toasts[0];
-			ToastAnchor anchor = GetAnchorFromNumber(General.Settings.ToastPosition);
+			ToastAnchor anchor = General.Settings.ToastSettings.Anchor;
 
 			// We only need to update the first toasts if it didn't reach it end position yet
 			bool needsupdate =
@@ -172,7 +182,7 @@ namespace CodeImp.DoomBuilder
 		/// </summary>
 		/// <param name="number">The number</param>
 		/// <returns>The appropriate ToastAnchor, or BOTTOMRIGHT if input is not valid</returns>
-		private ToastAnchor GetAnchorFromNumber(int number)
+		public static ToastAnchor GetAnchorFromNumber(int number)
 		{
 			return Enum.IsDefined(typeof(ToastAnchor), number) ? (ToastAnchor)number : ToastAnchor.BOTTOMRIGHT;
 		}
@@ -181,12 +191,16 @@ namespace CodeImp.DoomBuilder
 		/// Adds a new toast.
 		/// </summary>
 		/// <param name="type">Toast type</param>
-		/// <param name="text">The message body of the toast</param>
-		public void AddToast(ToastType type, string text)
+		/// <param name="message">The message body of the toast</param>
+		public void AddToast(ToastType type, string message, string shortmessage)
 		{
-			if (!General.Settings.ToastsEnabled)
-				return;
+			StatusType st = type == ToastType.INFO ? StatusType.Info : StatusType.Warning;
 
+			AddToast(type, message, new StatusInfo(st, shortmessage));
+		}
+
+		public void AddToast(ToastType type, string message, StatusInfo statusinfo)
+		{
 			string title = "Information";
 
 			if (type == ToastType.WARNING)
@@ -194,28 +208,31 @@ namespace CodeImp.DoomBuilder
 			else if (type == ToastType.ERROR)
 				title = "Error";
 
-			AddToast(type, title, text);
+			AddToast(type, title, message, statusinfo);
 		}
 
-		/// <summary>
-		/// Adds a new toast.
-		/// </summary>
-		/// <param name="type">Toast type</param>
-		/// <param name="title">Title of the toast</param>
-		/// <param name="text">The message body of the toast</param>
-		public void AddToast(ToastType type, string title, string text)
+		public void AddToast(ToastType type, string title, string message, StatusInfo statusinfo, [CallerMemberName] string callerName = "")
 		{
-			if (!General.Settings.ToastsEnabled)
-				return;
+			var x = new StackFrame(1).GetMethod();
+			var y = Assembly.GetCallingAssembly();
 
-			if(General.Actions.Current != null)
+			if (!General.Settings.ToastSettings.Enabled)
 			{
-				if (General.Settings.ToastActionsEnabled.ContainsKey(General.Actions.Current.Name) && General.Settings.ToastActionsEnabled[General.Actions.Current.Name] == false)
-					return;
+				General.Interface.DisplayStatus(statusinfo);
+				return;
 			}
 
-			ToastControl tc = new ToastControl(type, title, text, General.Settings.ToastDuration);
-			ToastAnchor anchor = GetAnchorFromNumber(General.Settings.ToastPosition);
+			if (General.Actions.Current != null)
+			{
+				if (General.Settings.ToastSettings.Actions.ContainsKey(General.Actions.Current.Name) && General.Settings.ToastSettings.Actions[General.Actions.Current.Name] == false)
+				{
+					General.Interface.DisplayStatus(statusinfo);
+					return;
+				}
+			}
+
+			ToastControl tc = new ToastControl(type, title, message, General.Settings.ToastSettings.Duration);
+			ToastAnchor anchor = General.Settings.ToastSettings.Anchor;
 
 			// Set the initial y position of the control so that it's outside of the control the toast manager is bound to.
 			// No need to care about the x position, since that will be set in the update event anyway
@@ -234,6 +251,25 @@ namespace CodeImp.DoomBuilder
 			// Start the timer so that the toast is moved into view
 			if (!timer.Enabled)
 				timer.Start();
+
+			// Play a sound for warnings and errors
+			if (type == ToastType.WARNING)
+				General.MessageBeep(MessageBeepType.Warning);
+			else if (type == ToastType.ERROR)
+				General.MessageBeep(MessageBeepType.Error);
+		}
+
+		/// <summary>
+		/// Adds a new toast.
+		/// </summary>
+		/// <param name="type">Toast type</param>
+		/// <param name="title">Title of the toast</param>
+		/// <param name="message">The message body of the toast</param>
+		public void AddToast(ToastType type, string title, string message, string shortmessage)
+		{
+			StatusType st = type == ToastType.INFO ? StatusType.Info : StatusType.Warning;
+
+			AddToast(type, title, message, new StatusInfo(st, shortmessage));
 		}
 
 		#endregion

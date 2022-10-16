@@ -43,6 +43,7 @@ namespace CodeImp.DoomBuilder.Windows
 		string ActiveDockerTabName { get; } //mxd
 		RenderTargetControl Display { get; }
 		int ProcessingCount { get; }
+		ToastManager ToastManager { get; }
 
 		//mxd. Events
 		event EventHandler OnEditFormValuesChanged;
@@ -233,15 +234,34 @@ namespace CodeImp.DoomBuilder.Windows
 		/// Adds a new toast.
 		/// </summary>
 		/// <param name="type">Toast type</param>
-		/// <param name="text">The message body of the toast</param>
-		void AddToast(ToastType type, string text);
+		/// <param name="message">The message body of the toast</param>
+		/// <param name="shortmessage">The message to show in the status line when toasts are disabled</param>
+		void AddToast(ToastType type, string message, string shortmessage);
+
+		/// <summary>
+		/// Adds a new toast.
+		/// </summary>
+		/// <param name="type">Toast type</param>
+		/// <param name="message">The message body of the toast</param>
+		/// <param name="statusinfo">The StatusInfo to show when toasts are disabled</param>
+		void AddToast(ToastType type, string message, StatusInfo statusinfo);
 
 		/// <summary>
 		/// Adds a new toast.
 		/// </summary>
 		/// <param name="type">Toast type</param>
 		/// <param name="title">Title of the toast</param>
-		/// <param name="text">The message body of the toast</param>
-		void AddToast(ToastType type, string title, string text);
+		/// <param name="message">The message body of the toast</param>
+		/// <param name="shortmessage">The message to show in the status line when toasts are disabled</param>
+		void AddToast(ToastType type, string title, string message, string shortmessage);
+
+		/// <summary>
+		/// Adds a new toast.
+		/// </summary>
+		/// <param name="type">Toast type</param>
+		/// <param name="title">Title of the toast</param>
+		/// <param name="message">The message body of the toast</param>
+		/// <param name="statusinfo">The StatusInfo to show when toasts are disabled</param>
+		void AddToast(ToastType type, string title, string message, StatusInfo statusinfo);
 	}
 }
