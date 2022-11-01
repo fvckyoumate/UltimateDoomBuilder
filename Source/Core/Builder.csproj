@@ -243,7 +243,6 @@
     <Compile Include="Dehacked\DehackedThing.cs" />
     <Compile Include="General\SHA256Hash.cs" />
     <Compile Include="General\ToastManager.cs" />
-    <Compile Include="General\ToastSettings.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

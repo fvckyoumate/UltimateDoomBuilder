@@ -1072,7 +1072,7 @@ namespace CodeImp.DoomBuilder.Editing
 			if (!string.IsNullOrEmpty(key))
 				message += $" Press '{key}' to toggle.";
 
-			General.Interface.ToastManager.AddToast(ToastType.INFO, "Changed highlight", message, new StatusInfo(StatusType.Action, shortmessage));
+			General.ToastManager.AddToast("togglehighlight", ToastType.INFO, "Changed highlight", message, new StatusInfo(StatusType.Action, shortmessage));
 
 			// Redraw display to show changes
 			General.Interface.RedrawDisplay();

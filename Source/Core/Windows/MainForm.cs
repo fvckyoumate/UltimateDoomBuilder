@@ -161,8 +161,6 @@ namespace CodeImp.DoomBuilder.Windows
 		private Graphics graphics;
 
 		private CommandPaletteControl commandpalette;
-
-		private ToastManager toastmanager;
 		
 		#endregion
 
@@ -185,8 +183,6 @@ namespace CodeImp.DoomBuilder.Windows
 		public static Size ScaledIconSize = new Size(16, 16); //mxd
 		public static SizeF DPIScaler = new SizeF(1.0f, 1.0f); //mxd
 		public int ProcessingCount { get { return processingcount; } }
-
-		public ToastManager ToastManager { get { return toastmanager; } }
 
 		#endregion
 
@@ -293,8 +289,6 @@ namespace CodeImp.DoomBuilder.Windows
 			//mxd. Hints
 			hintsPanel = new HintsPanel();
 			hintsDocker = new Docker("hints", "Help", hintsPanel);
-
-			toastmanager = new ToastManager(display);
 
 			KeyPreview = true;
 			PreviewKeyDown += new PreviewKeyDownEventHandler(MainForm_PreviewKeyDown);
@@ -753,56 +747,6 @@ namespace CodeImp.DoomBuilder.Windows
 				General.OpenMapFile(targetwad, null);
 				UpdateGZDoomPanel();
 			}
-		}
-
-		#endregion
-
-		#region ================== Toasts
-
-		/// <summary>
-		/// Adds a new toast.
-		/// </summary>
-		/// <param name="type">Toast type</param>
-		/// <param name="message">The message body of the toast</param>
-		/// <param name="shortmessage">The message to show in the status line when toasts are disabled</param>
-		public void AddToast(ToastType type, string message, string shortmessage)
-		{
-			toastmanager.AddToast(type, message, shortmessage);
-		}
-
-		/// <summary>
-		/// Adds a new toast.
-		/// </summary>
-		/// <param name="type">Toast type</param>
-		/// <param name="message">The message body of the toast</param>
-		/// <param name="statusinfo">The StatusInfo to show when toasts are disabled</param>
-		public void AddToast(ToastType type, string message, StatusInfo statusinfo)
-		{
-			toastmanager.AddToast(type, message, statusinfo);
-		}
-
-		/// <summary>
-		/// Adds a new toast.
-		/// </summary>
-		/// <param name="type">Toast type</param>
-		/// <param name="title">Title of the toast</param>
-		/// <param name="message">The message body of the toast</param>
-		/// <param name="shortmessage">The message to show in the status line when toasts are disabled</param>
-		public void AddToast(ToastType type, string title, string message, string shortmessage)
-		{
-			toastmanager.AddToast(type, title, message, shortmessage);
-		}
-
-		/// <summary>
-		/// Adds a new toast.
-		/// </summary>
-		/// <param name="type">Toast type</param>
-		/// <param name="title">Title of the toast</param>
-		/// <param name="message">The message body of the toast</param>
-		/// <param name="statusinfo">The StatusInfo to show when toasts are disabled</param>
-		public void AddToast(ToastType type, string title, string message, StatusInfo statusinfo)
-		{
-			toastmanager.AddToast(type, title, message, statusinfo);
 		}
 
 		#endregion
@@ -3098,7 +3042,15 @@ namespace CodeImp.DoomBuilder.Windows
 			Renderer.FullBrightness = !Renderer.FullBrightness;
 			buttonfullbrightness.Checked = Renderer.FullBrightness;
 			itemfullbrightness.Checked = Renderer.FullBrightness;
-			General.Interface.DisplayStatus(StatusType.Action, "Full Brightness is now " + (Renderer.FullBrightness ? "ON" : "OFF"));
+
+			string shorttext = "Full brightness is now " + (Renderer.FullBrightness ? "ON" : "OFF") + ".";
+			string text = shorttext;
+			string key = Actions.Action.GetShortcutKeyDesc(General.Actions.Current.ShortcutKey);
+
+			if (!string.IsNullOrEmpty(key))
+				text += $" Press '{key}' to toggle.";
+
+			General.ToastManager.AddToast("togglebrightness", ToastType.INFO, "Changed full brightness", text, shorttext);
 
 			// Redraw display to show changes
 			General.Interface.RedrawDisplay();

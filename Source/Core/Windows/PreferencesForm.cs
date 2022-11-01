@@ -270,9 +270,9 @@ namespace CodeImp.DoomBuilder.Windows
 			pasteoptions.Setup(General.Settings.PasteOptions.Copy());
 
 			// Toasts
-			cbToastsEnabled.Checked = General.Settings.ToastSettings.Enabled;
-			tbToastDuration.Text = (General.Settings.ToastSettings.Duration / 1000).ToString();
-			RadioButton rb = gbToastPosition.Controls.OfType<RadioButton>().FirstOrDefault(r => (string)r.Tag == ((int)General.Settings.ToastSettings.Anchor).ToString());
+			cbToastsEnabled.Checked = General.ToastManager.Enabled;
+			tbToastDuration.Text = (General.ToastManager.Duration / 1000).ToString();
+			RadioButton rb = gbToastPosition.Controls.OfType<RadioButton>().FirstOrDefault(r => (string)r.Tag == ((int)General.ToastManager.Anchor).ToString());
 			if (rb != null)
 				rb.Checked = true;
 
@@ -281,11 +281,12 @@ namespace CodeImp.DoomBuilder.Windows
 			// Make list column header full width
 			columnname.Width = lvToastActions.ClientRectangle.Width - SystemInformation.VerticalScrollBarWidth - 2;
 
-			foreach (Action action in General.Actions.GetAllActions().Where(a => a.RegisterToast))
+			// Add checkboxes for all registered toasts
+			foreach(ToastRegistryEntry tre in General.ToastManager.Registry.Values.OrderBy(e => e.Title))
 			{
-				ListViewItem lvi = lvToastActions.Items.Add(action.Title);
-				lvi.Checked = General.Settings.ToastSettings.Actions.ContainsKey(action.Name) ? General.Settings.ToastSettings.Actions[action.Name] : true;
-				lvi.Tag = action;
+				ListViewItem lvi = lvToastActions.Items.Add(tre.Title);
+				lvi.Checked = tre.Enabled;
+				lvi.Tag = tre;
 			}
 
 			// Allow plugins to add tabs
@@ -446,14 +447,14 @@ namespace CodeImp.DoomBuilder.Windows
 			General.Settings.PasteOptions = pasteoptions.GetOptions();
 
 			// Toasts
-			General.Settings.ToastSettings.Enabled = cbToastsEnabled.Checked;
-			General.Settings.ToastSettings.Anchor = (ToastAnchor)int.Parse((string)gbToastPosition.Controls.OfType<RadioButton>().FirstOrDefault(rb => rb.Checked).Tag);
-			General.Settings.ToastSettings.Duration = tbToastDuration.GetResult(1) * 1000;
+			General.ToastManager.Enabled = cbToastsEnabled.Checked;
+			General.ToastManager.Anchor = (ToastAnchor)int.Parse((string)gbToastPosition.Controls.OfType<RadioButton>().FirstOrDefault(rb => rb.Checked).Tag);
+			General.ToastManager.Duration = tbToastDuration.GetResult(1) * 1000;
 
 			foreach(ListViewItem lvi in lvToastActions.Items)
 			{
-				if(lvi.Tag is Action action)
-					General.Settings.ToastSettings.Actions[action.Name] = lvi.Checked;
+				if(lvi.Tag is ToastRegistryEntry tre)
+					General.ToastManager.Registry[tre.Name].Enabled = lvi.Checked;
 			}
 			
 			// Let the plugins know we're closing

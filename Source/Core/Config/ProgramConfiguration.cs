@@ -151,15 +151,6 @@ namespace CodeImp.DoomBuilder.Config
 		private bool flatShadeVertices;
 		private bool alwaysShowVertices;
 
-		// Toast settings
-		/*
-		private bool toastsenabled;
-		private int toastposition;
-		private long toastduration;
-		private Dictionary<string, bool> toastactionsenabled;
-		*/
-		private ToastSettings toastsettings;
-
 		// These are not stored in the configuration, only used at runtime
 		private int defaultbrightness;
 		private int defaultfloorheight;
@@ -291,15 +282,6 @@ namespace CodeImp.DoomBuilder.Config
 		public bool FlatShadeVertices {  get { return flatShadeVertices; } internal set { flatShadeVertices = value;  } }
 
 		public bool AlwaysShowVertices {  get { return alwaysShowVertices; } internal set { alwaysShowVertices = value; } }
-
-		// Toasts
-		/*
-		public bool ToastsEnabled { get { return toastsenabled; } internal set { toastsenabled = value; } }
-		public int ToastPosition { get { return toastposition; } internal set { toastposition = value; } }
-		public long ToastDuration { get { return toastduration; } internal set { toastduration = value; } }
-		internal Dictionary<string, bool> ToastActionsEnabled { get { return toastactionsenabled; } set { toastactionsenabled = value; } }
-		*/
-		public ToastSettings ToastSettings { get { return toastsettings; } internal set { toastsettings = value; } }
 
 		//mxd. Left here for compatibility reasons...
 		public string DefaultTexture { get { return General.Map != null ? General.Map.Options.DefaultWallTexture : "-"; } set { if(General.Map != null) General.Map.Options.DefaultWallTexture = value; } }
@@ -439,9 +421,6 @@ namespace CodeImp.DoomBuilder.Config
 				alwaysShowVertices = cfg.ReadSetting("alwaysshowvertices", true);
 				flatShadeVertices = cfg.ReadSetting("flatshadevertices", false);
 
-				// Toasts
-				toastsettings = new ToastSettings(cfg, "toasts");
-	
 				//mxd. Sector defaults
 				defaultceilheight = cfg.ReadSetting("defaultceilheight", 128);
 				defaultfloorheight = cfg.ReadSetting("defaultfloorheight", 0);
@@ -588,7 +567,7 @@ namespace CodeImp.DoomBuilder.Config
 			cfg.WriteSetting("flatshadevertices", flatShadeVertices);
 
 			// Toasts
-			toastsettings.WriteSettings(cfg, "toasts");
+			General.ToastManager.WriteSettings(cfg);
 			
 			//mxd. Sector defaults
 			cfg.WriteSetting("defaultceilheight", defaultceilheight);

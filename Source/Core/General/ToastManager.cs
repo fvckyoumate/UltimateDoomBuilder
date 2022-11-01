@@ -24,6 +24,7 @@
 #region ================== Namespaces
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -31,7 +32,9 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Windows.Forms;
+using CodeImp.DoomBuilder.Config;
 using CodeImp.DoomBuilder.Controls;
+using CodeImp.DoomBuilder.IO;
 using CodeImp.DoomBuilder.Windows;
 
 #endregion
@@ -53,18 +56,50 @@ namespace CodeImp.DoomBuilder
 		BOTTOMLEFT
 	}
 
+	internal class ToastRegistryEntry
+	{
+		public bool Enabled { get; set; }
+		public string Name { get; set; }
+		public string Title { get; set; }
+
+		public ToastRegistryEntry(string name, string title, bool enabled)
+		{
+			Enabled = enabled;
+			Name = name;
+			Title = title;
+		}
+	}
+
 	public class ToastManager
 	{
+		#region ================== Static variables
+
+		public static readonly string TITLE_INFO = "Information";
+		public static readonly string TITLE_WARNING = "Warning";
+		public static readonly string TITLE_ERROR = "Error";
+
+		#endregion
+
 		#region ================== Variables
 
 		private List<ToastControl> toasts;
 		private Control bindcontrol;
 		private Timer timer;
-		private Dictionary<string, bool> registeredactions;
+		private bool enabled;
+		private ToastAnchor anchor;
+		private long duration;
+		private Dictionary<string, ToastRegistryEntry> registry;
 
 		#endregion
 
-		public static Func<MethodBase> GCM = MethodBase.GetCurrentMethod;
+		#region ================== Properties
+
+		internal bool Enabled { get => enabled; set => enabled = value; }
+		internal ToastAnchor Anchor { get => anchor; set => anchor = value; }
+		internal long Duration { get => duration; set => duration = value; }
+		internal Dictionary<string, ToastRegistryEntry> Registry { get => registry; }
+
+		#endregion
 
 		#region ================== Constructors
 
@@ -79,13 +114,11 @@ namespace CodeImp.DoomBuilder
 			timer.Interval = 1;
 			timer.Tick += UpdateEvent;
 
-			// Find actions that are registered for toasts and load their visibility setting
-			registeredactions = new Dictionary<string, bool>();
-			foreach (Actions.Action action in General.Actions.GetAllActions().Where(a => a.RegisterToast))
-			{
-				registeredactions[action.Name] = General.Settings.ReadSetting($"toasts.visibility.{action.Name}", true);
-			}
+			// Create registry and load toasts from actions
+			registry = new Dictionary<string, ToastRegistryEntry>();
 		}
+
+
 
 		#endregion
 
@@ -116,7 +149,6 @@ namespace CodeImp.DoomBuilder
 			}
 
 			ToastControl ft = toasts[0];
-			ToastAnchor anchor = General.Settings.ToastSettings.Anchor;
 
 			// We only need to update the first toasts if it didn't reach it end position yet
 			bool needsupdate =
@@ -177,6 +209,70 @@ namespace CodeImp.DoomBuilder
 
 		#region ================== Methods
 
+		public void LoadSettings(Configuration cfg)
+		{
+			enabled = cfg.ReadSetting("toasts.enabled", true);
+			anchor = GetAnchorFromNumber(cfg.ReadSetting("toasts.anchor", 3));
+			duration = cfg.ReadSetting("toasts.duration", 3000);
+
+			// Make sure the duration is set to something sensible
+			if (duration <= 0)
+				duration = 3000;
+ 
+			IDictionary toastactionenableddict = cfg.ReadSetting("toasts.registry", new Hashtable());
+			foreach (string key in toastactionenableddict.Keys)
+			{
+				//string key = de.Key.ToString();
+
+				if (registry.ContainsKey(key))
+					registry[key].Enabled = cfg.ReadSetting($"toasts.registry.{key}", true);
+			}
+		}
+
+		/// <summary>
+		/// Writes the settings to a configuration with a prefix.
+		/// </summary>
+		/// <param name="cfg">The Configuration</param>
+		/// <param name="prefix">The prefix</param>
+		public void WriteSettings(Configuration cfg)
+		{
+			cfg.WriteSetting("toasts.enabled", Enabled);
+			cfg.WriteSetting("toasts.anchor", (int)Anchor);
+			cfg.WriteSetting("toasts.duration", Duration);
+
+			foreach (string key in Registry.Keys)
+			{
+				// true is the default value, so we only need to save it if it's false
+				if (Registry[key].Enabled == false)
+					cfg.WriteSetting($"toasts.registry.{key}", false);
+				else
+					cfg.DeleteSetting($"toasts.registry.{key}");
+			}
+		}
+
+		public void RegisterActions()
+		{
+			foreach (Actions.Action action in General.Actions.GetAllActions().Where(a => a.RegisterToast))
+			{
+				if (!registry.ContainsKey(action.Name))
+					registry[action.Name] = new ToastRegistryEntry(action.Name, action.Title, true);
+			}
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		public void RegisterToast(string name, string title)
+		{
+			string fullname = Assembly.GetCallingAssembly().GetName().Name.ToLowerInvariant() + $"_{name}";
+
+			if (registry.ContainsKey(fullname))
+			{
+				General.WriteLogLine($"Tried to register toast \"{fullname}\", but it is already registered");
+				return;
+			}
+
+			registry[fullname] = new ToastRegistryEntry(fullname, title, true);
+		}
+
 		/// <summary>
 		/// Gets the ToastAnchor from a number. Makes sure the input is valid, otherwise returns a default.
 		/// </summary>
@@ -192,15 +288,28 @@ namespace CodeImp.DoomBuilder
 		/// </summary>
 		/// <param name="type">Toast type</param>
 		/// <param name="message">The message body of the toast</param>
-		public void AddToast(ToastType type, string message, string shortmessage)
+		public void AddToast(ToastType type, string title, string message, string shortmessage = "")
 		{
 			StatusType st = type == ToastType.INFO ? StatusType.Info : StatusType.Warning;
 
-			AddToast(type, message, new StatusInfo(st, shortmessage));
+			if (!enabled)
+			{
+				General.Interface.DisplayStatus(new StatusInfo(st, shortmessage));
+				return;
+			}
+
+			if (type == ToastType.WARNING)
+				title = "Warning";
+			else if (type == ToastType.ERROR)
+				title = "Error";
+
+			CreateToast(type, title, message);
 		}
 
-		public void AddToast(ToastType type, string message, StatusInfo statusinfo)
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		public void AddToast(string name, ToastType type, string message, StatusInfo statusinfo)
 		{
+			string fullname = Assembly.GetCallingAssembly().GetName().Name.ToLowerInvariant() + $"_{name}";
 			string title = "Information";
 
 			if (type == ToastType.WARNING)
@@ -208,31 +317,54 @@ namespace CodeImp.DoomBuilder
 			else if (type == ToastType.ERROR)
 				title = "Error";
 
-			AddToast(type, title, message, statusinfo);
+			CreateToast(fullname, type, title, message, statusinfo);
 		}
 
-		public void AddToast(ToastType type, string title, string message, StatusInfo statusinfo, [CallerMemberName] string callerName = "")
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		public void AddToast(string name, ToastType type, string title, string message, StatusInfo statusinfo)
 		{
-			var x = new StackFrame(1).GetMethod();
-			var y = Assembly.GetCallingAssembly();
+			string fullname = Assembly.GetCallingAssembly().GetName().Name.ToLowerInvariant() + $"_{name}";
 
-			if (!General.Settings.ToastSettings.Enabled)
+			CreateToast(fullname, type, title, message, statusinfo);
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		public void AddToast(string name, ToastType type, string title, string message, string shortmessage = null)
+		{
+			string fullname = Assembly.GetCallingAssembly().GetName().Name.ToLowerInvariant() + $"_{name}";
+			StatusType st = type == ToastType.INFO ? StatusType.Info : StatusType.Warning;
+
+			if (string.IsNullOrWhiteSpace(shortmessage))
+				shortmessage = message;
+
+			CreateToast(fullname, type, title, message, new StatusInfo(st, shortmessage));
+		}
+
+		private void CreateToast(string fullname, ToastType type, string title, string message, StatusInfo statusinfo)
+		{
+			if (!enabled)
 			{
 				General.Interface.DisplayStatus(statusinfo);
 				return;
 			}
 
-			if (General.Actions.Current != null)
+			if (!registry.ContainsKey(fullname))
 			{
-				if (General.Settings.ToastSettings.Actions.ContainsKey(General.Actions.Current.Name) && General.Settings.ToastSettings.Actions[General.Actions.Current.Name] == false)
-				{
-					General.Interface.DisplayStatus(statusinfo);
-					return;
-				}
+				General.ErrorLogger.Add(ErrorType.Warning, $"Toast setting for \"{fullname}\" is not in the registry. Defaulting to show the toast.");
+			}
+			else if (registry[fullname].Enabled == false)
+			{
+				StatusType st = type == ToastType.INFO ? StatusType.Info : StatusType.Warning;
+				General.Interface.DisplayStatus(statusinfo);
+				return;
 			}
 
-			ToastControl tc = new ToastControl(type, title, message, General.Settings.ToastSettings.Duration);
-			ToastAnchor anchor = General.Settings.ToastSettings.Anchor;
+			CreateToast(type, title, message);
+		}
+
+		private void CreateToast(ToastType type, string title, string message)
+		{ 
+			ToastControl tc = new ToastControl(type, title, message, duration);
 
 			// Set the initial y position of the control so that it's outside of the control the toast manager is bound to.
 			// No need to care about the x position, since that will be set in the update event anyway
@@ -257,19 +389,6 @@ namespace CodeImp.DoomBuilder
 				General.MessageBeep(MessageBeepType.Warning);
 			else if (type == ToastType.ERROR)
 				General.MessageBeep(MessageBeepType.Error);
-		}
-
-		/// <summary>
-		/// Adds a new toast.
-		/// </summary>
-		/// <param name="type">Toast type</param>
-		/// <param name="title">Title of the toast</param>
-		/// <param name="message">The message body of the toast</param>
-		public void AddToast(ToastType type, string title, string message, string shortmessage)
-		{
-			StatusType st = type == ToastType.INFO ? StatusType.Info : StatusType.Warning;
-
-			AddToast(type, title, message, new StatusInfo(st, shortmessage));
 		}
 
 		#endregion
