@@ -38,6 +38,7 @@ namespace CodeImp.DoomBuilder.Controls
 		private long startime;
 		private long lifetime;
 		private bool pausedecay;
+		private bool remove;
 
 		#endregion
 
@@ -100,10 +101,20 @@ namespace CodeImp.DoomBuilder.Controls
 		/// <returns>true if it's alive, false if it isn't</returns>
 		public bool IsAlive()
 		{
-			if (!pausedecay && DateTimeOffset.Now.ToUnixTimeMilliseconds() - startime > lifetime)
+			if (remove || (!pausedecay && DateTimeOffset.Now.ToUnixTimeMilliseconds() - startime > lifetime))
 				return false;
 
 			return true;
+		}
+
+		/// <summary>
+		/// Sets the toast to be removed.
+		/// </summary>
+		/// <param name="sender">The sender</param>
+		/// <param name="e">The event arguments</param>
+		private void btnClose_Click(object sender, EventArgs e)
+		{
+			remove = true;
 		}
 
 		#endregion

@@ -32,6 +32,7 @@ namespace CodeImp.DoomBuilder.Controls
 			this.lbText = new System.Windows.Forms.Label();
 			this.icon = new System.Windows.Forms.Panel();
 			this.lbTitle = new System.Windows.Forms.Label();
+			this.btnClose = new System.Windows.Forms.Button();
 			this.SuspendLayout();
 			// 
 			// lbText
@@ -63,12 +64,24 @@ namespace CodeImp.DoomBuilder.Controls
 			this.lbTitle.TabIndex = 2;
 			this.lbTitle.Text = "Title";
 			// 
+			// btnClose
+			// 
+			this.btnClose.BackgroundImage = global::CodeImp.DoomBuilder.Properties.Resources.Close;
+			this.btnClose.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+			this.btnClose.Location = new System.Drawing.Point(385, 3);
+			this.btnClose.Name = "btnClose";
+			this.btnClose.Size = new System.Drawing.Size(16, 16);
+			this.btnClose.TabIndex = 3;
+			this.btnClose.UseVisualStyleBackColor = true;
+			this.btnClose.Click += new System.EventHandler(this.btnClose_Click);
+			// 
 			// ToastControl
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.BackColor = System.Drawing.SystemColors.Control;
 			this.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+			this.Controls.Add(this.btnClose);
 			this.Controls.Add(this.lbTitle);
 			this.Controls.Add(this.icon);
 			this.Controls.Add(this.lbText);
@@ -86,5 +99,6 @@ namespace CodeImp.DoomBuilder.Controls
 		private System.Windows.Forms.Label lbText;
 		private System.Windows.Forms.Panel icon;
 		private System.Windows.Forms.Label lbTitle;
+		private System.Windows.Forms.Button btnClose;
 	}
 }
