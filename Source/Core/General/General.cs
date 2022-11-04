@@ -813,10 +813,9 @@ namespace CodeImp.DoomBuilder
 			}
 		}
 
-
 		private static void RegisterToasts()
 		{
-			toastmanager.RegisterToast("resourcewarningsanderrors", "Resource warnings and errors");
+			toastmanager.RegisterToast("resourcewarningsanderrors", "Resource warnings and errors", "When there are errors or warning while (re)loading the resources");
 		}
 
 		// This parses the command line arguments

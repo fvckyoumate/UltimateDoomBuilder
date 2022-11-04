@@ -61,12 +61,14 @@ namespace CodeImp.DoomBuilder
 		public bool Enabled { get; set; }
 		public string Name { get; set; }
 		public string Title { get; set; }
+		public string Description { get; set; }
 
-		public ToastRegistryEntry(string name, string title, bool enabled)
+		public ToastRegistryEntry(string name, string title, string description, bool enabled)
 		{
 			Enabled = enabled;
 			Name = name;
 			Title = title;
+			Description = description;
 		}
 	}
 
@@ -255,12 +257,12 @@ namespace CodeImp.DoomBuilder
 			foreach (Actions.Action action in General.Actions.GetAllActions().Where(a => a.RegisterToast))
 			{
 				if (!registry.ContainsKey(action.Name))
-					registry[action.Name] = new ToastRegistryEntry(action.Name, action.Title, true);
+					registry[action.Name] = new ToastRegistryEntry(action.Name, action.Title, action.Description, true);
 			}
 		}
 
 		[MethodImpl(MethodImplOptions.NoInlining)]
-		public void RegisterToast(string name, string title)
+		public void RegisterToast(string name, string title, string description)
 		{
 			string fullname = Assembly.GetCallingAssembly().GetName().Name.ToLowerInvariant() + $"_{name}";
 
@@ -270,7 +272,7 @@ namespace CodeImp.DoomBuilder
 				return;
 			}
 
-			registry[fullname] = new ToastRegistryEntry(fullname, title, true);
+			registry[fullname] = new ToastRegistryEntry(fullname, title, description, true);
 		}
 
 		/// <summary>

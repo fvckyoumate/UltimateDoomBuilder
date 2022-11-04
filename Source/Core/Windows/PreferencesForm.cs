@@ -278,16 +278,18 @@ namespace CodeImp.DoomBuilder.Windows
 
 			SetToastSettingEnabled(cbToastsEnabled.Checked);
 
-			// Make list column header full width
-			columnname.Width = lvToastActions.ClientRectangle.Width - SystemInformation.VerticalScrollBarWidth - 2;
-
 			// Add checkboxes for all registered toasts
 			foreach(ToastRegistryEntry tre in General.ToastManager.Registry.Values.OrderBy(e => e.Title))
 			{
 				ListViewItem lvi = lvToastActions.Items.Add(tre.Title);
+				lvi.SubItems.Add(tre.Description);
 				lvi.Checked = tre.Enabled;
 				lvi.Tag = tre;
 			}
+
+			// Make the columns fit the contents
+			title.Width = -1;
+			description.Width = -1;
 
 			// Allow plugins to add tabs
 			this.SuspendLayout();

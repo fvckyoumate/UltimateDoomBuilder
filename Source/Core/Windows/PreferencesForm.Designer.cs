@@ -214,6 +214,10 @@ namespace CodeImp.DoomBuilder.Windows
 			this.label16 = new System.Windows.Forms.Label();
 			this.pasteoptions = new CodeImp.DoomBuilder.Controls.PasteOptionsControl();
 			this.tabtoasts = new System.Windows.Forms.TabPage();
+			this.groupBox10 = new System.Windows.Forms.GroupBox();
+			this.lvToastActions = new System.Windows.Forms.ListView();
+			this.title = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+			this.description = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
 			this.tbToastDuration = new CodeImp.DoomBuilder.Controls.ButtonsNumericTextbox();
 			this.label12 = new System.Windows.Forms.Label();
 			this.cbToastsEnabled = new System.Windows.Forms.CheckBox();
@@ -223,9 +227,6 @@ namespace CodeImp.DoomBuilder.Windows
 			this.rbToastPosBL = new System.Windows.Forms.RadioButton();
 			this.rbToastPosTR = new System.Windows.Forms.RadioButton();
 			this.rbToastPosTL = new System.Windows.Forms.RadioButton();
-			this.groupBox10 = new System.Windows.Forms.GroupBox();
-			this.lvToastActions = new System.Windows.Forms.ListView();
-			this.columnname = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
 			groupBox1 = new System.Windows.Forms.GroupBox();
 			label7 = new System.Windows.Forms.Label();
 			label5 = new System.Windows.Forms.Label();
@@ -271,8 +272,8 @@ namespace CodeImp.DoomBuilder.Windows
 			this.previewgroup.SuspendLayout();
 			this.tabpasting.SuspendLayout();
 			this.tabtoasts.SuspendLayout();
-			this.gbToastPosition.SuspendLayout();
 			this.groupBox10.SuspendLayout();
+			this.gbToastPosition.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// groupBox1
@@ -2435,6 +2436,42 @@ namespace CodeImp.DoomBuilder.Windows
 			this.tabtoasts.Text = "Toasts";
 			this.tabtoasts.UseVisualStyleBackColor = true;
 			// 
+			// groupBox10
+			// 
+			this.groupBox10.Controls.Add(this.lvToastActions);
+			this.groupBox10.Location = new System.Drawing.Point(11, 164);
+			this.groupBox10.Name = "groupBox10";
+			this.groupBox10.Size = new System.Drawing.Size(653, 346);
+			this.groupBox10.TabIndex = 5;
+			this.groupBox10.TabStop = false;
+			this.groupBox10.Text = "Toasts";
+			// 
+			// lvToastActions
+			// 
+			this.lvToastActions.CheckBoxes = true;
+			this.lvToastActions.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.title,
+            this.description});
+			this.lvToastActions.FullRowSelect = true;
+			this.lvToastActions.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
+			this.lvToastActions.HideSelection = false;
+			this.lvToastActions.Location = new System.Drawing.Point(6, 19);
+			this.lvToastActions.MultiSelect = false;
+			this.lvToastActions.Name = "lvToastActions";
+			this.lvToastActions.ShowGroups = false;
+			this.lvToastActions.Size = new System.Drawing.Size(641, 321);
+			this.lvToastActions.TabIndex = 5;
+			this.lvToastActions.UseCompatibleStateImageBehavior = false;
+			this.lvToastActions.View = System.Windows.Forms.View.Details;
+			// 
+			// title
+			// 
+			this.title.Text = "Title";
+			// 
+			// description
+			// 
+			this.description.Text = "Description";
+			// 
 			// tbToastDuration
 			// 
 			this.tbToastDuration.AllowDecimal = false;
@@ -2447,7 +2484,7 @@ namespace CodeImp.DoomBuilder.Windows
 			this.tbToastDuration.ButtonStepSmall = 0.1F;
 			this.tbToastDuration.ButtonStepsUseModifierKeys = false;
 			this.tbToastDuration.ButtonStepsWrapAround = false;
-			this.tbToastDuration.Location = new System.Drawing.Point(141, 170);
+			this.tbToastDuration.Location = new System.Drawing.Point(350, 45);
 			this.tbToastDuration.Name = "tbToastDuration";
 			this.tbToastDuration.Size = new System.Drawing.Size(70, 24);
 			this.tbToastDuration.StepValues = null;
@@ -2457,7 +2494,7 @@ namespace CodeImp.DoomBuilder.Windows
 			// label12
 			// 
 			this.label12.AutoSize = true;
-			this.label12.Location = new System.Drawing.Point(8, 175);
+			this.label12.Location = new System.Drawing.Point(217, 50);
 			this.label12.Name = "label12";
 			this.label12.Size = new System.Drawing.Size(99, 13);
 			this.label12.TabIndex = 2;
@@ -2540,33 +2577,6 @@ namespace CodeImp.DoomBuilder.Windows
 			this.rbToastPosTL.Tag = "1";
 			this.rbToastPosTL.UseVisualStyleBackColor = true;
 			// 
-			// groupBox10
-			// 
-			this.groupBox10.Controls.Add(this.lvToastActions);
-			this.groupBox10.Location = new System.Drawing.Point(217, 38);
-			this.groupBox10.Name = "groupBox10";
-			this.groupBox10.Size = new System.Drawing.Size(372, 477);
-			this.groupBox10.TabIndex = 5;
-			this.groupBox10.TabStop = false;
-			this.groupBox10.Text = "Toast per action";
-			// 
-			// lvToastActions
-			// 
-			this.lvToastActions.CheckBoxes = true;
-			this.lvToastActions.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.columnname});
-			this.lvToastActions.FullRowSelect = true;
-			this.lvToastActions.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
-			this.lvToastActions.HideSelection = false;
-			this.lvToastActions.Location = new System.Drawing.Point(6, 19);
-			this.lvToastActions.MultiSelect = false;
-			this.lvToastActions.Name = "lvToastActions";
-			this.lvToastActions.ShowGroups = false;
-			this.lvToastActions.Size = new System.Drawing.Size(360, 452);
-			this.lvToastActions.TabIndex = 5;
-			this.lvToastActions.UseCompatibleStateImageBehavior = false;
-			this.lvToastActions.View = System.Windows.Forms.View.Details;
-			// 
 			// PreferencesForm
 			// 
 			this.AcceptButton = this.apply;
@@ -2640,9 +2650,9 @@ namespace CodeImp.DoomBuilder.Windows
 			this.tabpasting.ResumeLayout(false);
 			this.tabtoasts.ResumeLayout(false);
 			this.tabtoasts.PerformLayout();
+			this.groupBox10.ResumeLayout(false);
 			this.gbToastPosition.ResumeLayout(false);
 			this.gbToastPosition.PerformLayout();
-			this.groupBox10.ResumeLayout(false);
 			this.ResumeLayout(false);
 
 		}
@@ -2836,6 +2846,7 @@ namespace CodeImp.DoomBuilder.Windows
 		private System.Windows.Forms.RadioButton rbToastPosTL;
 		private System.Windows.Forms.GroupBox groupBox10;
 		private System.Windows.Forms.ListView lvToastActions;
-		private System.Windows.Forms.ColumnHeader columnname;
+		private System.Windows.Forms.ColumnHeader title;
+		private System.Windows.Forms.ColumnHeader description;
 	}
 }
