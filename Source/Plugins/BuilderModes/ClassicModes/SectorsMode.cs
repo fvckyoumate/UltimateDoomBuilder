@@ -1932,7 +1932,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			}
 			else //mxd
 			{
-				General.ToastManager.AddToast("makedoor", ToastType.WARNING, "Couldn't create door", "You need to highlight or select at least one sector to create a door.");
+				General.ToastManager.ShowToast("makedoor", ToastType.WARNING, "Couldn't create door", "You need to highlight or select at least one sector to create a door.");
 			}
 		}
 		

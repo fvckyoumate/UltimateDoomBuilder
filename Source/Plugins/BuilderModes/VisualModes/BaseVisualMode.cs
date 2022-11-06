@@ -3648,7 +3648,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			if (!string.IsNullOrEmpty(key))
 				message += $" Press '{key}' to toggle.";
 
-			General.ToastManager.AddToast("togglegravity", ToastType.INFO, "Changed gravity", message, new StatusInfo(StatusType.Action, shortmessage));
+			General.ToastManager.ShowToast("togglegravity", ToastType.INFO, "Changed gravity", message, new StatusInfo(StatusType.Action, shortmessage));
 		}
 
 		[BeginAction("resettexture")]

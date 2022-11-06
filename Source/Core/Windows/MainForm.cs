@@ -3050,7 +3050,7 @@ namespace CodeImp.DoomBuilder.Windows
 			if (!string.IsNullOrEmpty(key))
 				text += $" Press '{key}' to toggle.";
 
-			General.ToastManager.AddToast("togglebrightness", ToastType.INFO, "Changed full brightness", text, shorttext);
+			General.ToastManager.ShowToast("togglebrightness", ToastType.INFO, "Changed full brightness", text, shorttext);
 
 			// Redraw display to show changes
 			General.Interface.RedrawDisplay();

@@ -113,7 +113,7 @@ namespace CodeImp.DoomBuilder
 
 			// Create the timer that will handle moving the toasts. Do not start it, though
 			timer = new Timer();
-			timer.Interval = 1;
+			timer.Interval = 1; // Actually only called every 1/64 second, because Windows
 			timer.Tick += UpdateEvent;
 
 			// Create registry and load toasts from actions
@@ -139,6 +139,7 @@ namespace CodeImp.DoomBuilder
 				if (!toasts[i].IsAlive())
 				{
 					bindcontrol.Controls.Remove(toasts[i]);
+					toasts[i].Dispose(); // Dispose, otherwise it'll leak
 					toasts.RemoveAt(i);
 				}
 			}
@@ -171,6 +172,7 @@ namespace CodeImp.DoomBuilder
 
 				// This moves the toast up or down a bit, depending on its anchor position. How fast this happens depends on
 				// the control's height, i.e. no matter the height a toast will always take the same time to slide in
+				// TODO: make it dependent on elapsed time
 				if (anchor == ToastAnchor.TOPLEFT || anchor == ToastAnchor.TOPRIGHT)
 					top = ft.Location.Y + ft.Height / 5;
 				else
@@ -252,6 +254,9 @@ namespace CodeImp.DoomBuilder
 			}
 		}
 
+		/// <summary>
+		/// Registers toast from all defined actions.
+		/// </summary>
 		public void RegisterActions()
 		{
 			foreach (Actions.Action action in General.Actions.GetAllActions().Where(a => a.RegisterToast))
@@ -261,6 +266,12 @@ namespace CodeImp.DoomBuilder
 			}
 		}
 
+		/// <summary>
+		/// Registers a toast by name. Automatically prepends the assembly name.
+		/// </summary>
+		/// <param name="name">Name of the toast (without assembly)</param>
+		/// <param name="title">Title to show in the toast preferences dialog</param>
+		/// <param name="description">Description to show in the toast preferences dialog</param>
 		[MethodImpl(MethodImplOptions.NoInlining)]
 		public void RegisterToast(string name, string title, string description)
 		{
@@ -286,11 +297,11 @@ namespace CodeImp.DoomBuilder
 		}
 
 		/// <summary>
-		/// Adds a new toast.
+		/// Shows a new toast.
 		/// </summary>
 		/// <param name="type">Toast type</param>
 		/// <param name="message">The message body of the toast</param>
-		public void AddToast(ToastType type, string title, string message, string shortmessage = "")
+		public void ShowToast(ToastType type, string title, string message, string shortmessage = "")
 		{
 			StatusType st = type == ToastType.INFO ? StatusType.Info : StatusType.Warning;
 
@@ -308,8 +319,15 @@ namespace CodeImp.DoomBuilder
 			CreateToast(type, title, message);
 		}
 
+		/// <summary>
+		/// Shows a new toast. Deducts the title from the type.
+		/// </summary>
+		/// <param name="name">Name of the toast</param>
+		/// <param name="type">Type of the toast</param>
+		/// <param name="message">Message to show</param>
+		/// <param name="statusinfo">StatusInfo to use when toasts are disabled</param>
 		[MethodImpl(MethodImplOptions.NoInlining)]
-		public void AddToast(string name, ToastType type, string message, StatusInfo statusinfo)
+		public void ShowToast(string name, ToastType type, string message, StatusInfo statusinfo)
 		{
 			string fullname = Assembly.GetCallingAssembly().GetName().Name.ToLowerInvariant() + $"_{name}";
 			string title = "Information";
@@ -322,16 +340,32 @@ namespace CodeImp.DoomBuilder
 			CreateToast(fullname, type, title, message, statusinfo);
 		}
 
+		/// <summary>
+		/// Shows a new toast.
+		/// </summary>
+		/// <param name="name">Name of the toast</param>
+		/// <param name="type">Type of the toast</param>
+		/// <param name="title">Title to show</param>
+		/// <param name="message">Message to show</param>
+		/// <param name="statusinfo">StatusInfo to use when toasts are disabled</param>
 		[MethodImpl(MethodImplOptions.NoInlining)]
-		public void AddToast(string name, ToastType type, string title, string message, StatusInfo statusinfo)
+		public void ShowToast(string name, ToastType type, string title, string message, StatusInfo statusinfo)
 		{
 			string fullname = Assembly.GetCallingAssembly().GetName().Name.ToLowerInvariant() + $"_{name}";
 
 			CreateToast(fullname, type, title, message, statusinfo);
 		}
 
+		/// <summary>
+		/// Shows a new toast.
+		/// </summary>
+		/// <param name="name">Name of the toast</param>
+		/// <param name="type">Type of the toast</param>
+		/// <param name="title">Title to show</param>
+		/// <param name="message">Message to show</param>
+		/// <param name="shortmessage">Message to show in the status bar if toasts are disabled. Should not include line breaks</param>
 		[MethodImpl(MethodImplOptions.NoInlining)]
-		public void AddToast(string name, ToastType type, string title, string message, string shortmessage = null)
+		public void ShowToast(string name, ToastType type, string title, string message, string shortmessage = null)
 		{
 			string fullname = Assembly.GetCallingAssembly().GetName().Name.ToLowerInvariant() + $"_{name}";
 			StatusType st = type == ToastType.INFO ? StatusType.Info : StatusType.Warning;
@@ -342,9 +376,17 @@ namespace CodeImp.DoomBuilder
 			CreateToast(fullname, type, title, message, new StatusInfo(st, shortmessage));
 		}
 
+		/// <summary>
+		/// Creates a toast.
+		/// </summary>
+		/// <param name="fullname">Full name (i.e. assembly and toast name) of the toast</param>
+		/// <param name="type">Type of the toast</param>
+		/// <param name="title">Title to show</param>
+		/// <param name="message">Message to show</param>
+		/// <param name="statusinfo">StatusInfo to use when toasts are disabled</param>
 		private void CreateToast(string fullname, ToastType type, string title, string message, StatusInfo statusinfo)
 		{
-			if (!enabled)
+			if (!enabled || registry[fullname]?.Enabled == false)
 			{
 				General.Interface.DisplayStatus(statusinfo);
 				return;
@@ -356,7 +398,6 @@ namespace CodeImp.DoomBuilder
 			}
 			else if (registry[fullname].Enabled == false)
 			{
-				StatusType st = type == ToastType.INFO ? StatusType.Info : StatusType.Warning;
 				General.Interface.DisplayStatus(statusinfo);
 				return;
 			}
@@ -364,6 +405,12 @@ namespace CodeImp.DoomBuilder
 			CreateToast(type, title, message);
 		}
 
+		/// <summary>
+		/// Creates a toast.
+		/// </summary>
+		/// <param name="type">Type of the toast</param>
+		/// <param name="title">Title to show</param>
+		/// <param name="message">Message to show</param>
 		private void CreateToast(ToastType type, string title, string message)
 		{ 
 			ToastControl tc = new ToastControl(type, title, message, duration);

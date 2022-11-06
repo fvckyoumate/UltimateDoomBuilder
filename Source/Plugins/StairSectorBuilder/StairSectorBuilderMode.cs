@@ -1237,7 +1237,7 @@ namespace CodeImp.DoomBuilder.StairSectorBuilderMode
             // If no lines are selected nothing can be done, so exit this mode immediately
             if(General.Map.Map.SelectedLinedefsCount == 0 && General.Map.Map.SelectedSectorsCount == 0)
             {
-				General.ToastManager.AddToast(ToastMessages.ENGAGEFAILED, ToastType.ERROR, "Failed to start Stair Sector Builder Mode", "You need to select at least one linedef or sector to enter Stair Sector Builder Mode");
+				General.ToastManager.ShowToast(ToastMessages.ENGAGEFAILED, ToastType.ERROR, "Failed to start Stair Sector Builder Mode", "You need to select at least one linedef or sector to enter Stair Sector Builder Mode");
                 General.Editing.ChangeMode(General.Editing.PreviousStableMode.Name);
                 return;
             }

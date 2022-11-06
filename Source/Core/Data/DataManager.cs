@@ -630,9 +630,9 @@ namespace CodeImp.DoomBuilder.Data
 					keymessage = $" ({key})";
 
 				if (General.ErrorLogger.IsWarningAdded)
-					General.ToastManager.AddToast("resourcewarningsanderrors", ToastType.WARNING, ToastManager.TITLE_WARNING, $"There were warnings while loading the resources. Please review the messages in the Warnings and Errors window{keymessage}.", "There were warnings while loading the resources.");
+					General.ToastManager.ShowToast("resourcewarningsanderrors", ToastType.WARNING, ToastManager.TITLE_WARNING, $"There were warnings while loading the resources. Please review the messages in the Warnings and Errors window{keymessage}.", "There were warnings while loading the resources.");
 				else if(General.ErrorLogger.IsErrorAdded)
-					General.ToastManager.AddToast("resourcewarningsanderrors", ToastType.ERROR, ToastManager.TITLE_ERROR, $"There were errors while loading the resources. Please review the messages in the Warnings and Errors window{keymessage}.", "There were errors while loading the resources.");
+					General.ToastManager.ShowToast("resourcewarningsanderrors", ToastType.ERROR, ToastManager.TITLE_ERROR, $"There were errors while loading the resources. Please review the messages in the Warnings and Errors window{keymessage}.", "There were errors while loading the resources.");
 			}
 		}
 		

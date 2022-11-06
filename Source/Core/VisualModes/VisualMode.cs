@@ -1391,7 +1391,7 @@ namespace CodeImp.DoomBuilder.VisualModes
 			if (!string.IsNullOrEmpty(key))
 				text += $" Press '{key}' to toggle.";
 
-			General.ToastManager.AddToast("togglehighlight", ToastType.INFO, "Changed highlight", text, shorttext);
+			General.ToastManager.ShowToast("togglehighlight", ToastType.INFO, "Changed highlight", text, shorttext);
 		}
 
 		#endregion
