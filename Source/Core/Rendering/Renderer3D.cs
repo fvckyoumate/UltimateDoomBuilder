@@ -281,6 +281,13 @@ namespace CodeImp.DoomBuilder.Rendering
 			
 			// Make the projection matrix
 			projection = Matrix.PerspectiveFov(fovy, aspect, PROJ_NEAR_PLANE, General.Settings.ViewDistance);
+
+			// We also need to re-create the 2D matrices, otherwise the corsshair will be distorted after the viewport is resized. See
+			// https://github.com/jewalky/UltimateDoomBuilder/issues/321
+			// and
+			// https://github.com/jewalky/UltimateDoomBuilder/issues/777
+			CreateMatrices2D();
+			crosshairverts = null;
 		}
 		
 		// This creates matrices for a camera view
@@ -1596,7 +1603,10 @@ namespace CodeImp.DoomBuilder.Rendering
 				Matrix modelscale = Matrix.Scaling((float)sx, (float)sx, (float)sy);
 				Matrix modelrotation = Matrix.RotationY((float)-t.Thing.RollRad) * Matrix.RotationX((float)-t.Thing.PitchRad) * Matrix.RotationZ((float)t.Thing.Angle);
 
-				world = General.Map.Data.ModeldefEntries[t.Thing.Type].Transform * modelscale * modelrotation * t.Position;
+				if(General.Map.Data.ModeldefEntries[t.Thing.Type].UseRotationCenter)
+					world = General.Map.Data.ModeldefEntries[t.Thing.Type].Transform * modelscale * Matrix.Translation(-General.Map.Data.ModeldefEntries[t.Thing.Type].RotationCenter) * modelrotation * Matrix.Translation(General.Map.Data.ModeldefEntries[t.Thing.Type].RotationCenter) * t.Position;
+				else
+					world = General.Map.Data.ModeldefEntries[t.Thing.Type].Transform * modelscale * modelrotation  * t.Position;
                 graphics.SetUniform(UniformName.world, world);
 
                 // Set variables for fog rendering

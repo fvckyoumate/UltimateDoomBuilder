@@ -160,6 +160,7 @@
     <Compile Include="Config\LinedefActivateInfo.cs" />
     <Compile Include="Config\ProgramConfiguration.cs" />
     <Compile Include="Config\SkillInfo.cs" />
+    <Compile Include="Config\RequiredArchive.cs" />
     <Compile Include="Config\StaticLimits.cs" />
     <Compile Include="Config\TagType.cs" />
     <Compile Include="Config\TextureSet.cs" />
@@ -200,6 +201,12 @@
     <Compile Include="Controls\SidedefPartLightControl.Designer.cs">
       <DependentUpon>SidedefPartLightControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="Controls\ToastControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\ToastControl.Designer.cs">
+      <DependentUpon>ToastControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="Controls\ToolStripActionButton.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -227,6 +234,7 @@
     <Compile Include="Data\FlatImage.cs" />
     <Compile Include="Data\ImageLoadState.cs" />
     <Compile Include="General\SHA256Hash.cs" />
+    <Compile Include="General\ToastManager.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -681,6 +689,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Controls\SidedefPartLightControl.resx">
       <DependentUpon>SidedefPartLightControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\ToastControl.resx">
+      <DependentUpon>ToastControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Windows\PreAndPostCommandsForm.resx">
       <DependentUpon>PreAndPostCommandsForm.cs</DependentUpon>

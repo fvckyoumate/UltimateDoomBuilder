@@ -41,6 +41,7 @@ namespace CodeImp.DoomBuilder.Windows
 		private List<DefinedTextureSet> copiedsets;
 		private bool preventchanges;
 		private bool reloadresources;
+		private readonly int initialformheight;
 
 		//mxd. "Copy/Paste" stuff
 		private ConfigurationInfo configinfocopy;
@@ -55,7 +56,8 @@ namespace CodeImp.DoomBuilder.Windows
 			
 			// Initialize
 			InitializeComponent();
-			CodeImp.DoomBuilder.General.ApplyMonoListViewFix(listtextures);
+			this.initialformheight = Height;
+			General.ApplyMonoListViewFix(listtextures);
 
 			#if NO_WIN32
 			// Linux doesn't require .exe or .bat file extensions
@@ -140,8 +142,9 @@ namespace CodeImp.DoomBuilder.Windows
 
 				// Set defaults
 				configinfo.ApplyDefaults(gameconfig);
-				
+
 				// Fill resources list
+				configdata.GameConfiguration = gameconfig;
 				configdata.EditResourceLocationList(configinfo.Resources);
 				
 				// Go for all nodebuilder save items
@@ -1125,6 +1128,12 @@ namespace CodeImp.DoomBuilder.Windows
 			General.Interface.DisplayStatus(StatusType.Info, "Pasted color presets from \"" + configinfocopy.Name + "\"");
 		}
 
-		#endregion
-	}
+        #endregion
+
+        private void configdata_OnWarningsChanged(int size)
+        {
+			Height = initialformheight + size;
+			Refresh();
+        }
+    }
 }

@@ -39,6 +39,7 @@ using CodeImp.DoomBuilder.ZDoom;
 using Matrix = CodeImp.DoomBuilder.Rendering.Matrix;
 using CodeImp.DoomBuilder.Controls;
 using CodeImp.DoomBuilder.Dehacked;
+using System.Diagnostics;
 
 #endregion
 
@@ -358,7 +359,7 @@ namespace CodeImp.DoomBuilder.Data
 			knowncolors = new Dictionary<string, PixelColor>(StringComparer.OrdinalIgnoreCase);
 			cvars = new CvarsCollection();
 			ambientsounds = new Dictionary<int, AmbientSoundInfo>();
-			
+
 			// Load texture sets
 			foreach(DefinedTextureSet ts in General.Map.ConfigSettings.TextureSets)
 				texturesets.Add(new MatchingTextureSet(ts));
@@ -387,7 +388,7 @@ namespace CodeImp.DoomBuilder.Data
 				try
 				{
 					// Choose container type
-					switch(dl.type)
+					switch (dl.type)
 					{
 						//mxd. Load resource in read-only mode if:
 						// 1. UseResourcesInReadonlyMode map option is set.
@@ -397,10 +398,10 @@ namespace CodeImp.DoomBuilder.Data
 
 						// WAD file container
 						case DataLocation.RESOURCE_WAD:
-							c = new WADReader(dl, true);
-							if(((WADReader)c).WadFile.IsOfficialIWAD) //mxd
+							c = new WADReader(dl, General.Map.Config, true);
+							if (((WADReader)c).WadFile.IsOfficialIWAD) //mxd
 							{
-								if(!string.IsNullOrEmpty(prevofficialiwad))
+								if (!string.IsNullOrEmpty(prevofficialiwad))
 									General.ErrorLogger.Add(ErrorType.Warning, "Using more than one official IWAD as a resource is not recommended. Consider removing \"" + prevofficialiwad + "\" or \"" + dl.GetDisplayName() + "\".");
 								prevofficialiwad = dl.GetDisplayName();
 							}
@@ -408,22 +409,22 @@ namespace CodeImp.DoomBuilder.Data
 
 						// Directory container
 						case DataLocation.RESOURCE_DIRECTORY:
-							c = new DirectoryReader(dl, true);
+							c = new DirectoryReader(dl, General.Map.Config, true);
 							break;
 
 						// PK3 file container
 						case DataLocation.RESOURCE_PK3:
-							c = new PK3Reader(dl, true);
+							c = new PK3Reader(dl, General.Map.Config, true);
 							break;
 					}
 				}
-				catch(Exception e)
+				catch (Exception e)
 				{
 					// Unable to load resource
 					General.ErrorLogger.Add(ErrorType.Error, "Unable to load resources from location \"" + dl.location + "\". Please make sure the location is accessible and not in use by another program. The resources will now be loaded with this location excluded. You may reload the resources to try again.\n" + e.GetType().Name + " when creating data reader: " + e.Message);
 					General.WriteLogLine(e.StackTrace);
 					continue;
-				}	
+				}
 
 				// Add container
 				if(c != null)
@@ -432,7 +433,7 @@ namespace CodeImp.DoomBuilder.Data
 					resourcetextures.Add(c.TextureSet);
 				}
 			}
-			
+
 			// Load stuff
 			LoadX11R6RGB(); //mxd
 			LoadPalette();
@@ -619,6 +620,20 @@ namespace CodeImp.DoomBuilder.Data
 				gldefsentries.Count + " dynamic light definitions, " + 
 				glowingflats.Count + " glowing flat definitions, " + skyboxes.Count + " skybox definitions, " +
 				reverbs.Count + " sound environment definitions");
+
+			if (General.ErrorLogger.HasChanged)
+			{
+				string key = Actions.Action.GetShortcutKeyDesc(General.Actions.GetActionByName("builder_showerrors").ShortcutKey);
+				string keymessage = "";
+
+				if (!string.IsNullOrEmpty(key))
+					keymessage = $" ({key})";
+
+				if (General.ErrorLogger.IsWarningAdded)
+					General.ToastManager.ShowToast("resourcewarningsanderrors", ToastType.WARNING, ToastManager.TITLE_WARNING, $"There were warnings while loading the resources. Please review the messages in the Warnings and Errors window{keymessage}.", "There were warnings while loading the resources.");
+				else if(General.ErrorLogger.IsErrorAdded)
+					General.ToastManager.ShowToast("resourcewarningsanderrors", ToastType.ERROR, ToastManager.TITLE_ERROR, $"There were errors while loading the resources. Please review the messages in the Warnings and Errors window{keymessage}.", "There were errors while loading the resources.");
+			}
 		}
 		
 		// This unloads all data
@@ -666,9 +681,9 @@ namespace CodeImp.DoomBuilder.Data
 			mapinfo = null; //mxd
 		}
 		
-		#endregion
+#endregion
 		
-		#region ================== Suspend / Resume
+#region ================== Suspend / Resume
 
 		// This suspends data resources
 		internal void Suspend()
@@ -709,9 +724,9 @@ namespace CodeImp.DoomBuilder.Data
 			StartBackgroundLoader();
 		}
 		
-		#endregion
+#endregion
 
-		#region ================== Background Loading
+#region ================== Background Loading
 		
 		// This starts background loading
 		private void StartBackgroundLoader()
@@ -827,9 +842,9 @@ namespace CodeImp.DoomBuilder.Data
 			return false;
 		}
 
-        #endregion
+#endregion
 
-        #region ================== Palette
+#region ================== Palette
 
         // This loads the PLAYPAL palette
         private void LoadPalette()
@@ -868,9 +883,9 @@ namespace CodeImp.DoomBuilder.Data
 	        }
         }
 
-		#endregion
+#endregion
 
-		#region ================== Colormaps
+#region ================== Colormaps
 
 		// This loads the colormaps
 		private int LoadColormaps(Dictionary<long, ImageData> list)
@@ -914,9 +929,9 @@ namespace CodeImp.DoomBuilder.Data
 			return null;
 		}
 
-		#endregion
+#endregion
 
-		#region ================== Textures
+#region ================== Textures
 
 		// This loads the textures
 		private int LoadTextures(Dictionary<long, ImageData> list, Dictionary<long, long> nametranslation, Dictionary<string, TexturesParser> cachedparsers)
@@ -1136,9 +1151,9 @@ namespace CodeImp.DoomBuilder.Data
 			return result;
 		}
 		
-		#endregion
+#endregion
 
-		#region ================== Flats
+#region ================== Flats
 
 		// This loads the flats
 		private int LoadFlats(Dictionary<long, ImageData> list, Dictionary<long, long> nametranslation, Dictionary<string, TexturesParser> cachedparsers)
@@ -1267,9 +1282,9 @@ namespace CodeImp.DoomBuilder.Data
 			return (flatnamesfulltoshort.ContainsKey(hash) ? flatnamesfulltoshort[hash] : hash);
 		}
 		
-		#endregion
+#endregion
 
-		#region ================== mxd. HiRes textures
+#region ================== mxd. HiRes textures
 
 		// This loads the textures
 		private int LoadHiResTextures()
@@ -1363,9 +1378,9 @@ namespace CodeImp.DoomBuilder.Data
 			return null;
 		}
 
-		#endregion
+#endregion
 
-		#region ================== Sprites
+#region ================== Sprites
 
 		// This loads the hard defined sprites (not all the lumps, we do that on a need-to-know basis, see LoadThingSprites)
 		private int LoadSprites(Dictionary<string, TexturesParser> cachedparsers)
@@ -1687,9 +1702,9 @@ namespace CodeImp.DoomBuilder.Data
 			return result;
 		}
 		
-		#endregion
+#endregion
 
-		#region ================== mxd. Voxels
+#region ================== mxd. Voxels
 
 		// This returns a specific voxel stream
 		internal Stream GetVoxelData(string pname, ref string voxellocation)
@@ -1709,9 +1724,9 @@ namespace CodeImp.DoomBuilder.Data
 			return null;
 		}
 
-		#endregion
+#endregion
 
-		#region ================== Things
+#region ================== Things
 		
         private void LoadZScriptThings()
         {
@@ -1724,11 +1739,13 @@ namespace CodeImp.DoomBuilder.Data
                 // Go for all opened containers
                 foreach (DataReader dr in containers)
                 {
-                    // Load Decorate info cumulatively (the last Decorate is added to the previous)
-                    // I'm not sure if this is the right thing to do though.
-                    currentreader = dr;
-                    IEnumerable<TextResourceData> streams = dr.GetDecorateData("ZSCRIPT");
-                    foreach (TextResourceData data in streams)
+					// Load Decorate info cumulatively (the last Decorate is added to the previous)
+					// I'm not sure if this is the right thing to do though.
+					Stopwatch t = new Stopwatch();
+					t.Start();
+
+					currentreader = dr;
+                    foreach (TextResourceData data in dr.GetZScriptData("ZSCRIPT"))
                     {
                         // Parse the data
                         data.Stream.Seek(0, SeekOrigin.Begin);
@@ -1740,11 +1757,16 @@ namespace CodeImp.DoomBuilder.Data
                             zscript.LogError();
                             break;
                         }
-                    }
+					}
+
+					DebugConsole.WriteLine(string.Format("Loading ZScript lumps from {0} took {1}ms", dr.Location.location, t.ElapsedMilliseconds));
                 }
 
+				Stopwatch t2 = new Stopwatch();
+				t2.Start();
                 zscript.Finalize();
-                if (zscript.HasError)
+				DebugConsole.WriteLine(string.Format("Finalizing ZScript lumps took {0}ms", t2.ElapsedMilliseconds));
+				if (zscript.HasError)
                     zscript.LogError();
 
                 //mxd. Add to text resources collection
@@ -1771,15 +1793,14 @@ namespace CodeImp.DoomBuilder.Data
 					// Load Decorate info cumulatively (the last Decorate is added to the previous)
 					// I'm not sure if this is the right thing to do though.
 					currentreader = dr;
-					IEnumerable<TextResourceData> decostreams = dr.GetDecorateData("DECORATE");
-					foreach(TextResourceData data in decostreams)
+					foreach(TextResourceData data in dr.GetDecorateData("DECORATE"))
 					{
 						// Parse the data
 						data.Stream.Seek(0, SeekOrigin.Begin);
 						decorate.Parse(data, true);
-						
+
 						//mxd. DECORATE lumps are interdepandable. Can't carry on...
-						if(decorate.HasError)
+						if (decorate.HasError)
 						{
 							decorate.LogError();
 							break;
@@ -2325,9 +2346,9 @@ namespace CodeImp.DoomBuilder.Data
 			return null;
 		}
 		
-		#endregion
+#endregion
 
-		#region ================== mxd. Modeldef, Voxeldef, Gldefs, Mapinfo
+#region ================== mxd. Modeldef, Voxeldef, Gldefs, Mapinfo
 
 		//mxd. This creates <Actor Class, Thing.Type> dictionary. Should be called after all DECORATE actors are parsed
 		private Dictionary<string, int> CreateActorsByClassList() 
@@ -3141,9 +3162,9 @@ namespace CodeImp.DoomBuilder.Data
 			return null;
 		}
 
-		#endregion
+#endregion
 
-		#region ================== Tools
+#region ================== Tools
 
 		// This finds the first IWAD or IPK3 resource
 		// Returns false when not found
@@ -3324,9 +3345,9 @@ namespace CodeImp.DoomBuilder.Data
             General.MainWindow.UpdateStatus();
         }
 
-        #endregion
+#endregion
 
-        #region ================== mxd. Skybox Making
+#region ================== mxd. Skybox Making
 
         internal void SetupSkybox()
 		{
@@ -3858,6 +3879,6 @@ namespace CodeImp.DoomBuilder.Data
             }
 		}
 		
-		#endregion
+#endregion
 	}
 }
