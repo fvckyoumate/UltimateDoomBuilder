@@ -19,6 +19,7 @@ nav:
     - Line2D: 'Line2D.md'
     - Linedef: 'Linedef.md'
     - Map: 'Map.md'
+    - Plane: 'Plane.md'
     - QueryOptions: 'QueryOptions.md'
     - Sector: 'Sector.md'
     - Sidedef: 'Sidedef.md'

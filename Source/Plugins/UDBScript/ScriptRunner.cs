@@ -170,8 +170,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 			{
 				try
 				{
-					ParserOptions po = new ParserOptions(file.Remove(0, General.AppPath.Length));
-					engine.Execute(File.ReadAllText(file), po);
+					engine.Execute(File.ReadAllText(file), file.Remove(0, General.AppPath.Length));
 				}
 				catch (ParserException e)
 				{
@@ -384,11 +383,9 @@ namespace CodeImp.DoomBuilder.UDBScript
 			string script = File.ReadAllText(scriptinfo.ScriptFile);
 
 			// Run the script file
-			ParserOptions po = new ParserOptions(scriptinfo.ScriptFile.Remove(0, General.AppPath.Length));
-
 			stopwatch.Reset();
 			stopwatch.Start();
-			engine.Execute(script, po);
+			engine.Execute(script, scriptinfo.ScriptFile.Remove(0, General.AppPath.Length));
 			stopwatch.Stop();
 		}
 
