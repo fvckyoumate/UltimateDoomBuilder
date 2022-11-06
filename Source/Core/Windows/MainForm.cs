@@ -3260,9 +3260,17 @@ namespace CodeImp.DoomBuilder.Windows
 			General.Settings.GZDrawLightsMode = (General.Settings.EnhancedRenderingEffects ? LightRenderMode.ALL : LightRenderMode.NONE);
 			General.Settings.GZDrawModelsMode = (General.Settings.EnhancedRenderingEffects ? ModelRenderMode.ALL : ModelRenderMode.NONE);
 
+			string shorttext = "Enhanced rendering effects are " + (General.Settings.EnhancedRenderingEffects ? "ENABLED" : "DISABLED") + ".";
+			string text = shorttext;
+			string key = Actions.Action.GetShortcutKeyDesc(General.Actions.Current.ShortcutKey);
+
+			if (!string.IsNullOrEmpty(key))
+				text += $" Press '{key}' to toggle.";
+
+			General.ToastManager.ShowToast("gztoggleenhancedrendering", ToastType.INFO, "Changed enhanced rendering", text, shorttext);
+
 			UpdateGZDoomPanel();
 			UpdateViewMenu();
-			DisplayStatus(StatusType.Info, "Enhanced rendering effects are " + (General.Settings.EnhancedRenderingEffects ? "ENABLED" : "DISABLED"));
 		}
 
 		//mxd
@@ -3315,7 +3323,15 @@ namespace CodeImp.DoomBuilder.Windows
 			itemtoggleeventlines.Checked = General.Settings.GZShowEventLines;
 			buttontoggleeventlines.Checked = General.Settings.GZShowEventLines;
 
-			General.MainWindow.DisplayStatus(StatusType.Action, "Event lines are " + (General.Settings.GZShowEventLines ? "ENABLED" : "DISABLED"));
+			string shorttext = "Event lines are now " + (General.Settings.GZShowEventLines ? "ENABLED" : "DISABLED") + ".";
+			string text = shorttext;
+			string key = Actions.Action.GetShortcutKeyDesc(General.Actions.Current.ShortcutKey);
+
+			if (!string.IsNullOrEmpty(key))
+				text += $" Press '{key}' to toggle.";
+
+			General.ToastManager.ShowToast("gztoggleeventlines", ToastType.INFO, "Changed event line visibility", text, shorttext);
+
 			General.MainWindow.RedrawDisplay();
 			General.MainWindow.UpdateGZDoomPanel();
 		}
