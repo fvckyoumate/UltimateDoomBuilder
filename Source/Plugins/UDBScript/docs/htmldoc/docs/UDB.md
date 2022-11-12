@@ -11,6 +11,7 @@ let rad = UDB.Angle2D.degToRad(46);
 ```
 
 ---
+<span style="float:right;font-weight:normal;font-size:66%">Version: 5</span>
 ### BlockMap
 Instantiable class that contains methods related to blockmaps. See [BlockMap][BlockMap.md) for more information.
 
@@ -43,6 +44,7 @@ let sectors = UDB.Map.getSelectedOrHighlightedSectors();
 ```
 
 ---
+<span style="float:right;font-weight:normal;font-size:66%">Version: 5</span>
 ### Plane
 Instantiable class that contains methods related to a three-dimensional Plane. See [Plane](Plane.md) for more information.
 

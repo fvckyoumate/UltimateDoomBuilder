@@ -126,9 +126,9 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		{
 			try
 			{
-				Vector2D v1 = (Vector2D)BuilderPlug.Me.GetVectorFromObject(p1, false);
-				Vector2D v2 = (Vector2D)BuilderPlug.Me.GetVectorFromObject(p2, false);
-				Vector2D v3 = (Vector2D)BuilderPlug.Me.GetVectorFromObject(p3, false);
+				Vector2D v1 = BuilderPlug.Me.GetVector3DFromObject(p1);
+				Vector2D v2 = BuilderPlug.Me.GetVector3DFromObject(p2);
+				Vector2D v3 = BuilderPlug.Me.GetVector3DFromObject(p3);
 
 				return Angle2D.RadToDeg(Angle2D.GetAngle(v1, v2, v3));
 			}
@@ -149,9 +149,9 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		{
 			try
 			{
-				Vector2D v1 = (Vector2D)BuilderPlug.Me.GetVectorFromObject(p1, false);
-				Vector2D v2 = (Vector2D)BuilderPlug.Me.GetVectorFromObject(p2, false);
-				Vector2D v3 = (Vector2D)BuilderPlug.Me.GetVectorFromObject(p3, false);
+				Vector2D v1 = BuilderPlug.Me.GetVector3DFromObject(p1);
+				Vector2D v2 = BuilderPlug.Me.GetVector3DFromObject(p2);
+				Vector2D v3 = BuilderPlug.Me.GetVector3DFromObject(p3);
 
 				return Angle2D.GetAngle(v1, v2, v3);
 			}

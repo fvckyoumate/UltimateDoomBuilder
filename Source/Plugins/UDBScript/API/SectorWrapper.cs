@@ -569,7 +569,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 
 			try
 			{
-				Vector2D v = (Vector2D)BuilderPlug.Me.GetVectorFromObject(p, false);
+				Vector2D v = BuilderPlug.Me.GetVector3DFromObject(p);
 
 				return sector.Intersect(v);
 			}
@@ -710,7 +710,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 
 			try
 			{
-				sector.FloorSlope = (Vector3D)BuilderPlug.Me.GetVectorFromObject(normal, true);
+				sector.FloorSlope = BuilderPlug.Me.GetVector3DFromObject(normal);
 			}
 			catch (CantConvertToVectorException e)
 			{
@@ -741,7 +741,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 
 			try
 			{
-				sector.CeilSlope = (Vector3D)BuilderPlug.Me.GetVectorFromObject(normal, true);
+				sector.CeilSlope = BuilderPlug.Me.GetVector3DFromObject(normal);
 			}
 			catch (CantConvertToVectorException e)
 			{

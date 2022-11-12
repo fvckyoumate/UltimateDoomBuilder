@@ -528,7 +528,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 
 			try
 			{
-				Vector2D v = (Vector2D)BuilderPlug.Me.GetVectorFromObject(pos, false);
+				Vector2D v = BuilderPlug.Me.GetVector3DFromObject(pos);
 				return new Vector2DWrapper(linedef.NearestOnLine(v));
 			}
 			catch (CantConvertToVectorException e)
@@ -550,7 +550,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 
 			try
 			{
-				Vector2D v = (Vector2D)BuilderPlug.Me.GetVectorFromObject(pos, false);
+				Vector2D v = BuilderPlug.Me.GetVector3DFromObject(pos);
 				return linedef.SafeDistanceToSq(v, bounded);
 			}
 			catch (CantConvertToVectorException e)
@@ -572,7 +572,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 
 			try
 			{
-				Vector2D v = (Vector2D)BuilderPlug.Me.GetVectorFromObject(pos, false);
+				Vector2D v = BuilderPlug.Me.GetVector3DFromObject(pos);
 				return linedef.SafeDistanceTo(v, bounded);
 			}
 			catch (CantConvertToVectorException e)
@@ -594,7 +594,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 
 			try
 			{
-				Vector2D v = (Vector2D)BuilderPlug.Me.GetVectorFromObject(pos, false);
+				Vector2D v = BuilderPlug.Me.GetVector3DFromObject(pos);
 				return linedef.DistanceToSq(v, bounded);
 			}
 			catch (CantConvertToVectorException e)
@@ -616,7 +616,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 
 			try
 			{
-				Vector2D v = (Vector2D)BuilderPlug.Me.GetVectorFromObject(pos, false);
+				Vector2D v = BuilderPlug.Me.GetVector3DFromObject(pos);
 				return linedef.DistanceTo(v, bounded);
 			}
 			catch (CantConvertToVectorException e)
@@ -637,7 +637,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 
 			try
 			{
-				Vector2D v = (Vector2D)BuilderPlug.Me.GetVectorFromObject(pos, false);
+				Vector2D v = BuilderPlug.Me.GetVector3DFromObject(pos);
 				return linedef.SideOfLine(v);
 			}
 			catch (CantConvertToVectorException e)
@@ -661,7 +661,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 
 			try
 			{
-				Vector2D v = (Vector2D)BuilderPlug.Me.GetVectorFromObject(pos, false);
+				Vector2D v = BuilderPlug.Me.GetVector3DFromObject(pos);
 				Vertex nv = General.Map.Map.CreateVertex(v);
 				nv.SnapToAccuracy();
 				Linedef nld = linedef.Split(nv);

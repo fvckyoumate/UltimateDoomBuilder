@@ -85,6 +85,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// const blockmap = new UDB.BlockMap();
 		/// ```
 		/// </summary>
+		[UDBScriptSettings(MinVersion = 5)]
 		public BlockMapWrapper()
 		{
 			CreateBlockmap(true, true, true, true);
@@ -101,6 +102,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// <param name="things">If thigs should be added or not</param>
 		/// <param name="sectors">If sectors should be added or not</param>
 		/// <param name="vertices">If vertices should be added or not</param>
+		/// [UDBScriptSettings(MinVersion = 5)]
 		public BlockMapWrapper(bool lines, bool things, bool sectors, bool vertices)
 		{
 			CreateBlockmap(lines, things, sectors, vertices);
@@ -127,6 +129,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// <param name="things">If thigs should be added or not</param>
 		/// <param name="sectors">If sectors should be added or not</param>
 		/// <param name="vertices">If vertices should be added or not</param>
+		[UDBScriptSettings(MinVersion = 5)]
 		private void CreateBlockmap(bool lines, bool things, bool sectors, bool vertices)
 		{
 			RectangleF area = MapSet.CreateArea(General.Map.Map.Vertices);
@@ -171,9 +174,10 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// </summary>
 		/// <param name="pos">The point to get the `BlockEntry` of</param>
 		/// <returns>The `BlockEntry` on the given point</returns>
+		[UDBScriptSettings(MinVersion = 5)]
 		public BlockEntryWrapper getBlockAt(object pos)
 		{
-			Vector2D p = (Vector2D)BuilderPlug.Me.GetVectorFromObject(pos, false);
+			Vector2D p = BuilderPlug.Me.GetVector3DFromObject(pos);
 			BlockEntry be = blockmap.GetBlockAt(p);
 
 			if (!blockentries.ContainsKey(be))
@@ -192,10 +196,11 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// <param name="v1">The first point</param>
 		/// <param name="v2">The second point</param>
 		/// <returns>The `BlockMapQueryResult` for the line between the two points</returns>
+		[UDBScriptSettings(MinVersion = 5)]
 		public BlockMapQueryResult getLineBlocks(object v1, object v2)
 		{
-			Vector2D p1 = (Vector2D)BuilderPlug.Me.GetVectorFromObject(v1, false);
-			Vector2D p2 = (Vector2D)BuilderPlug.Me.GetVectorFromObject(v2, false);
+			Vector2D p1 = BuilderPlug.Me.GetVector3DFromObject(v1);
+			Vector2D p2 = BuilderPlug.Me.GetVector3DFromObject(v2);
 
 			return new BlockMapQueryResult(blockmap.GetLineBlocks(p1, p2));
 		}
@@ -212,6 +217,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// <param name="width">Width of the rectangle</param>
 		/// <param name="height">Height of the rectangle</param>
 		/// <returns></returns>
+		[UDBScriptSettings(MinVersion = 5)]
 		public BlockMapQueryResult getRectangleBlocks(int x, int y, int width, int height)
 		{
 			return new BlockMapQueryResult(blockmap.GetSquareRange(new RectangleF(x, y, width, height)));

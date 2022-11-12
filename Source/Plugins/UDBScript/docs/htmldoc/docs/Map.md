@@ -433,6 +433,7 @@ Stitches marked geometry with non-marked geometry.
 ## Enums
 
 ---
+<span style="float:right;font-weight:normal;font-size:66%">Version: 5</span>
 ### MergeGeometryMode
 How geometry should be merged when geometry is stitched.
 

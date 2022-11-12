@@ -465,24 +465,19 @@ namespace CodeImp.DoomBuilder.UDBScript
 			panel.EndEdit();
 		}
 
-		internal object GetVectorFromObject(object data, bool allow3d)
+		internal Vector3D GetVector3DFromObject(object data)
 		{
 			if (data is Vector2D)
 				return (Vector2D)data;
 			else if (data is Vector2DWrapper)
 				return new Vector2D(((Vector2DWrapper)data)._x, ((Vector2DWrapper)data)._y);
+			else if (data is Vector3D)
+				return (Vector3D)data;
 			else if (data is Vector3DWrapper)
-			{
-				if(allow3d)
-					return new Vector3D(((Vector3DWrapper)data)._x, ((Vector3DWrapper)data)._y, ((Vector3DWrapper)data)._z);
-				else
-					return new Vector2D(((Vector3DWrapper)data)._x, ((Vector3DWrapper)data)._y);
-			}
+				return new Vector3D(((Vector3DWrapper)data)._x, ((Vector3DWrapper)data)._y, ((Vector3DWrapper)data)._z);
 			else if (data.GetType().IsArray)
-			//else if(data is double[])
 			{
 				object[] vals = (object[])data;
-				//double[] vals = (double[])data;
 
 				// Make sure all values in the array are doubles
 				foreach (object v in vals)
@@ -499,7 +494,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 				IDictionary<string, object> eo = data as IDictionary<string, object>;
 				double x = double.NaN;
 				double y = double.NaN;
-				double z = double.NaN;
+				double z = 0.0;
 
 				if (eo.ContainsKey("x"))
 				{
@@ -537,24 +532,11 @@ namespace CodeImp.DoomBuilder.UDBScript
 					}
 				}
 
-				if (allow3d)
-				{
-					if (!double.IsNaN(x) && !double.IsNaN(y) && double.IsNaN(z))
-						return new Vector2D(x, y);
-					else if (!double.IsNaN(x) && !double.IsNaN(y) && !double.IsNaN(z))
-						return new Vector3D(x, y, z);
-				}
-				else
-				{
-					if (x != double.NaN && y != double.NaN)
-						return new Vector2D(x, y);
-				}
+				if (!double.IsNaN(x) && !double.IsNaN(y) && !double.IsNaN(z))
+					return new Vector3D(x, y, z);
 			}
 
-			if (allow3d)
-				throw new CantConvertToVectorException("Data must be a Vector2D, Vector3D, or an array of numbers.");
-			else
-				throw new CantConvertToVectorException("Data must be a Vector2D, or an array of numbers.");
+			throw new CantConvertToVectorException("Data must be a Vector2D, Vector3D, an array of numbers, or an object with (x, y, z) members.");
 		}
 
 		internal object GetConvertedUniValue(UniValue uv)

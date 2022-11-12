@@ -4,7 +4,7 @@ This site lists all changes between different API version of UDBScript
 ## Version 5
 
 - Added `Plane` class
-- Added `BlockMap` class
+- Added `BlockMap`, `BlockEntry`, and `BlackMapQueryResult` classes
 - `Sector` class
     - Added `getLabelPositions` method to get the position of sector labels (where tags, effects etc. are displayed)
 - Added support for JavaScript BigInt for UDMF fields. This means it's not necessary anymore to use `UniValue` to assign integers to new UDMF fields. Instead it can be done like this: `sector.fields.my_int_field = 1n;`

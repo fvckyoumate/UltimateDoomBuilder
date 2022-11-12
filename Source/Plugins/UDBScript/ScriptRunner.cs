@@ -36,6 +36,7 @@ using Jint;
 using Jint.Runtime;
 using Jint.Runtime.Interop;
 using Esprima;
+using Jint.Native;
 
 #endregion
 
@@ -263,11 +264,33 @@ namespace CodeImp.DoomBuilder.UDBScript
 			if (info.Name == nameof(GetType))
 				return false;
 
-			if(info.GetCustomAttribute(typeof(UDBScriptSettingsAttribute)) is UDBScriptSettingsAttribute sa)
+			if (info.GetCustomAttribute(typeof(UDBScriptSettingsAttribute)) is UDBScriptSettingsAttribute sa)
 				return sa.MinVersion <= scriptinfo.Version;
 
 			return true;
 		}
+
+		/*
+		private JsValue GetObjectMember(Engine engine, object target, string memberName)
+		{
+			Type t = target.GetType();
+			MethodInfo mi = t.GetMethod(memberName);
+			if (mi != null)
+			{
+				var attr = mi.GetCustomAttribute<UDBScriptSettingsAttribute>(false);
+				if (attr != null && scriptinfo.Version < attr.MinVersion)
+					throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException($"{t.Name} requires UDBScript version {attr.MinVersion} or higher.");
+
+			}
+			if (t.GetCustomAttribute(typeof(UDBScriptSettingsAttribute)) is UDBScriptSettingsAttribute sa)
+			{
+				if (scriptinfo.Version < sa.MinVersion)
+					throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException($"{t.Name} requires UDBScript version {sa.MinVersion} or higher.");
+			}
+
+			return null;
+		}
+		*/
 
 		/// <summary>
 		/// Sets everything up for running the script. This has to be done on the UI thread.
@@ -300,6 +323,8 @@ namespace CodeImp.DoomBuilder.UDBScript
 			{
 				MemberFilter = MemberFilter// member => member.Name != nameof(GetType)
 			});
+
+			//options.SetMemberAccessor(GetObjectMember);
 
 			/*
 			options.SetWrapObjectHandler((eng, obj) =>

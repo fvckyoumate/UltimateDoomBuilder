@@ -47,6 +47,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// <summary>
 		/// The plane's normal vector.
 		/// </summary>
+		[UDBScriptSettings(MinVersion = 5)]
 		public Vector3D normal
 		{
 			get
@@ -58,6 +59,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// <summary>
 		/// The distance of the plane along the normal vector.
 		/// </summary>
+		[UDBScriptSettings(MinVersion = 5)]
 		public double offset
 		{
 			get
@@ -73,6 +75,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// <summary>
 		/// The `a` value of the plane equation. This is the `x` value of the normal vector.
 		/// </summary>
+		[UDBScriptSettings(MinVersion = 5)]
 		public double a
 		{
 			get
@@ -84,6 +87,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// <summary>
 		/// The `b` value of the plane equation. This is the `y` value of the normal vector.
 		/// </summary>
+		[UDBScriptSettings(MinVersion = 5)]
 		public double b
 		{
 			get
@@ -95,6 +99,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// <summary>
 		/// The `c` value of the plane equation. This is the `z` value of the normal vector.
 		/// </summary>
+		[UDBScriptSettings(MinVersion = 5)]
 		public double c
 		{
 			get
@@ -106,6 +111,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// <summary>
 		/// The `d` value of the plane equation. This is the same as the `offset` value.
 		/// </summary>
+		[UDBScriptSettings(MinVersion = 5)]
 		public double d
 		{
 			get
@@ -131,9 +137,15 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// </summary>
 		/// <param name="normal">Normal vector of the plane</param>
 		/// <param name="offset">Distance of the plane from the origin</param>
+		[UDBScriptSettings(MinVersion = 5)]
 		public PlaneWrapper(object normal, double offset)
 		{
-			plane = new Plane((Vector3D)BuilderPlug.Me.GetVectorFromObject(normal, true), offset);
+			plane = new Plane(BuilderPlug.Me.GetVector3DFromObject(normal), offset);
+		}
+
+		private object bla()
+		{
+			return new Vector2D(1, 2);
 		}
 
 		/// <summary>
@@ -147,13 +159,23 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// <param name="p2">Second point</param>
 		/// <param name="p3">Thrid point</param>
 		/// <param name="up">`true` if plane is pointing up, `false` if pointing down</param>
+		[UDBScriptSettings(MinVersion = 5)]
 		public PlaneWrapper(object p1, object p2, object p3, bool up)
 		{
-			Vector3D v1 = (Vector3D)BuilderPlug.Me.GetVectorFromObject(p1, true);
-			Vector3D v2 = (Vector3D)BuilderPlug.Me.GetVectorFromObject(p2, true);
-			Vector3D v3 = (Vector3D)BuilderPlug.Me.GetVectorFromObject(p3, true);
+			//Vector2D a2 = new Vector2D(1, 2);
+			Vector3D a3 = (Vector2D)bla();
+			try
+			{
+				Vector3D v1 = BuilderPlug.Me.GetVector3DFromObject(p1);
+				Vector3D v2 = BuilderPlug.Me.GetVector3DFromObject(p2);
+				Vector3D v3 = BuilderPlug.Me.GetVector3DFromObject(p3);
 
-			plane = new Plane(v1, v2, v3, up);
+				plane = new Plane(v1, v2, v3, up);
+			}
+			catch (CantConvertToVectorException e)
+			{
+				throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException(e.Message);
+			}
 		}
 
 		#endregion
@@ -174,10 +196,11 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// <param name="from">`Vector3D` of the start of the line</param>
 		/// <param name="to">`Vector3D` of the end of the line</param>
 		/// <returns></returns>
+		[UDBScriptSettings(MinVersion = 5)]
 		public object[] getIntersection(object from, object to)
 		{
-			Vector3D f = (Vector3D)BuilderPlug.Me.GetVectorFromObject(from, true);
-			Vector3D t = (Vector3D)BuilderPlug.Me.GetVectorFromObject(to, true);
+			Vector3D f = BuilderPlug.Me.GetVector3DFromObject(from);
+			Vector3D t = BuilderPlug.Me.GetVector3DFromObject(to);
 
 			double u_ray = double.NaN;
 
@@ -195,9 +218,10 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// </summary>
 		/// <param name="p">Point to compute the distnace to</param>
 		/// <returns>Distance between the `Plane` and the point as `number`</returns>
+		[UDBScriptSettings(MinVersion = 5)]
 		public double distance(object p)
 		{
-			Vector3D v = (Vector3D)BuilderPlug.Me.GetVectorFromObject(p, true);
+			Vector3D v = BuilderPlug.Me.GetVector3DFromObject(p);
 
 			return plane.Distance(v);
 		}
@@ -211,9 +235,10 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// </summary>
 		/// <param name="p">Point to get the closest position from</param>
 		/// <returns>Point as `Vector3D` on the plane closest to the given point</returns>
+		[UDBScriptSettings(MinVersion = 5)]
 		public Vector3DWrapper closestOnPlane(object p)
 		{
-			Vector3D v = (Vector3D)BuilderPlug.Me.GetVectorFromObject(p, true);
+			Vector3D v = BuilderPlug.Me.GetVector3DFromObject(p);
 
 			return new Vector3DWrapper(plane.ClosestOnPlane(v));
 		}
@@ -227,9 +252,10 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// </summary>
 		/// <param name="p">Point to get the z position from</param>
 		/// <returns></returns>
+		[UDBScriptSettings(MinVersion = 5)]
 		public double getZ(object p)
 		{
-			Vector2D v = (Vector2D)BuilderPlug.Me.GetVectorFromObject(p, true);
+			Vector2D v = BuilderPlug.Me.GetVector3DFromObject(p);
 
 			return plane.GetZ(v);
 		}

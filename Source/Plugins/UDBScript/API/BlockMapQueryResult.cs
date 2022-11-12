@@ -83,6 +83,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// Gets all `Linedef`s in the blockmap query result.
 		/// </summary>
 		/// <returns>`Array` of `Linedef`s</returns>
+		[UDBScriptSettings(MinVersion = 5)]
 		public override LinedefWrapper[] getLinedefs()
 		{
 			if (lines == null)
@@ -95,6 +96,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// Gets all `Thing`s in the blockmap query result.
 		/// </summary>
 		/// <returns>`Array` of `Thing`s</returns>
+		[UDBScriptSettings(MinVersion = 5)]
 		public override ThingWrapper[] getThings()
 		{
 			if (things == null)
@@ -108,6 +110,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// Gets all `Sector`s in the blockmap query result.
 		/// </summary>
 		/// <returns>`Array` of `Sector`s</returns>
+		[UDBScriptSettings(MinVersion = 5)]
 		public override SectorWrapper[] getSectors()
 		{
 			if (sectors == null)
@@ -120,6 +123,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// Gets all `Vertex` in the blockmap query result.
 		/// </summary>
 		/// <returns>`Array` of `Vertex`</returns>
+		[UDBScriptSettings(MinVersion = 5)]
 		public override VertexWrapper[] getVertices()
 		{
 			if (vertices == null)

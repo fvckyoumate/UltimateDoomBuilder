@@ -36,6 +36,7 @@ As you can see the code is quite similar, the difference being that a blockmap i
 ## Constructors
 
 ---
+<span style="float:right;font-weight:normal;font-size:66%">Version: 5</span>
 ### BlockMap()
 Creates a blockmap that includes linedefs, things, sectors, and vertices.
 
@@ -60,6 +61,7 @@ const blockmap = new UDB.BlockMap(false, false, true, false);
 ## Methods
 
 ---
+<span style="float:right;font-weight:normal;font-size:66%">Version: 5</span>
 ### getBlockAt(pos: object)
 Gets the `BlockEntry` at a point. The given point can be a `Vector2D` or an `Array` of two numbers.
 
@@ -73,6 +75,7 @@ const blockentry = blockmap.getBlockAt([ 64, 128 ]);
 The `BlockEntry` on the given point
 
 ---
+<span style="float:right;font-weight:normal;font-size:66%">Version: 5</span>
 ### getLineBlocks(v1: object, v2: object)
 Gets a `BlockMapQueryResult` for the blockmap along a line between two points. The given points can be `Vector2D`s or an `Array`s of two numbers.
 
@@ -87,6 +90,7 @@ const result = blockmap.getLineBlocks([ 0, 0 ], [ 512, 256 ]);
 The `BlockMapQueryResult` for the line between the two points
 
 ---
+<span style="float:right;font-weight:normal;font-size:66%">Version: 5</span>
 ### getRectangleBlocks(x: int, y: int, width: int, height: int)
 Gets a `BlockMapQueryResult` for the blockmap in a rectangle.
 

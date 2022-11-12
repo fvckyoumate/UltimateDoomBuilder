@@ -139,6 +139,21 @@ def get_sorted_comment_texts(texts):
         text += texts[t]
     return text
 
+def parse_attributes_line(line, attributes):
+    mo = re.match(r'\[(.+?)\((.+?)\)\]', line)
+    if mo is None:
+        return
+    attr_name = mo.group(1)
+    attr_vals = mo.group(2)
+    if attr_name not in attributes:
+        attributes[attr_name] = {}
+    for attr in attr_vals.split(','):
+        mo = re.match(r'(.+)=(.+)', attr)
+        if mo is None:
+            return
+        attributes[attr_name][mo.group(1).strip()] = mo.group(2).strip()
+
+
 topics = {
     'GameConfiguration': { 'files': [ '../API/GameConfigurationWrapper.cs' ], 'asnamespace': True },
     'Angle2D': { 'files': [ '../API/Angle2DWrapper.cs' ], 'asnamespace': True },
@@ -179,7 +194,8 @@ for topic in topics:
         'methods': {},
         'staticmethods': {},
         'enums': {}
-    }    
+    }
+    memberattributes = {}
     for filename in topics[topic]['files']:
         topicname = filename.split('\\')[-1].replace('Wrapper.cs', '')
 
@@ -190,7 +206,7 @@ for topic in topics:
             for line in file:
                 line = line.strip()
                 if line.startswith('['):
-                    continue
+                    parse_attributes_line(line, memberattributes)
                 elif line.startswith('///'):
                     parsingcomment = True
                     line = re.sub(r'^\s', r'', line.lstrip('/'))
@@ -246,6 +262,8 @@ for topic in topics:
                         commenttext += '\n---\n'
                         if 'version' in d:
                             commenttext += f'<span style="float:right;font-weight:normal;font-size:66%">Version: {d["version"]}</span>\n'
+                        if 'UDBScriptSettings' in memberattributes:
+                            commenttext += f'<span style="float:right;font-weight:normal;font-size:66%">Version: {memberattributes["UDBScriptSettings"]["MinVersion"]}</span>\n'
                         commenttext += f'### {signature}'
                         if parameters is not None:
                             commenttext += '('
@@ -293,6 +311,7 @@ for topic in topics:
                             texts[texttype][signature] = ''
                         texts[texttype][signature] += commenttext
                     xmltext = ''
+                    memberattributes = {}
                     parsingcomment = False
 
         dtsdata[topic] = dtsd

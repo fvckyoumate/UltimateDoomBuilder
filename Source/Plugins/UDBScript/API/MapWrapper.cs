@@ -156,7 +156,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		{
 			try
 			{
-				return new Vector2DWrapper(General.Map.Grid.SnappedToGrid((Vector2D)BuilderPlug.Me.GetVectorFromObject(pos, false)));
+				return new Vector2DWrapper(General.Map.Grid.SnappedToGrid(BuilderPlug.Me.GetVector3DFromObject(pos)));
 			}
 			catch (CantConvertToVectorException e)
 			{
@@ -298,7 +298,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		{
 			try
 			{
-				Vector2D v = (Vector2D)BuilderPlug.Me.GetVectorFromObject(pos, false);
+				Vector2D v = BuilderPlug.Me.GetVector3DFromObject(pos);
 				Linedef nearest = null;
 
 				if (double.IsNaN(maxrange))
@@ -327,7 +327,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		{
 			try
 			{
-				Vector2D v = (Vector2D)BuilderPlug.Me.GetVectorFromObject(pos, false);
+				Vector2D v = BuilderPlug.Me.GetVector3DFromObject(pos);
 				Thing nearest = null;
 
 				if (double.IsNaN(maxrange))
@@ -356,7 +356,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		{
 			try
 			{
-				Vector2D v = (Vector2D)BuilderPlug.Me.GetVectorFromObject(pos, false);
+				Vector2D v = BuilderPlug.Me.GetVector3DFromObject(pos);
 				Vertex nearest = null;
 
 				if (double.IsNaN(maxrange))
@@ -385,7 +385,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		{
 			try
 			{
-				Vector2D v = (Vector2D)BuilderPlug.Me.GetVectorFromObject(pos, false);
+				Vector2D v = BuilderPlug.Me.GetVector3DFromObject(pos);
 				Sidedef nearest = MapSet.NearestSidedef(General.Map.Map.Sidedefs, v);
 
 				if (nearest == null)
@@ -432,7 +432,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 			{
 				try
 				{
-					Vector2D v = (Vector2D)BuilderPlug.Me.GetVectorFromObject(item, false);
+					Vector2D v = BuilderPlug.Me.GetVector3DFromObject(item);
 					DrawnVertex dv = new DrawnVertex();
 					dv.pos = v;
 					dv.stitch = dv.stitchline = true;
@@ -1092,7 +1092,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		{
 			try
 			{
-				Vector2D v = (Vector2D)BuilderPlug.Me.GetVectorFromObject(pos, false);
+				Vector2D v = BuilderPlug.Me.GetVector3DFromObject(pos);
 				Vertex newvertex = General.Map.Map.CreateVertex(v);
 
 				if(newvertex == null)
@@ -1125,7 +1125,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 				if(type < 0)
 					throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Thing type can not be negative.");
 
-				object v = BuilderPlug.Me.GetVectorFromObject(pos, true);
+				Vector2D v = BuilderPlug.Me.GetVector3DFromObject(pos);
 				Thing t = General.Map.Map.CreateThing();
 
 				if(t == null)
@@ -1133,10 +1133,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 
 				General.Settings.ApplyCleanThingSettings(t, type);
 
-				if(v is Vector2D)
-					t.Move((Vector2D)v);
-				else if(v is Vector3D)
-					t.Move((Vector3D)v);
+				t.Move(v);
 
 				t.UpdateConfiguration();
 
