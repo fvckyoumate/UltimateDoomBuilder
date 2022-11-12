@@ -30,6 +30,7 @@ using System.Dynamic;
 using System.Windows.Forms;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
@@ -477,17 +478,25 @@ namespace CodeImp.DoomBuilder.UDBScript
 				return new Vector3D(((Vector3DWrapper)data)._x, ((Vector3DWrapper)data)._y, ((Vector3DWrapper)data)._z);
 			else if (data.GetType().IsArray)
 			{
-				object[] vals = (object[])data;
+				object[] rawvals = (object[])data;
+				List<double> vals = new List<double>(rawvals.Length);
 
-				// Make sure all values in the array are doubles
-				foreach (object v in vals)
-					if (!(v is double))
+				// Make sure all values in the array are doubles or BigIntegers
+				foreach (object rv in rawvals)
+				{
+					if (!(rv is double || rv is BigInteger))
 						throw new CantConvertToVectorException("Values in array must be numbers.");
 
-				if (vals.Length == 2)
-					return new Vector2D((double)vals[0], (double)vals[1]);
-				if (vals.Length == 3)
-					return new Vector3D((double)vals[0], (double)vals[1], (double)vals[2]);
+					if (rv is double d)
+						vals.Add(d);
+					else if(rv is BigInteger bi)
+						vals.Add((double)bi);
+				}
+
+				if (vals.Count == 2)
+					return new Vector2D(vals[0], vals[1]);
+				if (vals.Count == 3)
+					return new Vector3D(vals[0], vals[1], vals[2]);
 			}
 			else if (data is ExpandoObject)
 			{
