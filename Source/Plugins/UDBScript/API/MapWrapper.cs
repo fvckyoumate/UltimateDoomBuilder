@@ -1145,6 +1145,36 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 			}
 		}
 
+		/// <summary>
+		/// Creates a new `Sector` at the given position. This works like Make Sectors Mode, i.e. from the position it will figure out on its own. If a new sector was created it'll return this sector. If no new sector was created it'll return the existing sector at this position. If no sector was created it'll return `null`.
+		/// </summary>
+		/// <param name="pos">Position where the new `Sector` should be created at</param>
+		/// <returns>The new `Sector` or `null` if the new sector could not be created</returns>
+		[UDBScriptSettings(MinVersion = 6)]
+		public SectorWrapper createSectorAt(object pos)
+		{
+			try
+			{
+				Vector2D v = BuilderPlug.Me.GetVector3DFromObject(pos);
+
+				List<LinedefSide> linedefSides = Tools.FindPotentialSectorAt(v);
+
+				if (linedefSides == null)
+					return null;
+
+				Sector sector = Tools.MakeSector(linedefSides, null, false);
+				
+				if (sector == null)
+					return null;
+
+				return new SectorWrapper(sector);
+			}
+			catch (CantConvertToVectorException e)
+			{
+				throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException(e.Message);
+			}
+		}
+
 		#endregion
 
 		#region ================== Merging/Joining

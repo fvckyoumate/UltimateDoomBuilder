@@ -1,6 +1,11 @@
 # Changes
 This site lists all changes between different API version of UDBScript
 
+## Version 6
+
+- `Map` class
+	- Added a new `createSectorAt` method that creates a new sector at a position
+
 ## Version 5
 
 - Added `Plane` class
