@@ -123,9 +123,28 @@ namespace CodeImp.DoomBuilder.VisualModes
 		//mxd. Added to allow to properly update visual geometry from plugins
 		public virtual void UpdateSectorData() { }
 		public virtual void UpdateSectorGeometry(bool includeneighbours) { }
-		
-		// This updates the visual sector
-		public void Update(RenderDevice graphics)
+
+		public void AddSolidGeometry(List<float> vertices, List<int> indexes)
+		{
+			// To do: how do we skip translucent/masked geometry here?
+
+			foreach (VisualGeometry g in allgeometry)
+			{
+				if (g.Vertices != null)
+				{
+					foreach (WorldVertex v in g.Vertices)
+					{
+                        indexes.Add(indexes.Count);
+                        vertices.Add(v.x);
+                        vertices.Add(v.y);
+                        vertices.Add(v.z);
+                    }
+				}
+			}
+        }
+
+        // This updates the visual sector
+        public void Update(RenderDevice graphics)
 		{
 			int numverts = 0;
 			int v = 0;

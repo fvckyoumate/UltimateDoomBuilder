@@ -138,6 +138,10 @@ functions
 		if (dist > lPosAndRadius.w)
 			return light;
 
+		// Ray trace if light can be seen
+		if (TraceAnyHit(PosW, 0.01, normalize(lPosAndRadius.xyz - PosW), dist))
+			return light;
+
 		float power = 1.0;
 		power *= max(lPosAndRadius.w - dist, 0.0) / lPosAndRadius.w;
 

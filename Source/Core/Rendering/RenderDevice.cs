@@ -480,6 +480,11 @@ namespace CodeImp.DoomBuilder.Rendering
             ThrowIfFailed(RenderDevice_SetVertexBufferSubdata(Handle, buffer.Handle, 0, data, size * FlatVertex.Stride));
         }
 
+        public void SetAccelStruct(float[] vertices, int[] indexes)
+        {
+            ThrowIfFailed(RenderDevice_SetAccelStruct(Handle, vertices, vertices.Length / 3, indexes, indexes.Length));
+        }
+
         public void SetPixels(Texture texture, System.Drawing.Bitmap bitmap)
         {
             System.Drawing.Imaging.BitmapData bmpdata = bitmap.LockBits(
@@ -695,6 +700,9 @@ namespace CodeImp.DoomBuilder.Rendering
 
         [DllImport("BuilderNative", CallingConvention = CallingConvention.Cdecl)]
         protected static extern bool RenderDevice_SetCubePixels(IntPtr handle, IntPtr texture, CubeMapFace face, IntPtr data);
+
+        [DllImport("BuilderNative", CallingConvention = CallingConvention.Cdecl)]
+        static extern bool RenderDevice_SetAccelStruct(IntPtr handle, float[] vertices, long vertexCount, int[] indexes, long indexCount);
 
         //mxd. Anisotropic filtering steps
         public static readonly List<float> AF_STEPS = new List<float> { 1.0f, 2.0f, 4.0f, 8.0f, 16.0f };

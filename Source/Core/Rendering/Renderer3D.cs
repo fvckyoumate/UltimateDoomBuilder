@@ -435,10 +435,48 @@ namespace CodeImp.DoomBuilder.Rendering
 			translucentmodelthings = new List<VisualThing>(); //mxd
 			lightthings = new List<VisualThing>(); //mxd
 			allthings = new List<VisualThing>(); //mxd
-		}
 
-		// This ends rendering world geometry
-		public void FinishGeometry()
+			UpdateAccelStruct();
+        }
+
+        // Update ray tracing acceleration structure
+        bool accelStructChanged = true;
+        void UpdateAccelStruct()
+		{
+            VisualMode vm = (VisualMode)General.Editing.Mode;
+
+            /*
+            bool accelStructChanged = false;
+            foreach (Sector sector in General.Map.Map.Sectors)
+            {
+                VisualSector vs = vm.GetVisualSector(sector);
+                if (vs.NeedsUpdateGeo)
+                {
+                    // TBD; maybe we shouldn't use the same update flag for accel struct
+					// as the vertex buffers don't need an update unless they are also visible
+                    vs.Update(graphics);
+                    accelStructChanged = true;
+                }
+            }
+			*/
+
+            if (accelStructChanged)
+            {
+				accelStructChanged = false;
+
+                var vertices = new List<float>();
+                var indexes = new List<int>();
+                foreach (Sector sector in General.Map.Map.Sectors)
+                {
+                    VisualSector vs = vm.GetVisualSector(sector);
+                    vs.AddSolidGeometry(vertices, indexes);
+                }
+                graphics.SetAccelStruct(vertices.ToArray(), indexes.ToArray());
+            }
+        }
+
+        // This ends rendering world geometry
+        public void FinishGeometry()
 		{
 			//mxd. Sort lights
 			if(General.Settings.GZDrawLightsMode != LightRenderMode.NONE && !fullbrightness && lightthings.Count > 0)

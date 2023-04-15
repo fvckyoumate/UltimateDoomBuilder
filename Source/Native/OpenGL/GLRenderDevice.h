@@ -22,6 +22,7 @@
 #pragma once
 
 #include "../Backend.h"
+#include "../Collision.h"
 #include "OpenGLContext.h"
 #include <list>
 
@@ -75,6 +76,8 @@ public:
 	void* MapPBO(Texture* texture) override;
 	bool UnmapPBO(Texture* texture) override;
 
+	bool SetAccelStruct(FVector3* vertices, int64_t vertexCount, uint32_t* indexes, int64_t indexCount) override;
+
 	bool InvalidateTexture(GLTexture* texture);
 
 	void GarbageCollectBuffer(int size, VertexFormat format);
@@ -89,6 +92,7 @@ public:
 	bool ApplyRasterizerState();
 	bool ApplyBlendState();
 	bool ApplyDepthState();
+	bool ApplyAccelStruct();
 
 	void CheckContext();
 	void RequireContext();
@@ -173,6 +177,40 @@ public:
 	GLuint mStreamVertexBuffer = 0;
 	GLuint mStreamVAO = 0;
 
+	struct CollisionNodeBufferHeader
+	{
+		int root;
+		int padding1;
+		int padding2;
+		int padding3;
+	};
+
+	struct CollisionNode
+	{
+		FVector3 center;
+		float padding1;
+		FVector3 extents;
+		float padding2;
+		int left;
+		int right;
+		int element_index;
+		int padding3;
+	};
+
+	std::vector<CollisionNode> CreateCollisionNodes();
+
+	struct
+	{
+		GLuint NodeBuffer = 0;
+		GLuint VertexBuffer = 0;
+		GLuint ElementBuffer = 0;
+		std::vector<FVector3> MeshVertices;
+		std::vector<uint32_t> MeshElements;
+		std::unique_ptr<TriangleMeshShape> Collision;
+	} mAccelStruct;
+
+	bool mSupportsSSBO = false;
+
 	Cull mCullMode = Cull::None;
 	FillMode mFillMode = FillMode::Solid;
 	bool mAlphaTest = false;
@@ -194,6 +232,7 @@ public:
 	bool mDepthStateChanged = true;
 	bool mBlendStateChanged = true;
 	bool mRasterizerStateChanged = true;
+	bool mAccelStructChanged = true;
 
 	bool mContextIsCurrent = false;
 

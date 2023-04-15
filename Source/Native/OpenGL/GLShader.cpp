@@ -22,6 +22,7 @@
 #include "Precomp.h"
 #include "GLShader.h"
 #include "GLRenderDevice.h"
+#include "TraceGLSL.h"
 #include <stdexcept>
 
 void GLShader::Setup(const std::string& identifier, const std::string& vertexShader, const std::string& fragmentShader, bool alphatest)
@@ -78,17 +79,23 @@ void GLShader::Bind()
 
 void GLShader::CreateProgram(GLRenderDevice* device)
 {
-	const char* prefixNAT = R"(
-		#version 330
-		#line 1
-	)";
-	const char* prefixAT = R"(
-		#version 330
-		#define ALPHA_TEST
-		#line 1
-	)";
+	std::string prefix;
+	
+	if (device->mSupportsSSBO)
+	{
+		prefix += "#version 430\n";
+		prefix += TraceGLSL;
+	}
+	else
+	{
+		prefix += "#version 330\n";
+		prefix += "bool TraceAnyHit(vec3 origin, float tmin, vec3 dir, float tmax) { return false; }\n";
+	}
 
-	const char* prefix = mAlphatest ? prefixAT : prefixNAT;
+	if (mAlphatest)
+		prefix += "#define ALPHA_TEST\n";
+
+	prefix += "#line 1\n";
 
 	mVertexShader = CompileShader(prefix + mVertexText, GL_VERTEX_SHADER);
 	if (!mVertexShader)

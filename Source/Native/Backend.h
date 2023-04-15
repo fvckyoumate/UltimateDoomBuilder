@@ -61,6 +61,7 @@ typedef int ShaderName;
 class VertexBuffer;
 class IndexBuffer;
 class Texture;
+class FVector3;
 
 class RenderDevice
 {
@@ -101,6 +102,7 @@ public:
 	virtual bool SetCubePixels(Texture* texture, CubeMapFace face, const void* data) = 0;
 	virtual void* MapPBO(Texture* texture) = 0;
 	virtual bool UnmapPBO(Texture* texture) = 0;
+	virtual bool SetAccelStruct(FVector3* vertices, int64_t vertexCount, uint32_t* indexes, int64_t indexCount) = 0;
 };
 
 class VertexBuffer

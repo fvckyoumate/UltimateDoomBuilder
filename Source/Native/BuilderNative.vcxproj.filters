@@ -68,6 +68,7 @@
     <ClCompile Include="VPO\w_wad.cpp">
       <Filter>VPO</Filter>
     </ClCompile>
+    <ClCompile Include="Collision.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Precomp.h" />
@@ -162,6 +163,10 @@
     </ClInclude>
     <ClInclude Include="VPO\inttypes.h">
       <Filter>VPO</Filter>
+    </ClInclude>
+    <ClInclude Include="Collision.h" />
+    <ClInclude Include="OpenGL\TraceGLSL.h">
+      <Filter>OpenGL</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

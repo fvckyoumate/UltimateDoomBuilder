@@ -254,6 +254,11 @@ extern "C"
 		return device->UnmapPBO(texture);
 	}
 
+	bool RenderDevice_SetAccelStruct(RenderDevice* device, FVector3* vertices, int64_t vertexCount, uint32_t* indexes, int64_t indexCount)
+	{
+		return device->SetAccelStruct(vertices, vertexCount, indexes, indexCount);
+	}
+
 	////////////////////////////////////////////////////////////////////////////
 
 	IndexBuffer* IndexBuffer_New()

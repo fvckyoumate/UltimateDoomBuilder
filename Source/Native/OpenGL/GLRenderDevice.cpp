@@ -69,6 +69,47 @@ GLRenderDevice::GLRenderDevice(void* disp, void* window, bool debug)
 		}
 //#endif
 
+		const char* versionString = (const char*)glGetString(GL_VERSION);
+		if (versionString)
+		{
+			std::string str = versionString;
+			size_t dot1 = str.find('.');
+			size_t dot2 = str.find_first_of(". ", dot1 + 1);
+			if (dot1 != std::string::npos)
+			{
+				int majorVersion = atoi(str.substr(0, dot1).c_str());
+				int minorVersion = atoi(str.substr(dot1 + 1, dot2 - dot1 - 1).c_str());
+				if (majorVersion > 4 || (majorVersion == 4 && minorVersion >= 3))
+				{
+					mSupportsSSBO = true;
+				}
+			}
+		}
+
+		if (mSupportsSSBO)
+		{
+			mAccelStruct.MeshVertices.push_back({ -1.0f, -1.0f, -1.0f });
+			mAccelStruct.MeshVertices.push_back({ 1.0f, -1.0f, -1.0f });
+			mAccelStruct.MeshVertices.push_back({ 1.0f,  1.0f, -1.0f });
+			mAccelStruct.MeshVertices.push_back({ -1.0f, -1.0f, -1.0f });
+			mAccelStruct.MeshVertices.push_back({ -1.0f,  1.0f, -1.0f });
+			mAccelStruct.MeshVertices.push_back({ 1.0f,  1.0f, -1.0f });
+			mAccelStruct.MeshVertices.push_back({ -1.0f, -1.0f,  1.0f });
+			mAccelStruct.MeshVertices.push_back({ 1.0f, -1.0f,  1.0f });
+			mAccelStruct.MeshVertices.push_back({ 1.0f,  1.0f,  1.0f });
+			mAccelStruct.MeshVertices.push_back({ -1.0f, -1.0f,  1.0f });
+			mAccelStruct.MeshVertices.push_back({ -1.0f,  1.0f,  1.0f });
+			mAccelStruct.MeshVertices.push_back({ 1.0f,  1.0f,  1.0f });
+			for (int i = 0; i < 3 * 4; i++)
+				mAccelStruct.MeshElements.push_back(i);
+
+			mAccelStruct.Collision = std::make_unique<TriangleMeshShape>(mAccelStruct.MeshVertices.data(), (int)mAccelStruct.MeshVertices.size(), mAccelStruct.MeshElements.data(), (int)mAccelStruct.MeshElements.size());
+
+			glGenBuffers(1, &mAccelStruct.NodeBuffer);
+			glGenBuffers(1, &mAccelStruct.VertexBuffer);
+			glGenBuffers(1, &mAccelStruct.ElementBuffer);
+		}
+
 		glGenVertexArrays(1, &mStreamVAO);
 		glGenBuffers(1, &mStreamVertexBuffer);
 		glBindVertexArray(mStreamVAO);
@@ -123,6 +164,13 @@ GLRenderDevice::~GLRenderDevice()
 		    {
 		        glDeleteSamplers(1, &handle);
 		    }
+		}
+
+		if (mSupportsSSBO)
+		{
+			glDeleteBuffers(1, &mAccelStruct.NodeBuffer);
+			glDeleteBuffers(1, &mAccelStruct.VertexBuffer);
+			glDeleteBuffers(1, &mAccelStruct.ElementBuffer);
 		}
 
 		mShaderManager->ReleaseResources();
@@ -694,6 +742,76 @@ bool GLRenderDevice::UnmapPBO(Texture* itexture)
 	return result;
 }
 
+bool GLRenderDevice::SetAccelStruct(FVector3* vertices, int64_t vertexCount, uint32_t* indexes, int64_t indexCount)
+{
+	mAccelStruct.MeshVertices.resize(vertexCount);
+	memcpy(mAccelStruct.MeshVertices.data(), vertices, vertexCount * sizeof(FVector3));
+
+	mAccelStruct.MeshElements.resize(indexCount);
+	memcpy(mAccelStruct.MeshElements.data(), indexes, indexCount * sizeof(uint32_t));
+
+	mAccelStruct.Collision = std::make_unique<TriangleMeshShape>(mAccelStruct.MeshVertices.data(), (int)mAccelStruct.MeshVertices.size(), mAccelStruct.MeshElements.data(), (int)mAccelStruct.MeshElements.size());
+
+	mNeedApply = true;
+	mAccelStructChanged = true;
+	return true;
+}
+
+bool GLRenderDevice::ApplyAccelStruct()
+{
+	if (mSupportsSSBO)
+	{
+		std::vector<CollisionNode> nodes = CreateCollisionNodes();
+
+		// std430 alignment rules forces us to convert the vec3 to a vec4
+		std::vector<FVector4> vertices;
+		vertices.reserve(mAccelStruct.MeshVertices.size());
+		for (const FVector3& v : mAccelStruct.MeshVertices)
+			vertices.push_back({ v, 1.0f });
+
+		CollisionNodeBufferHeader nodesHeader;
+		nodesHeader.root = mAccelStruct.Collision->get_root();
+
+		GLint oldbinding = 0;
+		glGetIntegerv(GL_SHADER_STORAGE_BUFFER_BINDING, &oldbinding);
+
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, mAccelStruct.NodeBuffer);
+		glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(CollisionNodeBufferHeader) + nodes.size() * sizeof(CollisionNode), nullptr, GL_STATIC_DRAW);
+		glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(CollisionNodeBufferHeader), &nodesHeader);
+		glBufferSubData(GL_SHADER_STORAGE_BUFFER, sizeof(CollisionNodeBufferHeader), nodes.size() * sizeof(CollisionNode), nodes.data());
+
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, mAccelStruct.VertexBuffer);
+		glBufferData(GL_SHADER_STORAGE_BUFFER, vertices.size() * sizeof(FVector4), vertices.data(), GL_STATIC_DRAW);
+
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, mAccelStruct.ElementBuffer);
+		glBufferData(GL_SHADER_STORAGE_BUFFER, mAccelStruct.MeshElements.size() * sizeof(uint32_t), mAccelStruct.MeshElements.data(), GL_STATIC_DRAW);
+
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, oldbinding);
+	}
+
+	mAccelStructChanged = false;
+	return CheckGLError();
+}
+
+std::vector<GLRenderDevice::CollisionNode> GLRenderDevice::CreateCollisionNodes()
+{
+	std::vector<CollisionNode> nodes;
+	nodes.reserve(mAccelStruct.Collision->get_nodes().size());
+	for (const auto& node : mAccelStruct.Collision->get_nodes())
+	{
+		CollisionNode info;
+		info.center = node.aabb.Center;
+		info.extents = node.aabb.Extents;
+		info.left = node.left;
+		info.right = node.right;
+		info.element_index = node.element_index;
+		nodes.push_back(info);
+	}
+	if (nodes.empty()) // to avoid zero sized buffers
+		nodes.push_back(CollisionNode());
+	return nodes;
+}
+
 bool GLRenderDevice::InvalidateTexture(GLTexture* texture)
 {
 	if (texture->IsTextureCreated())
@@ -763,6 +881,7 @@ void GLRenderDevice::SetUniform(UniformName name, const void* values, int count,
 
 bool GLRenderDevice::ApplyChanges()
 {
+	if (mAccelStructChanged && !ApplyAccelStruct()) return false;
 	if (mShaderChanged && !ApplyShader()) return false;
 	if (mVertexBufferChanged && !ApplyVertexBuffer()) return false;
 	if (mIndexBufferChanged && !ApplyIndexBuffer()) return false;
@@ -793,6 +912,23 @@ bool GLRenderDevice::ApplyShader()
 
 	curShader->Bind();
 	mShaderChanged = false;
+
+	if (mSupportsSSBO)
+	{
+		GLint oldbinding = 0;
+		glGetIntegerv(GL_SHADER_STORAGE_BUFFER_BINDING, &oldbinding);
+
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, mAccelStruct.NodeBuffer);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, mAccelStruct.NodeBuffer);
+
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, mAccelStruct.VertexBuffer);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, mAccelStruct.VertexBuffer);
+
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, mAccelStruct.ElementBuffer);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, mAccelStruct.ElementBuffer);
+
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, oldbinding);
+	}
 
 	return CheckGLError();
 }
