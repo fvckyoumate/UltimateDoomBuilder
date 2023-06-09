@@ -156,6 +156,9 @@ namespace CodeImp.DoomBuilder.Windows
 
 			// Setup types list
 			thingtype.Setup();
+
+			// Enable/disable controls based on the availability of the UDMF fields in the game config
+			score.Enabled = General.Map.Config.HasUniversalField<Thing>("score");
 		}
 
 		#endregion
