@@ -158,7 +158,21 @@ namespace CodeImp.DoomBuilder.Windows
 			thingtype.Setup();
 
 			// Enable/disable controls based on the availability of the UDMF fields in the game config
+			/*
 			score.Enabled = General.Map.Config.HasUniversalField<Thing>("score");
+			pitch.Enabled = General.Map.Config.HasUniversalField<Thing>("pitch");
+			
+			foreach(KeyValuePair<Control, string> kvp in new Dictionary<Control, string>()
+			{
+				{ score, "score" },
+				{ pitch, "pitch" }
+			})
+			{
+				kvp.Key.Enabled = General.Map.Config.HasUniversalField<Thing>(kvp.Value);
+			}
+			*/
+
+			DoUDMFControls(this);
 		}
 
 		#endregion
@@ -418,6 +432,28 @@ namespace CodeImp.DoomBuilder.Windows
 
 			// Store current flag names
 			flagsrename = newflagsrename;
+		}
+
+		private void DoUDMFControls(Control control)
+		{
+			if (control.Tag is string name)
+			{
+				//EnableDisableControlAndChildren(control, General.Map.Config.HasUniversalFieldOrFlag<Thing>(name));
+				EnableDisableControlAndChildren(control, General.Map.Config.ThingFields.Any(f => f.Name == name));
+			}
+			else
+			{
+				foreach (Control c in control.Controls)
+					DoUDMFControls(c);
+			}
+		}
+
+		private void EnableDisableControlAndChildren(Control control, bool state)
+		{
+			control.Enabled = state;
+
+			foreach (Control c in control.Controls)
+				EnableDisableControlAndChildren(c, state);
 		}
 
 		#endregion
