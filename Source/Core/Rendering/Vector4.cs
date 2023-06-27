@@ -90,12 +90,12 @@ namespace CodeImp.DoomBuilder.Rendering
 
         public static Vector4f operator *(Vector4f vec, float scalar)
         {
-            return new Vector4f(vec.X + scalar, vec.Y + scalar, vec.Z + scalar, vec.W + scalar);
+            return new Vector4f(vec.X * scalar, vec.Y * scalar, vec.Z * scalar, vec.W * scalar);
         }
 
         public static Vector4f operator *(float scalar, Vector4f vec)
         {
-            return new Vector4f(vec.X + scalar, vec.Y + scalar, vec.Z + scalar, vec.W + scalar);
+            return new Vector4f(vec.X * scalar, vec.Y * scalar, vec.Z * scalar, vec.W * scalar);
         }
 
         public static Vector4f operator +(Vector4f left, Vector4f right)

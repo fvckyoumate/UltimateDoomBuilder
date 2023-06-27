@@ -118,12 +118,12 @@ namespace CodeImp.DoomBuilder.Rendering
 
         public static Vector3f operator *(Vector3f vec, float scalar)
         {
-            return new Vector3f(vec.X + scalar, vec.Y + scalar, vec.Z + scalar);
+            return new Vector3f(vec.X * scalar, vec.Y * scalar, vec.Z * scalar);
         }
 
         public static Vector3f operator *(float scalar, Vector3f vec)
         {
-            return new Vector3f(vec.X + scalar, vec.Y + scalar, vec.Z + scalar);
+            return new Vector3f(vec.X * scalar, vec.Y * scalar, vec.Z * scalar);
         }
 
         public static Vector3f operator +(Vector3f left, Vector3f right)

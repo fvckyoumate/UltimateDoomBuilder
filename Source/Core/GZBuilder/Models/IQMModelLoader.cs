@@ -1,4 +1,5 @@
-﻿using CodeImp.DoomBuilder.GZBuilder.Data;
+﻿using CodeImp.DoomBuilder.Geometry;
+using CodeImp.DoomBuilder.GZBuilder.Data;
 using CodeImp.DoomBuilder.Rendering;
 using System;
 using System.Collections.Generic;
@@ -59,7 +60,7 @@ namespace CodeImp.DoomBuilder.GZBuilder.Models
 
                 var Meshes = new List<IQMMesh>();
                 var Indexes = new int[3 * num_triangles];
-                var Adjacency = new List<IQMAdjacency>();
+                var Adjacency = new int[3 * num_triangles];
                 var Joints = new List<IQMJoint>();
                 var Poses = new List<IQMPose>();
                 var Anims = new List<IQMAnim>();
@@ -79,7 +80,6 @@ namespace CodeImp.DoomBuilder.GZBuilder.Models
                     mesh.NumVertices = reader.ReadUInt32();
                     mesh.FirstTriangle = reader.ReadUInt32();
                     mesh.NumTriangles = reader.ReadUInt32();
-                    // mesh.Skin = LoadSkin(path, mesh.Material);
                     Meshes.Add(mesh);
                 }
 
@@ -90,13 +90,9 @@ namespace CodeImp.DoomBuilder.GZBuilder.Models
                 }
 
                 reader.SeekTo(ofs_adjacency);
-                for (int i = 0; i < num_triangles; i++)
+                for (int i = 0; i < num_triangles * 3; i++)
                 {
-                    var adj = new IQMAdjacency();
-                    adj.Triangle[0] = reader.ReadUInt32();
-                    adj.Triangle[1] = reader.ReadUInt32();
-                    adj.Triangle[2] = reader.ReadUInt32();
-                    Adjacency.Add(adj);
+                    Adjacency[i] = reader.ReadInt32();
                 }
 
                 reader.SeekTo(ofs_joints);
@@ -150,11 +146,12 @@ namespace CodeImp.DoomBuilder.GZBuilder.Models
                     IQMJoint j = Joints[(int)i];
 
                     var m = new IQMMatrix();
-                    var invm = new IQMMatrix();
                     m.LoadIdentity();
                     m.Translate(j.Translate.X, j.Translate.Y, j.Translate.Z);
                     m.MultQuaternion(j.Quaternion);
                     m.Scale(j.Scale.X, j.Scale.Y, j.Scale.Z);
+
+                    var invm = new IQMMatrix();
                     invm = m.InverseMatrix();
 
                     if (j.Parent >= 0)
@@ -300,6 +297,9 @@ namespace CodeImp.DoomBuilder.GZBuilder.Models
                 List<IQMMatrix> bones = CalculateBones(frame, frame, 0.0f, Joints, baseframe, inversebaseframe, TRSData);
                 List<IQMMatrix> normalbones = ToNormalMatrixBones(bones);
 
+                float angleOfsetCos = (float)Math.Cos(-Angle2D.PIHALF);
+                float angleOfsetSin = (float)Math.Sin(-Angle2D.PIHALF);
+
                 var worldverts = new WorldVertex[num_vertices];
                 for (int i = 0; i < (int)num_vertices; i++)
                 {
@@ -341,8 +341,12 @@ namespace CodeImp.DoomBuilder.GZBuilder.Models
                         v.normal = normal;
                     }
 
-                    worldverts[i].x = v.pos.X;
-                    worldverts[i].y = v.pos.Y;
+                    // Fix rotation angle
+                    float rx = angleOfsetCos * v.pos.X - angleOfsetSin * v.pos.Y;
+                    float ry = angleOfsetSin * v.pos.X + angleOfsetCos * v.pos.Y;
+
+                    worldverts[i].x = rx;
+                    worldverts[i].y = ry;
                     worldverts[i].z = v.pos.Z;
                     worldverts[i].nx = v.normal.X;
                     worldverts[i].ny = v.normal.Y;
@@ -941,12 +945,6 @@ namespace CodeImp.DoomBuilder.GZBuilder.Models
         public IQMVertexArrayFormat Format;
         public uint Size;
         public uint Offset;
-    };
-
-
-    class IQMAdjacency
-    {
-        public uint[] Triangle = new uint[3];
     };
 
     class IQMJoint
