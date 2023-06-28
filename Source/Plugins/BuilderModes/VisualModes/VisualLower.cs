@@ -127,7 +127,10 @@ namespace CodeImp.DoomBuilder.BuilderModes
 				base.Texture = General.Map.Data.MissingTexture3D;
 				setuponloadedtexture = 0;
 			}
-			
+
+			// Set skewing. This has to be done after the texture is set
+			UpdateSkew();
+
 			// Get texture scaled size. Round up, because that's apparently what GZDoom does
 			Vector2D tsz = new Vector2D(Math.Ceiling(base.Texture.ScaledWidth / tscale.x), Math.Ceiling(base.Texture.ScaledHeight / tscale.y));
 			
@@ -318,7 +321,60 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			FitTexture(options);
 			Setup();
 		}
-		
+
+		/// <summary>
+		/// Updates the value for texture skewing. Has to be done after the texture is set.
+		/// </summary>
+		public void UpdateSkew()
+		{
+			string skewtype = Sidedef.Fields.GetValue("skew_bottom_type", "none");
+
+			// Reset
+			skew = new Vector2f(0.0f);
+
+			if ((skewtype == "front" || skewtype == "back") && Texture != null)
+			{
+				double leftz, rightz;
+
+				if (skewtype == "front")
+				{
+					if (Sidedef.IsFront)
+					{
+						Plane plane = Sector.GetSectorData().Floor.plane;
+						leftz = plane.GetZ(Sidedef.Line.Start.Position);
+						rightz = plane.GetZ(Sidedef.Line.End.Position);
+					}
+					else
+					{
+						Plane plane = mode.GetSectorData(Sidedef.Other.Sector).Floor.plane;
+						leftz = plane.GetZ(Sidedef.Line.End.Position);
+						rightz = plane.GetZ(Sidedef.Line.Start.Position);
+					}
+				}
+				else // "back"
+				{
+					if (Sidedef.IsFront)
+					{
+						Plane plane = mode.GetSectorData(Sidedef.Other.Sector).Floor.plane;
+						leftz = plane.GetZ(Sidedef.Line.Start.Position);
+						rightz = plane.GetZ(Sidedef.Line.End.Position);
+					}
+					else
+					{
+						Plane plane = Sector.GetSectorData().Floor.plane;
+						leftz = plane.GetZ(Sidedef.Line.End.Position);
+						rightz = plane.GetZ(Sidedef.Line.Start.Position);
+					}
+
+				}
+
+				skew = new Vector2f(
+					0.0f,
+					(float)((rightz - leftz) / Sidedef.Line.Length * ((double)Texture.Width / Texture.Height))
+					);
+			}
+		}
+
 		#endregion
 	}
 }
