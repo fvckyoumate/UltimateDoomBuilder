@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using CodeImp.DoomBuilder.Map;
 using CodeImp.DoomBuilder.Geometry;
 using CodeImp.DoomBuilder.Rendering;
@@ -126,9 +127,6 @@ namespace CodeImp.DoomBuilder.BuilderModes
 				setuponloadedtexture = 0;
 			}
 
-			// Set skewing. This has to be done after the texture is set
-			UpdateSkew();
-
 			// Get texture scaled size. Round up, because that's apparently what GZDoom does
 			Vector2D tsz = new Vector2D(Math.Ceiling(base.Texture.ScaledWidth / tscale.x), Math.Ceiling(base.Texture.ScaledHeight / tscale.y));
 
@@ -218,6 +216,10 @@ namespace CodeImp.DoomBuilder.BuilderModes
 				if(verts.Count > 2)
 				{
 					base.SetVertices(verts);
+
+					// Set skewing
+					UpdateSkew();
+
 					return true;
 				}
 			}
@@ -315,10 +317,13 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		/// </summary>
 		public void UpdateSkew()
 		{
-			string skewtype = Sidedef.Fields.GetValue("skew_top_type", "none");
-
 			// Reset
 			skew = new Vector2f(0.0f);
+
+			if (!General.Map.Config.SidedefTextureSkewing)
+				return;
+
+			string skewtype = Sidedef.Fields.GetValue("skew_top_type", "none");
 
 			if ((skewtype == "front" || skewtype == "back") && Texture != null)
 			{
@@ -357,7 +362,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 				}
 
 				skew = new Vector2f(
-					0.0f,
+					Vertices.Min(v => v.u), // Get the lowest horizontal texture offset
 					(float)((rightz - leftz) / Sidedef.Line.Length * ((double)Texture.Width / Texture.Height))
 					);
 			}
