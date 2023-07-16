@@ -25,6 +25,7 @@ using CodeImp.DoomBuilder.Map;
 using CodeImp.DoomBuilder.Rendering;
 using CodeImp.DoomBuilder.Editing;
 using CodeImp.DoomBuilder.Actions;
+using System.Linq;
 
 #endregion
 
@@ -52,6 +53,7 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 		private List<Thing> huntingThings;
 		private List<SoundPropagationDomain> propagationdomains;
 		private Dictionary<Sector, SoundPropagationDomain> sector2domain;
+		private LeakFinder leakfinder;
 
 		// The blockmap makes is used to make finding lines faster
 		BlockMap<BlockEntry> blockmap;
@@ -225,6 +227,8 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 
 			UpdateSoundPropagation();
 			General.Interface.RedrawDisplay();
+
+			leakfinder = new LeakFinder(General.Map.Map.Sectors.First(), General.Map.Map.Sectors.Last(), propagationdomains[0]);
 		}
 
 		// Mode disengages
@@ -310,6 +314,10 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 					foreach(SoundPropagationDomain spd in propagationdomains)
 						renderer.RenderHighlight(spd.Level1Geometry, spd.Color);
 				}
+
+				if (leakfinder != null)
+					foreach (SoundNode sn in leakfinder.Nodes)
+						sn.Render(renderer);
 
 				renderer.Finish();
 			}
