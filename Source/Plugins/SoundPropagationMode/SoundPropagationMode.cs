@@ -26,6 +26,8 @@ using CodeImp.DoomBuilder.Rendering;
 using CodeImp.DoomBuilder.Editing;
 using CodeImp.DoomBuilder.Actions;
 using System.Linq;
+using CodeImp.DoomBuilder.Geometry;
+using CodeImp.DoomBuilder.Data;
 
 #endregion
 
@@ -57,6 +59,14 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 
 		// The blockmap makes is used to make finding lines faster
 		BlockMap<BlockEntry> blockmap;
+
+		Sector leakstartsector;
+		Sector leakendsector;
+		Vector2D leakstartposition;
+		Vector2D leakendposition;
+		ImageData leakendimage;
+		int dashoffset;
+		long lasttime;
 
 		#endregion
 
@@ -207,6 +217,8 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 			sector2domain = new Dictionary<Sector, SoundPropagationDomain>();
 			BuilderPlug.Me.BlockingLinedefs = new List<Linedef>();
 
+			leakendimage = new ResourceImage("CodeImp.DoomBuilder.SoundPropagationMode.Resources.SoundPropagationIcon.png") {  UseColorCorrection = false };
+
 			UpdateData();
 
 			General.Interface.AddButton(BuilderPlug.Me.MenusForm.ColorConfiguration);
@@ -228,7 +240,7 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 			UpdateSoundPropagation();
 			General.Interface.RedrawDisplay();
 
-			leakfinder = new LeakFinder(General.Map.Map.Sectors.First(), General.Map.Map.Sectors.Last(), propagationdomains[0]);
+			General.Interface.EnableProcessing();
 		}
 
 		// Mode disengages
@@ -239,6 +251,8 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 
 			// Hide highlight info
 			General.Interface.HideInfo();
+
+			General.Interface.DisableProcessing();
 		}
 
 		// This redraws the display
@@ -315,9 +329,17 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 						renderer.RenderHighlight(spd.Level1Geometry, spd.Color);
 				}
 
+				//renderer.RenderDashedLine(new Geometry.Vector2D(0, 0), new Geometry.Vector2D(64, 0), 1, PixelColor.FromColor(Color.Red), 8, dashoffset%16, true);
+				//renderer.RenderDashedLine(renderer.MapToDisplay(new Geometry.Vector2D(0, 0)), renderer.MapToDisplay(new Geometry.Vector2D(64, 0)), 1, PixelColor.FromColor(Color.Red), 16, dashoffset % 32, false);
+
 				if (leakfinder != null)
-					foreach (SoundNode sn in leakfinder.Nodes)
-						sn.Render(renderer);
+				{
+					//foreach (SoundNode sn in leakfinder.Nodes)
+					//	sn.RenderWithNeighbors(renderer);
+
+					leakfinder.End.RenderPath(renderer, dashoffset);
+					renderer.RenderRectangleFilled(new RectangleF((float)leakfinder.End.Position.x - 8 / renderer.Scale, (float)leakfinder.End.Position.y + 8 / renderer.Scale, 16 / renderer.Scale, -16 / renderer.Scale), PixelColor.FromColor(Color.White), true, leakendimage);
+				}
 
 				renderer.Finish();
 			}
@@ -338,6 +360,9 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 			
 			// Update
 			ResetSoundPropagation();
+
+			FindSoundLeak();
+
 			General.Interface.RedrawDisplay();
 		}
 
@@ -464,6 +489,48 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 			Highlight(null);
 		}
 
+		public override void OnProcess(long deltatime)
+		{
+			base.OnProcess(deltatime);
+
+			if(Clock.CurrentTime > lasttime + 50)
+			{
+				dashoffset++;
+				lasttime = Clock.CurrentTime;
+				General.Interface.RedrawDisplay();
+			}
+		}
+
+		private void FindSoundLeak()
+		{
+			if (leakendsector == leakstartsector)
+			{
+				return;
+			}
+
+			if (leakstartsector == null || leakendsector == null)
+			{
+				return;
+			}
+
+			HashSet<Sector> sectors = new HashSet<Sector>(sector2domain[leakstartsector].Sectors);
+
+			foreach(Sector s in sector2domain[leakstartsector].AdjacentSectors)
+			{
+				sectors.UnionWith(sector2domain[s].Sectors);
+			}
+
+			if (!sectors.Contains(leakendsector))
+			{
+				return;
+			}
+
+			leakfinder = new LeakFinder(leakstartsector, leakstartposition, leakendsector, leakendposition, sectors);
+			leakfinder.FindLeak();
+
+			General.Interface.RedrawDisplay();
+		}
+
 		#endregion
 
 		#region ================== Actions
@@ -476,6 +543,24 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 				if(cc.ShowDialog((Form)General.Interface) == DialogResult.OK)
 					General.Interface.RedrawDisplay();
 			}
+		}
+
+		[BeginAction("setleakfinderstart")]
+		public void SetLeakFinderStartSector()
+		{
+			leakstartsector = highlighted;
+			leakstartposition = mousemappos;
+
+			FindSoundLeak();
+		}
+
+		[BeginAction("setleakfinderend")]
+		public void SetLeakFinderEndSector()
+		{
+			leakendsector = highlighted;
+			leakendposition = mousemappos;
+
+			FindSoundLeak();
 		}
 
 		#endregion
