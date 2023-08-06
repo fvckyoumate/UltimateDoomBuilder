@@ -16,6 +16,7 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 		public SoundNode End { get; }
 		public List<SoundNode> Nodes { get; }
 		public HashSet<Sector> Sectors { get; }
+		public bool Finished { get; internal set; }
 
 		private ConcurrentDictionary<Linedef, SoundNode> linedefs2nodes;
 		private int numblockingnodes;
@@ -28,6 +29,8 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 			End = new SoundNode(destinationposition);
 			Start = new SoundNode(sourceposition, End) { G = 0 };
 			Sectors = sectors;
+
+			Finished = false;
 
 			Nodes = new List<SoundNode>() { Start, End };
 
@@ -134,6 +137,7 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 		public bool FindLeak()
 		{
 			Stopwatch sw = Stopwatch.StartNew();
+			Finished = false;
 
 			while (true)
 			{
@@ -152,6 +156,7 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 					{
 						sw.Stop();
 						Console.WriteLine($"FindLeak took {sw.ElapsedMilliseconds} ms");
+						Finished = true;
 						return true;
 					}
 
@@ -180,6 +185,8 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 				{
 					sw.Stop();
 					Console.WriteLine($"FindLeak took {sw.ElapsedMilliseconds} ms");
+
+					Finished = true;
 
 					return false;
 				}

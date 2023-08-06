@@ -27,6 +27,7 @@ using CodeImp.DoomBuilder.Editing;
 using CodeImp.DoomBuilder.Actions;
 using CodeImp.DoomBuilder.Geometry;
 using CodeImp.DoomBuilder.Data;
+using System.ComponentModel;
 
 #endregion
 
@@ -67,6 +68,7 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 		long lasttime;
 		TextLabel leakstartlabel;
 		TextLabel leakendlabel;
+		private BackgroundWorker worker;
 
 		#endregion
 
@@ -347,14 +349,14 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 						renderer.RenderHighlight(spd.Level1Geometry, spd.Color);
 				}
 
-				if (leakfinder != null)
-				{
+				if (leakfinder != null && leakfinder.Finished)
 					leakfinder.End.RenderPath(renderer, dashoffset);
 
+				if (leakstartsector != null)
 					renderer.RenderText(leakstartlabel);
-					renderer.RenderText(leakendlabel);
-				}
 
+				if (leakendsector != null)
+					renderer.RenderText(leakendlabel);
 
 				renderer.Finish();
 			}
@@ -381,6 +383,20 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 			General.Interface.RedrawDisplay();
 		}
 
+		public override bool OnUndoBegin()
+		{
+			base.OnUndoBegin();
+
+			if (worker != null)
+			{
+				worker.CancelAsync();
+				worker.Dispose();
+				worker = null;
+			}
+
+			return true;
+		}
+
 		//mxd
 		public override void OnUndoEnd()
 		{
@@ -392,6 +408,20 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 			// Update
 			ResetSoundPropagation();
 			General.Interface.RedrawDisplay();
+		}
+
+		public override bool OnRedoBegin()
+		{
+			base.OnRedoBegin();
+
+			if (worker != null)
+			{
+				worker.CancelAsync();
+				worker.Dispose();
+				worker = null;
+			}
+
+			return true;
 		}
 
 		//mxd
@@ -518,6 +548,23 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 
 		private void FindSoundLeak()
 		{
+			if (worker != null)
+			{
+				worker.CancelAsync();
+				worker.Dispose();
+			}
+
+			worker = new BackgroundWorker();
+			worker.WorkerSupportsCancellation = true;
+			worker.DoWork += FindSoundLeakStart;
+			worker.RunWorkerCompleted += FindSoundLeakFinished;
+			worker.RunWorkerAsync();
+		}
+
+		private void FindSoundLeakStart(object sender, DoWorkEventArgs e)
+		{
+			leakfinder = null;
+
 			if (leakendsector == leakstartsector)
 			{
 				return;
@@ -542,7 +589,11 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 
 			leakfinder = new LeakFinder(leakstartsector, leakstartposition, leakendsector, leakendposition, sectors);
 			leakfinder.FindLeak();
+		}
 
+
+		private void FindSoundLeakFinished(object sender, RunWorkerCompletedEventArgs e)
+		{
 			General.Interface.RedrawDisplay();
 		}
 
@@ -566,6 +617,10 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 			leakstartsector = highlighted;
 			leakstartposition = mousemappos;
 			leakstartlabel.Location = mousemappos;
+			leakfinder = null;
+
+			// Redraw to show the label
+			General.Interface.RedrawDisplay();
 
 			FindSoundLeak();
 		}
@@ -576,6 +631,10 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 			leakendsector = highlighted;
 			leakendposition = mousemappos;
 			leakendlabel.Location = mousemappos;
+			leakfinder = null;
+
+			// Redraw to show the label
+			General.Interface.RedrawDisplay();
 
 			FindSoundLeak();
 		}
