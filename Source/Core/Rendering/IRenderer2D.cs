@@ -69,6 +69,7 @@ namespace CodeImp.DoomBuilder.Rendering
 		void PlotVerticesSet(ICollection<Vertex> vertices, bool checkMode = true);
 		void RenderThing(Thing t, PixelColor c, float alpha);
 		void RenderThingSet(ICollection<Thing> things, float alpha);
+		void RenderThingSet(ICollection<Thing> things, PixelColor c, float alpha);
 		void RenderRectangle(RectangleF rect, float bordersize, PixelColor c, bool transformrect);
 		void RenderRectangleFilled(RectangleF rect, PixelColor c, bool transformrect);
 		void RenderRectangleFilled(RectangleF rect, PixelColor c, bool transformrect, ImageData texture);

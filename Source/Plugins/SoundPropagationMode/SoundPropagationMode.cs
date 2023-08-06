@@ -19,15 +19,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using CodeImp.DoomBuilder.Map;
 using CodeImp.DoomBuilder.Rendering;
 using CodeImp.DoomBuilder.Editing;
 using CodeImp.DoomBuilder.Actions;
 using CodeImp.DoomBuilder.Geometry;
-using CodeImp.DoomBuilder.Data;
-using System.ComponentModel;
 
 #endregion
 
@@ -174,7 +174,6 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 			{
 				if(!General.Map.ThingsFilter.VisibleThings.Contains(thing)) continue;
 				if(thing.IsFlagSet(General.Map.UDMF ? "ambush" : "8")) continue;
-				if(thing.Sector == null) thing.DetermineSector();
 				if(thing.Sector != null && noisysectors.ContainsKey(thing.Sector.Index)) huntingThings.Add(thing);
 			}
 		}
@@ -188,6 +187,7 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 			RectangleF area = MapSet.CreateArea(General.Map.Map.Vertices);
 			blockmap = new BlockMap<BlockEntry>(area);
 			blockmap.AddLinedefsSet(General.Map.Map.Linedefs);
+			blockmap.AddSectorsSet(General.Map.Map.Sectors);
 		}
 
 		#endregion
@@ -254,6 +254,9 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 			// Create the blockmap
 			CreateBlockmap();
 
+			// To show things that will wake up we need to know the sector they are in
+			Parallel.ForEach(General.Map.Map.Things, t => t.DetermineSector(blockmap));
+
 			// Convert geometry selection to sectors only
 			General.Map.Map.ConvertSelection(SelectionType.Sectors);
 
@@ -281,6 +284,8 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 			List<SoundPropagationDomain> renderedspds = new List<SoundPropagationDomain>();
 			if (BuilderPlug.Me.DataIsDirty) UpdateData();
 
+			PixelColor doublesided = General.Colors.Linedefs.WithAlpha(General.Settings.DoubleSidedAlphaByte);
+
 			renderer.RedrawSurface();
 
 			// Render lines and vertices
@@ -290,11 +295,21 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 				// Plot lines by hand, so that no coloring (line specials, 3D floors etc.) distracts from
 				// the sound propagation. Also don't draw the line's normal. They are not needed here anyway
 				// and can make it harder to see the sound environment propagation
-				foreach (Linedef ld in General.Map.Map.Linedefs)
+				if(General.Settings.ParallelizedLinedefPlotting)
 				{
-					PixelColor c = (ld.IsFlagSet(General.Map.Config.ImpassableFlag) ?
-						General.Colors.Linedefs : General.Colors.Linedefs.WithAlpha(General.Settings.DoubleSidedAlphaByte));
-					renderer.PlotLine(ld.Start.Position, ld.End.Position, c, BuilderPlug.LINE_LENGTH_SCALER);
+					Parallel.ForEach(General.Map.Map.Linedefs, ld =>
+					{
+						PixelColor c = ld.IsFlagSet(General.Map.Config.ImpassableFlag) ? General.Colors.Linedefs : doublesided;
+						renderer.PlotLine(ld.Start.Position, ld.End.Position, c, BuilderPlug.LINE_LENGTH_SCALER);
+					});
+				}
+				else
+				{
+					foreach (Linedef ld in General.Map.Map.Linedefs)
+					{
+						PixelColor c = ld.IsFlagSet(General.Map.Config.ImpassableFlag) ? General.Colors.Linedefs : doublesided;
+						renderer.PlotLine(ld.Start.Position, ld.End.Position, c, BuilderPlug.LINE_LENGTH_SCALER);
+					}
 				}
 
 				// Since there will usually be way less blocking linedefs than total linedefs, it's presumably
@@ -314,8 +329,7 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 			{
 				renderer.RenderThingSet(General.Map.ThingsFilter.HiddenThings, General.Settings.HiddenThingsAlpha);
 				renderer.RenderThingSet(General.Map.ThingsFilter.VisibleThings, General.Settings.InactiveThingsAlpha);
-				foreach (Thing thing in huntingThings)
-					renderer.RenderThing(thing, General.Colors.Selection, General.Settings.ActiveThingsAlpha);
+				renderer.RenderThingSet(huntingThings, General.Colors.Selection, General.Settings.ActiveThingsAlpha);
 
 				renderer.Finish();
 			}
@@ -405,6 +419,9 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 			// Recreate the blockmap
 			CreateBlockmap();
 
+			// To show things that will wake up we need to know the sector they are in
+			Parallel.ForEach(General.Map.Map.Things, t => t.DetermineSector(blockmap));
+
 			// Update
 			ResetSoundPropagation();
 			General.Interface.RedrawDisplay();
@@ -431,6 +448,9 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 
 			// Recreate the blockmap
 			CreateBlockmap();
+
+			// To show things that will wake up we need to know the sector they are in
+			Parallel.ForEach(General.Map.Map.Things, t => t.DetermineSector(blockmap));
 
 			// Update
 			ResetSoundPropagation();
@@ -518,7 +538,7 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 						General.Interface.ShowSectorInfo(highlighted);
 					else
 						General.Interface.HideInfo();
-					
+
 					// Redraw display
 					General.Interface.RedrawDisplay();
 				}

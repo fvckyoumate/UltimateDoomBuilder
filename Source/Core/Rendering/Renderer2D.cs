@@ -1580,7 +1580,14 @@ namespace CodeImp.DoomBuilder.Rendering
 		{
 			RenderThingsBatch(things, alpha, false, new PixelColor());
 		}
-		
+
+		// This adds a thing in the things buffer for rendering
+		public void RenderThingSet(ICollection<Thing> things, PixelColor c, float alpha)
+		{
+			RenderThingsBatch(things, alpha, false, c);
+		}
+
+
 		#endregion
 
 		#region ================== Surface
