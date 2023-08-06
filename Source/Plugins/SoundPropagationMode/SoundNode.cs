@@ -100,8 +100,11 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 
 			while(current != null)
 			{
-				RectangleF rectangle = new RectangleF((float)(current.Position.x - 4 / renderer.Scale), (float)(current.Position.y - 4 / renderer.Scale), 8 / renderer.Scale, 8 / renderer.Scale);
-				renderer.RenderRectangleFilled(rectangle, PixelColor.FromColor(Color.Red), true);
+				if (current != this && current.From != null)
+				{
+					RectangleF rectangle = new RectangleF((float)(current.Position.x - 4 / renderer.Scale), (float)(current.Position.y - 4 / renderer.Scale), 8 / renderer.Scale, 8 / renderer.Scale);
+					renderer.RenderRectangleFilled(rectangle, PixelColor.FromColor(Color.Red), true);
+				}
 
 				if(current.From != null)
 					renderer.RenderLine(current.Position, current.From.Position, 1.0f, PixelColor.FromColor(Color.Red), true);

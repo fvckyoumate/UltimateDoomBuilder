@@ -25,7 +25,6 @@ using CodeImp.DoomBuilder.Map;
 using CodeImp.DoomBuilder.Rendering;
 using CodeImp.DoomBuilder.Editing;
 using CodeImp.DoomBuilder.Actions;
-using System.Linq;
 using CodeImp.DoomBuilder.Geometry;
 using CodeImp.DoomBuilder.Data;
 
@@ -64,9 +63,10 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 		Sector leakendsector;
 		Vector2D leakstartposition;
 		Vector2D leakendposition;
-		ImageData leakendimage;
 		int dashoffset;
 		long lasttime;
+		TextLabel leakstartlabel;
+		TextLabel leakendlabel;
 
 		#endregion
 
@@ -217,8 +217,6 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 			sector2domain = new Dictionary<Sector, SoundPropagationDomain>();
 			BuilderPlug.Me.BlockingLinedefs = new List<Linedef>();
 
-			leakendimage = new ResourceImage("CodeImp.DoomBuilder.SoundPropagationMode.Resources.SoundPropagationIcon.png") {  UseColorCorrection = false };
-
 			UpdateData();
 
 			General.Interface.AddButton(BuilderPlug.Me.MenusForm.ColorConfiguration);
@@ -231,6 +229,26 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 			presentation.AddLayer(new PresentLayer(RendererLayer.Geometry, BlendingMode.Alpha, 1.0f, true));
 			renderer.SetPresentation(presentation);
 
+			leakstartlabel = new TextLabel
+			{
+				TransformCoords = true,
+				AlignX = TextAlignmentX.Center,
+				AlignY = TextAlignmentY.Middle,
+				Color = General.Colors.Selection,
+				BackColor = General.Colors.Background,
+				Text = "S"
+			};
+
+			leakendlabel = new TextLabel
+			{
+				TransformCoords = true,
+				AlignX = TextAlignmentX.Center,
+				AlignY = TextAlignmentY.Middle,
+				Color = General.Colors.Selection,
+				BackColor = General.Colors.Background,
+				Text = "E"
+			};
+
 			// Create the blockmap
 			CreateBlockmap();
 
@@ -240,7 +258,7 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 			UpdateSoundPropagation();
 			General.Interface.RedrawDisplay();
 
-			General.Interface.EnableProcessing();
+			//General.Interface.EnableProcessing();
 		}
 
 		// Mode disengages
@@ -252,14 +270,14 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 			// Hide highlight info
 			General.Interface.HideInfo();
 
-			General.Interface.DisableProcessing();
+			//General.Interface.DisableProcessing();
 		}
 
 		// This redraws the display
 		public override void OnRedrawDisplay()
 		{
 			List<SoundPropagationDomain> renderedspds = new List<SoundPropagationDomain>();
-			if(BuilderPlug.Me.DataIsDirty) UpdateData();
+			if (BuilderPlug.Me.DataIsDirty) UpdateData();
 
 			renderer.RedrawSurface();
 
@@ -270,50 +288,50 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 				// Plot lines by hand, so that no coloring (line specials, 3D floors etc.) distracts from
 				// the sound propagation. Also don't draw the line's normal. They are not needed here anyway
 				// and can make it harder to see the sound environment propagation
-				foreach(Linedef ld in General.Map.Map.Linedefs)
+				foreach (Linedef ld in General.Map.Map.Linedefs)
 				{
-					PixelColor c = (ld.IsFlagSet(General.Map.Config.ImpassableFlag) ? 
+					PixelColor c = (ld.IsFlagSet(General.Map.Config.ImpassableFlag) ?
 						General.Colors.Linedefs : General.Colors.Linedefs.WithAlpha(General.Settings.DoubleSidedAlphaByte));
 					renderer.PlotLine(ld.Start.Position, ld.End.Position, c, BuilderPlug.LINE_LENGTH_SCALER);
 				}
 
 				// Since there will usually be way less blocking linedefs than total linedefs, it's presumably
 				// faster to draw them on their own instead of checking if each linedef is in BlockingLinedefs
-				foreach(Linedef ld in BuilderPlug.Me.BlockingLinedefs)
+				foreach (Linedef ld in BuilderPlug.Me.BlockingLinedefs)
 					renderer.PlotLine(ld.Start.Position, ld.End.Position, BuilderPlug.Me.BlockSoundColor, BuilderPlug.LINE_LENGTH_SCALER);
 
 				//mxd. Render highlighted line
-				if(highlightedline != null)
+				if (highlightedline != null)
 					renderer.PlotLine(highlightedline.Start.Position, highlightedline.End.Position, General.Colors.Highlight, BuilderPlug.LINE_LENGTH_SCALER);
 
 				renderer.Finish();
 			}
 
 			// Render things
-			if(renderer.StartThings(true))
+			if (renderer.StartThings(true))
 			{
 				renderer.RenderThingSet(General.Map.ThingsFilter.HiddenThings, General.Settings.HiddenThingsAlpha);
 				renderer.RenderThingSet(General.Map.ThingsFilter.VisibleThings, General.Settings.InactiveThingsAlpha);
-				foreach(Thing thing in huntingThings)
+				foreach (Thing thing in huntingThings)
 					renderer.RenderThing(thing, General.Colors.Selection, General.Settings.ActiveThingsAlpha);
 
 				renderer.Finish();
 			}
 
-			if(renderer.StartOverlay(true))
+			if (renderer.StartOverlay(true))
 			{
 				// Render highlighted domain and domains adjacent to it
-				if(highlighted != null && !highlighted.IsDisposed)
+				if (highlighted != null && !highlighted.IsDisposed)
 				{
 					renderer.RenderGeometry(overlayGeometry, null, true); //mxd
-					
+
 					SoundPropagationDomain spd = sector2domain[highlighted];
 					renderer.RenderGeometry(spd.Level1Geometry, null, true);
 
-					foreach(Sector s in spd.AdjacentSectors)
+					foreach (Sector s in spd.AdjacentSectors)
 					{
 						SoundPropagationDomain aspd = sector2domain[s];
-						if(!renderedspds.Contains(aspd))
+						if (!renderedspds.Contains(aspd))
 						{
 							renderer.RenderGeometry(aspd.Level2Geometry, null, true);
 							renderedspds.Add(aspd);
@@ -325,25 +343,22 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 				else
 				{
 					//mxd. Render all domains using domain colors
-					foreach(SoundPropagationDomain spd in propagationdomains)
+					foreach (SoundPropagationDomain spd in propagationdomains)
 						renderer.RenderHighlight(spd.Level1Geometry, spd.Color);
 				}
 
-				//renderer.RenderDashedLine(new Geometry.Vector2D(0, 0), new Geometry.Vector2D(64, 0), 1, PixelColor.FromColor(Color.Red), 8, dashoffset%16, true);
-				//renderer.RenderDashedLine(renderer.MapToDisplay(new Geometry.Vector2D(0, 0)), renderer.MapToDisplay(new Geometry.Vector2D(64, 0)), 1, PixelColor.FromColor(Color.Red), 16, dashoffset % 32, false);
-
 				if (leakfinder != null)
 				{
-					//foreach (SoundNode sn in leakfinder.Nodes)
-					//	sn.RenderWithNeighbors(renderer);
-
 					leakfinder.End.RenderPath(renderer, dashoffset);
-					renderer.RenderRectangleFilled(new RectangleF((float)leakfinder.End.Position.x - 8 / renderer.Scale, (float)leakfinder.End.Position.y + 8 / renderer.Scale, 16 / renderer.Scale, -16 / renderer.Scale), PixelColor.FromColor(Color.White), true, leakendimage);
+
+					renderer.RenderText(leakstartlabel);
+					renderer.RenderText(leakendlabel);
 				}
+
 
 				renderer.Finish();
 			}
-			
+
 			renderer.Present();
 		}
 
@@ -550,6 +565,7 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 		{
 			leakstartsector = highlighted;
 			leakstartposition = mousemappos;
+			leakstartlabel.Location = mousemappos;
 
 			FindSoundLeak();
 		}
@@ -559,8 +575,18 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 		{
 			leakendsector = highlighted;
 			leakendposition = mousemappos;
+			leakendlabel.Location = mousemappos;
 
 			FindSoundLeak();
+		}
+
+		[BeginAction("clearselection", BaseAction = true)]
+		public void ClearLeakFinder()
+		{
+			leakendsector = leakstartsector = null;
+			leakfinder = null;
+
+			General.Interface.RedrawDisplay();
 		}
 
 		#endregion
