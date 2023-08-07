@@ -46,8 +46,6 @@ namespace CodeImp.DoomBuilder.Data
 			this.AllowUnload = false;
 			SetName(resourcename);
 
-			var x = assembly.GetManifestResourceNames();
-
 			// Temporarily load resource from memory
 			Stream bitmapdata = assembly.GetManifestResourceStream(resourcename); 
 			Bitmap bmp = (Bitmap)Image.FromStream(bitmapdata);

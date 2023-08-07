@@ -64,8 +64,6 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 		Sector leakendsector;
 		Vector2D leakstartposition;
 		Vector2D leakendposition;
-		int dashoffset;
-		long lasttime;
 		TextLabel leakstartlabel;
 		TextLabel leakendlabel;
 		private BackgroundWorker worker;
@@ -262,8 +260,6 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 
 			UpdateSoundPropagation();
 			General.Interface.RedrawDisplay();
-
-			//General.Interface.EnableProcessing();
 		}
 
 		// Mode disengages
@@ -275,7 +271,11 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 			// Hide highlight info
 			General.Interface.HideInfo();
 
-			//General.Interface.DisableProcessing();
+			if (worker != null)
+			{
+				worker.CancelAsync();
+				worker.Dispose();
+			}
 		}
 
 		// This redraws the display
@@ -364,7 +364,7 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 				}
 
 				if (leakfinder != null && leakfinder.Finished)
-					leakfinder.End.RenderPath(renderer, dashoffset);
+					leakfinder.End.RenderPath(renderer, 0);
 
 				if (leakstartsector != null)
 					renderer.RenderText(leakstartlabel);
@@ -554,20 +554,36 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 			Highlight(null);
 		}
 
-		public override void OnProcess(long deltatime)
-		{
-			base.OnProcess(deltatime);
-
-			if(Clock.CurrentTime > lasttime + 50)
-			{
-				dashoffset++;
-				lasttime = Clock.CurrentTime;
-				General.Interface.RedrawDisplay();
-			}
-		}
-
+		/// <summary>
+		/// Starts finding a sound leak. Finding the actual leak is done by a background worker that's started from this method
+		/// </summary>
 		private void FindSoundLeak()
 		{
+			leakfinder = null;
+
+			if (leakendsector == leakstartsector)
+			{
+				General.ToastManager.ShowToast(ToastMessages.SOUNDPROPAGATIONMODE, ToastType.WARNING, "Sound propagation", "Stard and end position for sound leak are in the same sector");
+				return;
+			}
+
+			// Do not show an error if either start or end is not set, since that'll happen when you start out
+			if (leakstartsector == null || leakendsector == null)
+				return;
+
+			HashSet<Sector> sectors = new HashSet<Sector>(sector2domain[leakstartsector].Sectors);
+
+			// Mash all sectors from the leak start sector's domain and the adjacent domains into one hash set
+			foreach (Sector s in sector2domain[leakstartsector].AdjacentSectors)
+				sectors.UnionWith(sector2domain[s].Sectors);
+
+			// If the leak end sector isn't in the list of sectors there's no way sound can travel between the start and end
+			if (!sectors.Contains(leakendsector))
+			{
+				General.ToastManager.ShowToast(ToastMessages.SOUNDPROPAGATIONMODE, ToastType.WARNING, "Sound propagation", "Sound can not travel between the selected start and end positions");
+				return;
+			}
+
 			if (worker != null)
 			{
 				worker.CancelAsync();
@@ -578,40 +594,28 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 			worker.WorkerSupportsCancellation = true;
 			worker.DoWork += FindSoundLeakStart;
 			worker.RunWorkerCompleted += FindSoundLeakFinished;
-			worker.RunWorkerAsync();
+			worker.RunWorkerAsync(sectors);
 		}
 
+		/// <summary>
+		/// Method for the background worker that finds a sound leak.
+		/// </summary>
+		/// <param name="sender">The sender</param>
+		/// <param name="e">The event arguments</param>
 		private void FindSoundLeakStart(object sender, DoWorkEventArgs e)
 		{
-			leakfinder = null;
+			leakfinder = new LeakFinder(leakstartsector, leakstartposition, leakendsector, leakendposition, (HashSet<Sector>)e.Argument);
 
-			if (leakendsector == leakstartsector)
-			{
-				return;
-			}
-
-			if (leakstartsector == null || leakendsector == null)
-			{
-				return;
-			}
-
-			HashSet<Sector> sectors = new HashSet<Sector>(sector2domain[leakstartsector].Sectors);
-
-			foreach(Sector s in sector2domain[leakstartsector].AdjacentSectors)
-			{
-				sectors.UnionWith(sector2domain[s].Sectors);
-			}
-
-			if (!sectors.Contains(leakendsector))
-			{
-				return;
-			}
-
-			leakfinder = new LeakFinder(leakstartsector, leakstartposition, leakendsector, leakendposition, sectors);
-			leakfinder.FindLeak();
+			if (leakfinder.FindLeak() == false)
+				General.ToastManager.ShowToast(ToastMessages.SOUNDPROPAGATIONMODE, ToastType.WARNING, "Sound propagation", "Could not find a leak between the selected start and end positions, even though there should be one. This is weird");
 		}
 
 
+		/// <summary>
+		/// Method that's called when finding a sound leak finished.
+		/// </summary>
+		/// <param name="sender">The sender</param>
+		/// <param name="e">The event arguments</param>
 		private void FindSoundLeakFinished(object sender, RunWorkerCompletedEventArgs e)
 		{
 			General.Interface.RedrawDisplay();
@@ -626,7 +630,7 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 		{
 			using(ColorConfiguration cc = new ColorConfiguration())
 			{
-				if(cc.ShowDialog((Form)General.Interface) == DialogResult.OK)
+				if (cc.ShowDialog((Form)General.Interface) == DialogResult.OK)
 					General.Interface.RedrawDisplay();
 			}
 		}

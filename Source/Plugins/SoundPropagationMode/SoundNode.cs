@@ -40,7 +40,7 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 
 		public SoundNode(Linedef linedef, SoundNode destination) : this(linedef.Line.GetCoordinatesAt(0.5), destination)
 		{
-			IsBlocking = General.Map.UDMF ? linedef.IsFlagSet("blocksound") : linedef.IsFlagSet("64");
+			IsBlocking = linedef.IsFlagSet(SoundPropagationMode.BlockSoundFlag);
 		}
 
 		//public void ProcessNeighbors(HashSet<SoundNode> openset)
