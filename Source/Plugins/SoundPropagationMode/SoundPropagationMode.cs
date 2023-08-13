@@ -226,9 +226,10 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 			CustomPresentation presentation = new CustomPresentation();
 			presentation.AddLayer(new PresentLayer(RendererLayer.Background, BlendingMode.Mask, General.Settings.BackgroundAlpha));
 			presentation.AddLayer(new PresentLayer(RendererLayer.Grid, BlendingMode.Mask));
-			presentation.AddLayer(new PresentLayer(RendererLayer.Overlay, BlendingMode.Alpha, 1.0f, true));
+			presentation.AddLayer(new PresentLayer(RendererLayer.Overlay, BlendingMode.Alpha, 1.0f, true)); // First overlay (0)
 			presentation.AddLayer(new PresentLayer(RendererLayer.Things, BlendingMode.Alpha, 1.0f));
 			presentation.AddLayer(new PresentLayer(RendererLayer.Geometry, BlendingMode.Alpha, 1.0f, true));
+			presentation.AddLayer(new PresentLayer(RendererLayer.Overlay, BlendingMode.Alpha, 1.0f, true)); // Second overlay (1)
 			renderer.SetPresentation(presentation);
 
 			leakstartlabel = new TextLabel
@@ -288,6 +289,10 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 
 			PixelColor doublesided = General.Colors.Linedefs.WithAlpha(General.Settings.DoubleSidedAlphaByte);
 
+			// We don't care for the actualy surfaces, but without this the render targets will not be recreated
+			// when the window is resized
+			renderer.RedrawSurface();
+
 			// Render lines and vertices
 			if (renderer.StartPlotter(true))
 			{
@@ -336,6 +341,7 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 				renderer.Finish();
 			}
 
+			// The sound propagation domain overlay
 			if (renderer.StartOverlay(true))
 			{
 				// Render highlighted domain and domains adjacent to it
@@ -365,6 +371,12 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 						renderer.RenderHighlight(spd.Level1Geometry, spd.Color);
 				}
 
+				renderer.Finish();
+			}
+
+			// The sound leak overlay. This is done so that the path and labels are drawn at the very top
+			if (renderer.StartOverlay(true, 1))
+			{
 				if (leakfinder != null && leakfinder.Finished)
 					leakfinder.End.RenderPath(renderer);
 

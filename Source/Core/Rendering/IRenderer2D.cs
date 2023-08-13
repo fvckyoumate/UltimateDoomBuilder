@@ -52,7 +52,7 @@ namespace CodeImp.DoomBuilder.Rendering
 		// Rendering management methods
 		bool StartPlotter(bool clear);
 		bool StartThings(bool clear);
-		bool StartOverlay(bool clear);
+		bool StartOverlay(bool clear, int layernum = 0);
 		void Finish();
 		void SetPresentation(Presentation present);
 		void Present();
