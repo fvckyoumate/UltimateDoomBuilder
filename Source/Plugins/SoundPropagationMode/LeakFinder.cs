@@ -1,9 +1,31 @@
-﻿using System;
+﻿#region ================== Copyright (c) 2023 Boris Iwanski
+
+/*
+ * This program is free software: you can redistribute it and/or modify
+ *
+ * it under the terms of the GNU General Public License as published by
+ * 
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
+ * 
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program.If not, see<http://www.gnu.org/licenses/>.
+ */
+
+#endregion
+
+
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using CodeImp.DoomBuilder.Geometry;
 using CodeImp.DoomBuilder.Map;
@@ -36,12 +58,7 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 
 			linedefs2nodes = new ConcurrentDictionary<Linedef, SoundNode>();
 
-			Stopwatch sw = Stopwatch.StartNew();
-
 			GenerateNodes(sectors);
-
-			sw.Stop();
-			Console.WriteLine($"GenerateNodes took {sw.ElapsedMilliseconds} ms");
 
 			PopulateStartEndNeighbors(source, Start);
 			PopulateStartEndNeighbors(destination, End);
@@ -63,15 +80,11 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 
 		private void GenerateNodes(HashSet<Sector> sectors)
 		{
-			Stopwatch sw1 = new Stopwatch();
-			Stopwatch sw2 = new Stopwatch();
-
 			foreach(Sector s in sectors)
 			{
 				IEnumerable<Sidedef> sidedefs = s.Sidedefs.Where(sd => CheckLinedefValidity(sd.Line));
 
 				// Pass 1: create nodes
-				sw1.Start();
 				foreach(Sidedef sd in sidedefs)
 				{
 					if(!linedefs2nodes.ContainsKey(sd.Line))
@@ -80,24 +93,10 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 						Nodes.Add(linedefs2nodes[sd.Line]);
 					}
 				}
-				sw1.Stop();
-
-				// Pass 2: populate neighbors
-				/*
-				foreach(Sidedef sd1 in sidedefs)
-				{
-					foreach(Sidedef sd2 in sidedefs)
-					{
-						if (sd1 != sd2)
-							linedefs2nodes[sd1.Line].Neighbors.Add(linedefs2nodes[sd2.Line]);
-					}
-				}
-				*/
 			}
 
 			numblockingnodes = linedefs2nodes.Values.Count(n => n.IsBlocking);
 
-			sw2.Start();
 			Parallel.ForEach(linedefs2nodes.Keys, ld =>
 			{
 				foreach (Sidedef sd in ld.Front.Sector.Sidedefs)
@@ -112,14 +111,11 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 						linedefs2nodes[ld].Neighbors.Add(linedefs2nodes[sd.Line]);
 				}
 			});
-			sw2.Stop();
 
-			Console.WriteLine($"Pass 1 took {sw1.ElapsedMilliseconds} ms");
-			Console.WriteLine($"Pass 2 took {sw2.ElapsedMilliseconds} ms");
-
+#if DEBUG
 			int bla = linedefs2nodes.Values.Sum(n => n.Neighbors.Count);
 			Console.WriteLine($"There are {linedefs2nodes.Keys.Count} nodes with {bla} interconnections.");
-
+#endif
 		}
 
 		private void PopulateStartEndNeighbors(Sector sector, SoundNode node)
@@ -136,7 +132,6 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 
 		public bool FindLeak()
 		{
-			Stopwatch sw = Stopwatch.StartNew();
 			Finished = false;
 
 			while (true)
@@ -154,8 +149,6 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 
 					if (current == End)
 					{
-						sw.Stop();
-						Console.WriteLine($"FindLeak took {sw.ElapsedMilliseconds} ms");
 						Finished = true;
 						return true;
 					}
@@ -183,14 +176,10 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 
 				if(currentnumblockingnodes == numblockingnodes)
 				{
-					sw.Stop();
-					Console.WriteLine($"FindLeak took {sw.ElapsedMilliseconds} ms");
-
 					Finished = true;
 
 					return false;
 				}
-
 			}
 		}
 	}

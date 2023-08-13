@@ -28,6 +28,8 @@ using CodeImp.DoomBuilder.Rendering;
 using CodeImp.DoomBuilder.Editing;
 using CodeImp.DoomBuilder.Actions;
 using CodeImp.DoomBuilder.Geometry;
+using CodeImp.DoomBuilder.Windows;
+using System.Diagnostics;
 
 #endregion
 
@@ -259,7 +261,7 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 			General.Map.Map.ConvertSelection(SelectionType.Sectors);
 
 			UpdateSoundPropagation();
-			General.Interface.RedrawDisplay();
+			//General.Interface.RedrawDisplay();
 		}
 
 		// Mode disengages
@@ -285,8 +287,6 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 			if (BuilderPlug.Me.DataIsDirty) UpdateData();
 
 			PixelColor doublesided = General.Colors.Linedefs.WithAlpha(General.Settings.DoubleSidedAlphaByte);
-
-			renderer.RedrawSurface();
 
 			// Render lines and vertices
 			if (renderer.StartPlotter(true))
@@ -316,6 +316,8 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 				// faster to draw them on their own instead of checking if each linedef is in BlockingLinedefs
 				foreach (Linedef ld in BuilderPlug.Me.BlockingLinedefs)
 					renderer.PlotLine(ld.Start.Position, ld.End.Position, BuilderPlug.Me.BlockSoundColor, BuilderPlug.LINE_LENGTH_SCALER);
+
+
 
 				//mxd. Render highlighted line
 				if (highlightedline != null)
@@ -364,7 +366,7 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 				}
 
 				if (leakfinder != null && leakfinder.Finished)
-					leakfinder.End.RenderPath(renderer, 0);
+					leakfinder.End.RenderPath(renderer);
 
 				if (leakstartsector != null)
 					renderer.RenderText(leakstartlabel);
@@ -590,6 +592,8 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 				worker.Dispose();
 			}
 
+			General.Interface.DisplayStatus(StatusType.Busy, "Searching for sound leak...");
+
 			worker = new BackgroundWorker();
 			worker.WorkerSupportsCancellation = true;
 			worker.DoWork += FindSoundLeakStart;
@@ -604,10 +608,14 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 		/// <param name="e">The event arguments</param>
 		private void FindSoundLeakStart(object sender, DoWorkEventArgs e)
 		{
+			Stopwatch sw = Stopwatch.StartNew();
+
 			leakfinder = new LeakFinder(leakstartsector, leakstartposition, leakendsector, leakendposition, (HashSet<Sector>)e.Argument);
 
 			if (leakfinder.FindLeak() == false)
 				General.ToastManager.ShowToast(ToastMessages.SOUNDPROPAGATIONMODE, ToastType.WARNING, "Sound propagation", "Could not find a leak between the selected start and end positions, even though there should be one. This is weird");
+			else
+				General.Interface.DisplayStatus(StatusType.Info, string.Format(@"Searching for sound leak finished. Elapsed time: {0:mm\:ss\.ff}", sw.Elapsed));
 		}
 
 
