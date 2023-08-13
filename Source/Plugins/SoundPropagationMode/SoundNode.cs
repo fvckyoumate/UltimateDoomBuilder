@@ -36,8 +36,7 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 		public SoundNode From { get; set; }
 		public double G { get; set; }
 		public double H { get; }
-		//public double F => G + H;
-		public double F { get; set; }
+		public double F { get; set; } // It's G + H, but computing it on the fly is too expensive
 		public bool IsBlocking { get; }
 		public bool IsSkip { get; set; }
 
@@ -61,16 +60,25 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 			IsBlocking = linedef.IsFlagSet(SoundPropagationMode.BlockSoundFlag);
 		}
 
-		//public void ProcessNeighbors(HashSet<SoundNode> openset)
+		/// <summary>
+		/// Recomputes the values for the sound node's neighbors
+		/// </summary>
+		/// <param name="openset">The open set, the add the neighbor to if necessary</param>
+		/// <param name="start">The start sound node</param>
 		public void ProcessNeighbors(List<SoundNode> openset, SoundNode start)
 		{
+			bool blockinginpath = HasBlockingInPath(start);
+
 			foreach (SoundNode neighbor in Neighbors)
 			{
-				if ((neighbor.IsBlocking && HasBlockingInPath(start)) || neighbor.IsSkip)
+				// Skip neighbors that are blocking if there's already a blocking sound node in the path
+				// Also skip neighbors that are set to be skipped
+				if ((neighbor.IsBlocking && blockinginpath) || neighbor.IsSkip)
 					continue;
 
 				double newg = G + Vector2D.Distance(Position, neighbor.Position);
 
+				// Compute new values if the path is better
 				if (newg < neighbor.G)
 				{
 					neighbor.From = this;
@@ -83,6 +91,11 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 			}
 		}
 
+		/// <summary>
+		/// Checks if the path from this sound node to the start sound node has a blocking sound node
+		/// </summary>
+		/// <param name="start">The start sound node</param>
+		/// <returns>true if there is a blocking sound node in the path, false if there isn't</returns>
 		private bool HasBlockingInPath(SoundNode start)
 		{
 			SoundNode current = this;
@@ -96,6 +109,9 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 			return false;
 		}
 
+		/// <summary>
+		/// Resets the sound node's G and F values, and the sound node that leads here
+		/// </summary>
 		public void Reset()
 		{
 			From = null;
@@ -103,21 +119,18 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 			F = double.MaxValue;
 		}
 
-		internal void RenderWithNeighbors(IRenderer2D renderer)
-		{
-			RectangleF rectangle = new RectangleF((float)(Position.x - 10), (float)(Position.y - 10), 20, 20);
-			renderer.RenderRectangleFilled(rectangle, PixelColor.FromColor(Color.Purple), true);
-
-			foreach (SoundNode sn in Neighbors)
-				renderer.RenderLine(Position, sn.Position, 1.0f, PixelColor.FromColor(Color.Purple), true);
-		}
-
+		/// <summary>
+		/// Renders the path from this node to the beginning. Traces the path from this sound node back to the start sound node
+		/// </summary>
+		/// <param name="renderer">The Renderer2D to render with</param>
 		internal void RenderPath(IRenderer2D renderer)
 		{
 			SoundNode current = this;
 
+			// If the current node is null we have reached the beginning
 			while(current != null)
 			{
+				// Do not render the start and end sound nodes
 				if (current != this && current.From != null)
 				{
 					RectangleF rectangle = new RectangleF((float)(current.Position.x - 4 / renderer.Scale), (float)(current.Position.y - 4 / renderer.Scale), 8 / renderer.Scale, 8 / renderer.Scale);
@@ -127,6 +140,7 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 				if(current.From != null)
 					renderer.RenderLine(current.Position, current.From.Position, 1.0f, PixelColor.FromColor(Color.Red), true);
 
+				// One step back
 				current = current.From;
 			}
 		}

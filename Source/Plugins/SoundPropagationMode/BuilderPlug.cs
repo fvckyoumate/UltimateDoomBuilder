@@ -46,6 +46,7 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 	{
 		public static readonly string SOUNDPROPAGATIONMODE = "soundpropagationmode";
 	}
+
 	public class BuilderPlug : Plug
 	{
 		#region ================== Constants

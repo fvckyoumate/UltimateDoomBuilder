@@ -58,16 +58,17 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 		private List<SoundPropagationDomain> propagationdomains;
 		private Dictionary<Sector, SoundPropagationDomain> sector2domain;
 		private LeakFinder leakfinder;
+		private PixelColor doublesidedcolor;
 
 		// The blockmap makes is used to make finding lines faster
-		BlockMap<BlockEntry> blockmap;
+		private BlockMap<BlockEntry> blockmap;
 
-		Sector leakstartsector;
-		Sector leakendsector;
-		Vector2D leakstartposition;
-		Vector2D leakendposition;
-		TextLabel leakstartlabel;
-		TextLabel leakendlabel;
+		private Sector leakstartsector;
+		private Sector leakendsector;
+		private Vector2D leakstartposition;
+		private Vector2D leakendposition;
+		private TextLabel leakstartlabel;
+		private TextLabel leakendlabel;
 		private BackgroundWorker worker;
 
 		#endregion
@@ -219,6 +220,8 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 			sector2domain = new Dictionary<Sector, SoundPropagationDomain>();
 			BuilderPlug.Me.BlockingLinedefs = new List<Linedef>();
 
+			doublesidedcolor = General.Colors.Linedefs.WithAlpha(General.Settings.DoubleSidedAlphaByte);
+
 			UpdateData();
 
 			General.Interface.AddButton(BuilderPlug.Me.MenusForm.ColorConfiguration);
@@ -262,7 +265,6 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 			General.Map.Map.ConvertSelection(SelectionType.Sectors);
 
 			UpdateSoundPropagation();
-			//General.Interface.RedrawDisplay();
 		}
 
 		// Mode disengages
@@ -287,8 +289,6 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 			List<SoundPropagationDomain> renderedspds = new List<SoundPropagationDomain>();
 			if (BuilderPlug.Me.DataIsDirty) UpdateData();
 
-			PixelColor doublesided = General.Colors.Linedefs.WithAlpha(General.Settings.DoubleSidedAlphaByte);
-
 			// We don't care for the actualy surfaces, but without this the render targets will not be recreated
 			// when the window is resized
 			renderer.RedrawSurface();
@@ -300,11 +300,11 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 				// Plot lines by hand, so that no coloring (line specials, 3D floors etc.) distracts from
 				// the sound propagation. Also don't draw the line's normal. They are not needed here anyway
 				// and can make it harder to see the sound environment propagation
-				if(General.Settings.ParallelizedLinedefPlotting)
+				if (General.Settings.ParallelizedLinedefPlotting)
 				{
 					Parallel.ForEach(General.Map.Map.Linedefs, ld =>
 					{
-						PixelColor c = ld.IsFlagSet(General.Map.Config.ImpassableFlag) ? General.Colors.Linedefs : doublesided;
+						PixelColor c = ld.IsFlagSet(General.Map.Config.ImpassableFlag) ? General.Colors.Linedefs : doublesidedcolor;
 						renderer.PlotLine(ld.Start.Position, ld.End.Position, c, BuilderPlug.LINE_LENGTH_SCALER);
 					});
 				}
@@ -312,7 +312,7 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 				{
 					foreach (Linedef ld in General.Map.Map.Linedefs)
 					{
-						PixelColor c = ld.IsFlagSet(General.Map.Config.ImpassableFlag) ? General.Colors.Linedefs : doublesided;
+						PixelColor c = ld.IsFlagSet(General.Map.Config.ImpassableFlag) ? General.Colors.Linedefs : doublesidedcolor;
 						renderer.PlotLine(ld.Start.Position, ld.End.Position, c, BuilderPlug.LINE_LENGTH_SCALER);
 					}
 				}
@@ -321,8 +321,6 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 				// faster to draw them on their own instead of checking if each linedef is in BlockingLinedefs
 				foreach (Linedef ld in BuilderPlug.Me.BlockingLinedefs)
 					renderer.PlotLine(ld.Start.Position, ld.End.Position, BuilderPlug.Me.BlockSoundColor, BuilderPlug.LINE_LENGTH_SCALER);
-
-
 
 				//mxd. Render highlighted line
 				if (highlightedline != null)
@@ -575,15 +573,15 @@ namespace CodeImp.DoomBuilder.SoundPropagationMode
 		{
 			leakfinder = null;
 
+			// Do not show an error if either start or end is not set, since that'll happen when you start out
+			if (leakstartsector == null || leakendsector == null)
+				return;
+
 			if (leakendsector == leakstartsector)
 			{
 				General.ToastManager.ShowToast(ToastMessages.SOUNDPROPAGATIONMODE, ToastType.WARNING, "Sound propagation", "Stard and end position for sound leak are in the same sector");
 				return;
 			}
-
-			// Do not show an error if either start or end is not set, since that'll happen when you start out
-			if (leakstartsector == null || leakendsector == null)
-				return;
 
 			HashSet<Sector> sectors = new HashSet<Sector>(sector2domain[leakstartsector].Sectors);
 
