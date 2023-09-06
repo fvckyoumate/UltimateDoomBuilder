@@ -23,6 +23,8 @@ using System.IO;
 using CodeImp.DoomBuilder.Map;
 using System.Collections;
 using CodeImp.DoomBuilder.Types;
+using CodeImp.DoomBuilder.Config;
+using System.Linq;
 
 #endregion
 
@@ -44,6 +46,7 @@ namespace CodeImp.DoomBuilder.IO
 		{
 			if((manager != null) && (manager.Config != null))
 			{
+				/*
 				// Make configuration
 				Configuration config = new Configuration();
 				
@@ -87,6 +90,52 @@ namespace CodeImp.DoomBuilder.IO
 						break;
 					}
 				}
+				*/
+
+				foreach((MapElementType type, List<UniversalFieldInfo> data) in new[] {
+					(MapElementType.LINEDEF, General.Map.Config.LinedefFields),
+					(MapElementType.SECTOR, General.Map.Config.SectorFields),
+					(MapElementType.SIDEDEF, General.Map.Config.SidedefFields),
+					(MapElementType.THING, General.Map.Config.ThingFields),
+					(MapElementType.VERTEX, General.Map.Config.VertexFields)
+				})
+				{
+					Dictionary<string, UniversalType> values = new Dictionary<string, UniversalType>(StringComparer.Ordinal);
+
+					foreach (UniversalFieldInfo ufi in data.Where(o => o.Managed))
+					{
+						values.Add(ufi.Name, (UniversalType)ufi.Type);
+					}
+
+					uifields.Add(type, values);
+				}
+
+				/*
+				foreach (MapElementType met in new MapElementType[] { MapElementType.LINEDEF, MapElementType.SECTOR, MapElementType.SIDEDEF, MapElementType.THING, MapElementType.VERTEX })
+				{
+					List<UniversalFieldInfo> ufilist;
+
+					if (met == MapElementType.LINEDEF)
+						ufilist = General.Map.Config.LinedefFields;
+					else if (met == MapElementType.SECTOR)
+						ufilist = General.Map.Config.SectorFields;
+					else if (met == MapElementType.SIDEDEF)
+						ufilist = General.Map.Config.SidedefFields;
+					else if (met == MapElementType.THING)
+						ufilist = General.Map.Config.ThingFields;
+					else // Vertex
+						ufilist = General.Map.Config.VertexFields;
+
+					Dictionary<string, UniversalType> values = new Dictionary<string, UniversalType>(StringComparer.Ordinal);
+
+					foreach(UniversalFieldInfo ufi in ufilist.Where(o => o.Managed))
+					{
+						values.Add(ufi.Name, (UniversalType)ufi.Type);
+					}
+
+					uifields.Add(met, values);
+				}
+				*/
 			}
 		}
 

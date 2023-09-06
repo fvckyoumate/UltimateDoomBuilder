@@ -94,7 +94,7 @@ namespace CodeImp.DoomBuilder.Config
 			type = cfg.ReadSetting(setting + ".type", int.MinValue);
 			defaultvalue = cfg.ReadSettingObject(setting + ".default", null);
 			thingtypespecific = cfg.ReadSetting(setting + ".thingtypespecific", false);
-			managed = cfg.ReadSetting(setting + ".managed", false);
+			managed = cfg.ReadSetting(setting + ".managed", true);
 
 			// Read enum
 			object enumsetting = cfg.ReadSettingObject(setting + ".enum", null);
