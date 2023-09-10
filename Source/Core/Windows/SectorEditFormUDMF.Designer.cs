@@ -154,9 +154,9 @@
 			this.alphaceiling = new CodeImp.DoomBuilder.Controls.ButtonsNumericTextbox();
 			this.ceilportalrenderstylelabel = new System.Windows.Forms.Label();
 			this.ceilportalrenderstyle = new System.Windows.Forms.ComboBox();
-			this.groupBox5 = new System.Windows.Forms.GroupBox();
+			this.gbFloorSlope = new System.Windows.Forms.GroupBox();
 			this.floorslopecontrol = new CodeImp.DoomBuilder.Controls.SectorSlopeControl();
-			this.groupBox4 = new System.Windows.Forms.GroupBox();
+			this.gbCeilingSLope = new System.Windows.Forms.GroupBox();
 			this.ceilingslopecontrol = new CodeImp.DoomBuilder.Controls.SectorSlopeControl();
 			this.tabcomment = new System.Windows.Forms.TabPage();
 			this.commenteditor = new CodeImp.DoomBuilder.Controls.CommentEditor();
@@ -201,8 +201,8 @@
 			this.tabslopes.SuspendLayout();
 			this.groupBox7.SuspendLayout();
 			this.groupBox6.SuspendLayout();
-			this.groupBox5.SuspendLayout();
-			this.groupBox4.SuspendLayout();
+			this.gbFloorSlope.SuspendLayout();
+			this.gbCeilingSLope.SuspendLayout();
 			this.tabcomment.SuspendLayout();
 			this.tabcustom.SuspendLayout();
 			this.SuspendLayout();
@@ -1249,7 +1249,7 @@
 			// 
 			// floorAngleControl
 			// 
-			this.floorAngleControl.Angle = -2520;
+			this.floorAngleControl.Angle = -2610;
 			this.floorAngleControl.AngleOffset = 90;
 			this.floorAngleControl.DoomAngleClamping = false;
 			this.floorAngleControl.Location = new System.Drawing.Point(6, 156);
@@ -1555,7 +1555,7 @@
 			// 
 			// ceilAngleControl
 			// 
-			this.ceilAngleControl.Angle = -2520;
+			this.ceilAngleControl.Angle = -2610;
 			this.ceilAngleControl.AngleOffset = 90;
 			this.ceilAngleControl.DoomAngleClamping = false;
 			this.ceilAngleControl.Location = new System.Drawing.Point(6, 156);
@@ -1711,8 +1711,8 @@
 			// 
 			this.tabslopes.Controls.Add(this.groupBox7);
 			this.tabslopes.Controls.Add(this.groupBox6);
-			this.tabslopes.Controls.Add(this.groupBox5);
-			this.tabslopes.Controls.Add(this.groupBox4);
+			this.tabslopes.Controls.Add(this.gbFloorSlope);
+			this.tabslopes.Controls.Add(this.gbCeilingSLope);
 			this.tabslopes.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.tabslopes.Location = new System.Drawing.Point(4, 22);
 			this.tabslopes.Name = "tabslopes";
@@ -1901,15 +1901,15 @@
 			this.ceilportalrenderstyle.TabIndex = 55;
 			this.ceilportalrenderstyle.Tag = "renderstyleceiling";
 			// 
-			// groupBox5
+			// gbFloorSlope
 			// 
-			this.groupBox5.Controls.Add(this.floorslopecontrol);
-			this.groupBox5.Location = new System.Drawing.Point(3, 261);
-			this.groupBox5.Name = "groupBox5";
-			this.groupBox5.Size = new System.Drawing.Size(298, 266);
-			this.groupBox5.TabIndex = 1;
-			this.groupBox5.TabStop = false;
-			this.groupBox5.Text = " Floor slope ";
+			this.gbFloorSlope.Controls.Add(this.floorslopecontrol);
+			this.gbFloorSlope.Location = new System.Drawing.Point(3, 261);
+			this.gbFloorSlope.Name = "gbFloorSlope";
+			this.gbFloorSlope.Size = new System.Drawing.Size(298, 266);
+			this.gbFloorSlope.TabIndex = 1;
+			this.gbFloorSlope.TabStop = false;
+			this.gbFloorSlope.Text = " Floor slope ";
 			// 
 			// floorslopecontrol
 			// 
@@ -1923,15 +1923,15 @@
 			this.floorslopecontrol.OnPivotModeChanged += new System.EventHandler(this.floorslopecontrol_OnPivotModeChanged);
 			this.floorslopecontrol.OnResetClicked += new System.EventHandler(this.floorslopecontrol_OnResetClicked);
 			// 
-			// groupBox4
+			// gbCeilingSLope
 			// 
-			this.groupBox4.Controls.Add(this.ceilingslopecontrol);
-			this.groupBox4.Location = new System.Drawing.Point(3, 3);
-			this.groupBox4.Name = "groupBox4";
-			this.groupBox4.Size = new System.Drawing.Size(298, 252);
-			this.groupBox4.TabIndex = 0;
-			this.groupBox4.TabStop = false;
-			this.groupBox4.Text = " Ceiling slope ";
+			this.gbCeilingSLope.Controls.Add(this.ceilingslopecontrol);
+			this.gbCeilingSLope.Location = new System.Drawing.Point(3, 3);
+			this.gbCeilingSLope.Name = "gbCeilingSLope";
+			this.gbCeilingSLope.Size = new System.Drawing.Size(298, 252);
+			this.gbCeilingSLope.TabIndex = 0;
+			this.gbCeilingSLope.TabStop = false;
+			this.gbCeilingSLope.Text = " Ceiling slope ";
 			// 
 			// ceilingslopecontrol
 			// 
@@ -2072,8 +2072,8 @@
 			this.tabslopes.ResumeLayout(false);
 			this.groupBox7.ResumeLayout(false);
 			this.groupBox6.ResumeLayout(false);
-			this.groupBox5.ResumeLayout(false);
-			this.groupBox4.ResumeLayout(false);
+			this.gbFloorSlope.ResumeLayout(false);
+			this.gbCeilingSLope.ResumeLayout(false);
 			this.tabcomment.ResumeLayout(false);
 			this.tabcustom.ResumeLayout(false);
 			this.ResumeLayout(false);
@@ -2126,8 +2126,8 @@
 		private System.Windows.Forms.CheckBox cbUseFloorLineAngles;
 		private System.Windows.Forms.CheckBox cbUseCeilLineAngles;
 		private System.Windows.Forms.TabPage tabslopes;
-		private System.Windows.Forms.GroupBox groupBox5;
-		private System.Windows.Forms.GroupBox groupBox4;
+		private System.Windows.Forms.GroupBox gbFloorSlope;
+		private System.Windows.Forms.GroupBox gbCeilingSLope;
 		private CodeImp.DoomBuilder.Controls.SectorSlopeControl floorslopecontrol;
 		private CodeImp.DoomBuilder.Controls.SectorSlopeControl ceilingslopecontrol;
 		private CodeImp.DoomBuilder.Controls.ButtonsNumericTextbox heightoffset;

@@ -190,6 +190,10 @@ namespace CodeImp.DoomBuilder.Windows
 
 			DoUDMFControls(this);
 
+			// Plane equation slopes are handled internally instead through the UDMF fields, so they need special attention
+			EnableDisableControlAndChildren(gbCeilingSLope, General.Map.Config.PlaneEquationSupport);
+			EnableDisableControlAndChildren(gbFloorSlope, General.Map.Config.PlaneEquationSupport);
+
 			//mxd. Load settings
 			if (General.Settings.StoreSelectedEditTab)
 			{
