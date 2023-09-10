@@ -32,13 +32,6 @@ namespace CodeImp.DoomBuilder.IO
 {
 	internal class UniversalMapSetIO : MapSetIO
 	{
-		#region ================== Constants
-
-		// Name of the UDMF configuration file
-		private const string UDMF_UI_CONFIG_NAME = "UDMF_UI.cfg";
-		
-		#endregion
-		
 		#region ================== Constructor / Disposer
 
 		// Constructor
@@ -46,53 +39,8 @@ namespace CodeImp.DoomBuilder.IO
 		{
 			if((manager != null) && (manager.Config != null))
 			{
-				/*
-				// Make configuration
-				Configuration config = new Configuration();
-				
-				//mxd. Find a resource named UDMF_UI.cfg
-				string[] resnames = General.ThisAssembly.GetManifestResourceNames();
-				foreach(string rn in resnames)
-				{
-					// Found it?
-					if(rn.EndsWith(UDMF_UI_CONFIG_NAME, StringComparison.OrdinalIgnoreCase))
-					{
-						// Get a stream from the resource
-						Stream udmfcfg = General.ThisAssembly.GetManifestResourceStream(rn);
-						StreamReader udmfcfgreader = new StreamReader(udmfcfg, Encoding.ASCII);
-						
-						// Load configuration from stream
-						config.InputConfiguration(udmfcfgreader.ReadToEnd());
-						Dictionary<string, MapElementType> elements = new Dictionary<string, MapElementType>
-						                                              {
-							                                              { "vertex", MapElementType.VERTEX },
-																		  { "linedef", MapElementType.LINEDEF },
-																		  { "sidedef", MapElementType.SIDEDEF },
-																		  { "sector", MapElementType.SECTOR },
-																		  { "thing", MapElementType.THING }
-						                                              };
-
-						foreach(KeyValuePair<string, MapElementType> group in elements) 
-						{
-							IDictionary dic = config.ReadSetting("uifields." + group.Key, new Hashtable());
-
-							Dictionary<string, UniversalType> values = new Dictionary<string, UniversalType>(StringComparer.Ordinal);
-							foreach(DictionaryEntry de in dic) 
-							{
-								values.Add(de.Key.ToString(), (UniversalType)de.Value);
-							}
-
-							uifields.Add(group.Value, values);
-						}
-						
-						// Done
-						udmfcfgreader.Dispose();
-						break;
-					}
-				}
-				*/
-
-				foreach((MapElementType type, List<UniversalFieldInfo> data) in new[] {
+				// Build the dictionary of UDMF fields that are managed by the UI and should not be shown in the custom UDMF field dialog
+				foreach ((MapElementType type, List<UniversalFieldInfo> data) in new[] {
 					(MapElementType.LINEDEF, General.Map.Config.LinedefFields),
 					(MapElementType.SECTOR, General.Map.Config.SectorFields),
 					(MapElementType.SIDEDEF, General.Map.Config.SidedefFields),
@@ -100,42 +48,11 @@ namespace CodeImp.DoomBuilder.IO
 					(MapElementType.VERTEX, General.Map.Config.VertexFields)
 				})
 				{
-					Dictionary<string, UniversalType> values = new Dictionary<string, UniversalType>(StringComparer.Ordinal);
+					uifields[type] = new Dictionary<string, UniversalType>(StringComparer.Ordinal);
 
 					foreach (UniversalFieldInfo ufi in data.Where(o => o.Managed))
-					{
-						values.Add(ufi.Name, (UniversalType)ufi.Type);
-					}
-
-					uifields.Add(type, values);
+						uifields[type].Add(ufi.Name, (UniversalType)ufi.Type);
 				}
-
-				/*
-				foreach (MapElementType met in new MapElementType[] { MapElementType.LINEDEF, MapElementType.SECTOR, MapElementType.SIDEDEF, MapElementType.THING, MapElementType.VERTEX })
-				{
-					List<UniversalFieldInfo> ufilist;
-
-					if (met == MapElementType.LINEDEF)
-						ufilist = General.Map.Config.LinedefFields;
-					else if (met == MapElementType.SECTOR)
-						ufilist = General.Map.Config.SectorFields;
-					else if (met == MapElementType.SIDEDEF)
-						ufilist = General.Map.Config.SidedefFields;
-					else if (met == MapElementType.THING)
-						ufilist = General.Map.Config.ThingFields;
-					else // Vertex
-						ufilist = General.Map.Config.VertexFields;
-
-					Dictionary<string, UniversalType> values = new Dictionary<string, UniversalType>(StringComparer.Ordinal);
-
-					foreach(UniversalFieldInfo ufi in ufilist.Where(o => o.Managed))
-					{
-						values.Add(ufi.Name, (UniversalType)ufi.Type);
-					}
-
-					uifields.Add(met, values);
-				}
-				*/
 			}
 		}
 

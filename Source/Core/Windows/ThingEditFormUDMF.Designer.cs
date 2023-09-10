@@ -758,7 +758,7 @@
 			this.labelScale.Name = "labelScale";
 			this.labelScale.Size = new System.Drawing.Size(80, 14);
 			this.labelScale.TabIndex = 32;
-			this.labelScale.Tag = "scale";
+			this.labelScale.Tag = "scalex";
 			this.labelScale.Text = "Scale:";
 			this.labelScale.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
 			// 
@@ -775,6 +775,7 @@
 			this.scale.Name = "scale";
 			this.scale.Size = new System.Drawing.Size(186, 26);
 			this.scale.TabIndex = 0;
+			this.scale.Tag = "scalex";
 			this.scale.OnValuesChanged += new System.EventHandler(this.scale_OnValuesChanged);
 			// 
 			// color

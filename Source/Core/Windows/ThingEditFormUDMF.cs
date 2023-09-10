@@ -425,7 +425,7 @@ namespace CodeImp.DoomBuilder.Windows
 		/// <param name="control">Control to process</param>
 		private void DoUDMFControls(Control control)
 		{
-			if (control.Tag is string name)
+			if (control.Tag is string name && !string.IsNullOrWhiteSpace(name))
 			{
 				//EnableDisableControlAndChildren(control, General.Map.Config.HasUniversalFieldOrFlag<Thing>(name));
 				EnableDisableControlAndChildren(control, General.Map.Config.ThingFields.Any(f => f.Name == name));
