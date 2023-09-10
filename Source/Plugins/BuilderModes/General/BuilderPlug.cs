@@ -45,6 +45,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 	internal class ToastMessages
 	{
 		public static readonly string VISUALSLOPING = "visualsloping";
+		public static readonly string CHANGEMAPELEMENTINDEX = "changemapelementindex";
 	}
 
 	public class BuilderPlug : Plug
@@ -257,6 +258,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 
 			// Register toasts
 			General.ToastManager.RegisterToast(ToastMessages.VISUALSLOPING, "Visual sloping", "Toasts related to visual sloping");
+			General.ToastManager.RegisterToast(ToastMessages.CHANGEMAPELEMENTINDEX, "Change map element index", "Toasts related to changing the index of map elements");
 		}
 
 		// Disposer
@@ -676,9 +678,6 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		[BeginAction("exporttoimage")]
 		private void ExportToImage()
 		{
-			// Convert geometry selection to sectors
-			General.Map.Map.ConvertSelection(SelectionType.Sectors);
-
 			// Get sectors
 			ICollection<Sector> sectors = General.Map.Map.SelectedSectorsCount == 0 ? General.Map.Map.Sectors : General.Map.Map.GetSelectedSectors(true);
 			if (sectors.Count == 0)

@@ -83,6 +83,17 @@ namespace CodeImp.DoomBuilder.Windows
 			// Initialize
 			InitializeComponent();
 
+#if NO_WIN32
+			// No easy way to have case-insesitivity for non-Windows platforms
+			wadfiledialog.Filter = "Doom WAD Files (*.wad)|*.wad;*.Wad;*.wAd;*.WAd;*.waD;*.WaD;*.wAD;*.WAD";
+			pk3filedialog.Filter = "Doom PK3/PKE/PK7 Files (*.pk3;*.pke;*.pk7;*.ipk3;*.ipk7)|" +
+				"*.pk3;*.Pk3;*.pK3;*.PK3;" +
+				"*.pke;*.Pke;*.pKe;*.PKe;*.pkE;*.PkE;*.pKE;*.PKE;" +
+				"*.pk7;*.Pk7;*.pK7;*.PK7;" +
+				"*.ipk3;*.iPk3;*.ipK3;*.iPK3;*.Ipk3;*.IPk3;*.IpK3;*.IPK3;" +
+				"*.ipk7;*.iPk7;*.ipK7;*.iPK7;*.Ipk7;*.IPk7;*.IpK7;*.IPK7";
+#endif
+
 			// Set caption
 			this.Text = caption;
 
@@ -129,9 +140,9 @@ namespace CodeImp.DoomBuilder.Windows
 
 		public static List<string> CheckRequiredArchives(GameConfiguration config, DataLocation loc, CancellationToken token)
         {
-			#if DEBUG
+#if DEBUG
 			General.WriteLogLine(string.Format("CheckRequiredArchives (Config = {0})", config?.Name));
-			#endif
+#endif
 
 			if (config == null)
 				return new List<string>();
@@ -205,10 +216,10 @@ namespace CodeImp.DoomBuilder.Windows
 										classes.Add(cls.ToLowerInvariant());
 								}
 
-								#if DEBUG
+#if DEBUG
 								if (zscript.HasError)
 									General.WriteLogLine(string.Format("CRA({0}): ZScript error: {1}", loc.location, zscript.ErrorDescription));
-								#endif
+#endif
 
 								// load DECORATE
 								var decorate = new DecorateParser(zscript.AllActorsByClass) {
@@ -240,17 +251,17 @@ namespace CodeImp.DoomBuilder.Windows
 										classes.Add(cls.ToLowerInvariant());
 								}
 
-								#if DEBUG
+#if DEBUG
 								if (decorate.HasError)
 									General.WriteLogLine(string.Format("CRA({0}): DECORATE error: {1}", loc.location, decorate.ErrorDescription));
-								#endif
+#endif
 							}
 
 							if (!classes.Contains(e.Class.ToLowerInvariant()))
                             {
-								#if DEBUG
+#if DEBUG
 								General.WriteLogLine(string.Format("CRA({2}): Does not contain class: {1} <- {0}", string.Join(",", classes), e.Class, loc.location));
-								#endif
+#endif
 								found = false;
 								break;
                             }
@@ -258,9 +269,9 @@ namespace CodeImp.DoomBuilder.Windows
 
 						if (e.Lump != null && !dr.FileExists(e.Lump))
 						{
-							#if DEBUG
+#if DEBUG
 							General.WriteLogLine(string.Format("CRA({1}): Does not contain lump: {0}", e.Lump, loc.location));
-							#endif
+#endif
 							found = false;
 							break;
 						}
@@ -319,7 +330,7 @@ namespace CodeImp.DoomBuilder.Windows
 			dir_textures.Checked = false;
 			dir_flats.Checked = false;
 			notfortesting.Checked = false;
-			// if any of the detected required archives implies "not for testing" — disable it by default
+			// if any of the detected required archives implies "not for testing" ï¿½ disable it by default
 			foreach (var arc in GameConfiguration.RequiredArchives)
             {
 				if (requiredarchives.Contains(arc.ID) && arc.ExcludeFromTesting)
@@ -413,7 +424,7 @@ namespace CodeImp.DoomBuilder.Windows
 						break;
 
 					case DataLocation.RESOURCE_PK3:
-						MessageBox.Show(this, "Please select a valid PK3 or PK7 File resource.", Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+						MessageBox.Show(this, "Please select a valid PK3, PKE, or PK7 File resource.", Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
 						break;
 
 					case DataLocation.RESOURCE_DIRECTORY:
@@ -491,9 +502,14 @@ namespace CodeImp.DoomBuilder.Windows
 		}
 
 		// Link clicked
-		private void link_Click(object sender, LinkLabelLinkClickedEventArgs e)
+		private void pk3_link_Click(object sender, LinkLabelLinkClickedEventArgs e)
 		{
 			General.OpenWebsite("http://www.zdoom.org/wiki/Using_ZIPs_as_WAD_replacement");
+		}
+
+		private void pke_link_Click(object sender, LinkLabelLinkClickedEventArgs e)
+		{
+			General.OpenWebsite("https://eternity.youfailit.net/wiki/ZIP");
 		}
 
 		// Help
