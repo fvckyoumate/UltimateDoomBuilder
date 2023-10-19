@@ -2662,17 +2662,17 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			//mxd
 			if((General.Interface.ShiftState || General.Interface.CtrlState) && selectedobjects.Count > 0) 
 			{
-				if(General.Interface.AltState)
+				if (General.Interface.AltState || !BuilderPlug.Me.UseBuggyFloodSelect)
 				{
-					target.SelectNeighbours(target.Selected, General.Interface.ShiftState, General.Interface.CtrlState);
+					target.SelectNeighbours(target.Selected, General.Interface.ShiftState, General.Interface.CtrlState, General.Interface.AltState);
 				}
 				else
 				{
 					IVisualEventReceiver[] selection = new IVisualEventReceiver[selectedobjects.Count];
 					selectedobjects.CopyTo(selection);
-					
-					foreach(IVisualEventReceiver obj in selection)
-						obj.SelectNeighbours(target.Selected, General.Interface.ShiftState, General.Interface.CtrlState);
+
+					foreach (IVisualEventReceiver obj in selection)
+						obj.SelectNeighbours(target.Selected, General.Interface.ShiftState, General.Interface.CtrlState, false);
 				}
 			}
 
@@ -4339,7 +4339,11 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			{ 
 				General.Map.VisualCamera.Position = visualThings[0].CenterV3D; //position at thing
 				General.Map.VisualCamera.AngleXY = t.Angle - Angle2D.PI;
-				General.Map.VisualCamera.AngleZ = Angle2D.PI;
+
+				if (General.Map.UDMF)
+					General.Map.VisualCamera.AngleZ = Angle2D.DegToRad(t.Pitch) + Angle2D.PI;
+				else
+					General.Map.VisualCamera.AngleZ = Angle2D.PI;
 			}
 		}
 
@@ -4787,8 +4791,13 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			foreach (Thing t in things)
 			{
 				t.Rotate(General.Map.VisualCamera.AngleXY - Angle2D.PI);
-				t.SetPitch((int)Angle2D.RadToDeg(General.Map.VisualCamera.AngleZ - Angle2D.PI));
+
+				if (General.Map.UDMF)
+					t.SetPitch((int)Angle2D.RadToDeg(General.Map.VisualCamera.AngleZ - Angle2D.PI));
+
 				((BaseVisualThing)allthings[t]).Rebuild();
+
+				General.Interface.DisplayStatus(StatusType.Action, $"Applied camera rotation and pitch to {things.Count} thing{(things.Count == 1 ? "" : "s")}.");
 			}
 		}
 

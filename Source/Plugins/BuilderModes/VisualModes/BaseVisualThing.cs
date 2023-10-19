@@ -328,8 +328,8 @@ namespace CodeImp.DoomBuilder.BuilderModes
 					// Determine sprite size and offset
 					float radius = sprite.ScaledWidth * 0.5f;
 					float height = sprite.ScaledHeight;
-					offsets.x = radius - (sprite.OffsetX == int.MinValue ? 0 : sprite.OffsetX);
-					offsets.y = (sprite.OffsetY == int.MinValue ? 0 : sprite.OffsetY) - height;
+					offsets.x = radius - (sprite.OffsetX == int.MinValue ? 0 : sprite.OffsetX) * sprite.Scale.x;
+					offsets.y = (sprite.OffsetY == int.MinValue ? 0 : sprite.OffsetY) * sprite.Scale.y - height;
 
 					// Scale by thing type/actor scale
 					// We do this after the offset x/y determination above, because that is entirely in sprite pixels space
@@ -657,7 +657,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		public void OnSelectBegin() { }
 		public void OnEditBegin() { }
 		public void OnChangeTargetBrightness(bool up) { }
-		public void OnChangeTextureOffset(int horizontal, int vertical, bool doSurfaceAngleCorrection) { }
+		public bool OnChangeTextureOffset(int horizontal, int vertical, bool doSurfaceAngleCorrection) { return true; }
 		public void OnSelectTexture() { }
 		public void OnCopyTexture() { }
 		public void OnPasteTexture() { }
@@ -673,7 +673,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		public void ApplyTexture(string texture) { }
 		public void ApplyUpperUnpegged(bool set) { }
 		public void ApplyLowerUnpegged(bool set) { }
-		public void SelectNeighbours(bool select, bool withSameTexture, bool withSameHeight) { } //mxd
+		public void SelectNeighbours(bool select, bool withSameTexture, bool withSameHeight, bool stopatselected) { } //mxd
 		public virtual void OnPaintSelectEnd() { } // biwa
 
 		// Return texture name
