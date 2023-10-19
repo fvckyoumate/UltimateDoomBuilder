@@ -665,6 +665,14 @@ namespace CodeImp.DoomBuilder
 			return result;
 		}
 
+		public bool AutoSave()
+		{
+			General.Plugins.OnMapSaveBegin(SavePurpose.Testing);
+			bool result = SaveMap(@"c:\users\boris\desktop\test.wad", SavePurpose.Testing);
+			General.Plugins.OnMapSaveEnd(SavePurpose.Testing);
+			return result;
+		}
+
 		/// <summary>
 		/// This writes the map structures to the temporary file.
 		/// </summary>

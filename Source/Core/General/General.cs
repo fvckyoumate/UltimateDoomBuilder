@@ -239,6 +239,10 @@ namespace CodeImp.DoomBuilder
 		// Toasts
 		private static ToastManager toastmanager;
 
+		// Autosaving
+		private static long lastautosavetime;
+		private static System.Windows.Forms.Timer autosavetimer;
+
 		#endregion
 
 		#region ================== Properties
@@ -808,6 +812,9 @@ namespace CodeImp.DoomBuilder
 				if(General.Settings.CheckForUpdates) UpdateChecker.PerformCheck(false);
 #endif
 
+				// Prepare autosaving
+				InitializeAutosaveTimer();
+
 				// Run application from the main window
 				Application.Run(mainwindow);
 			}
@@ -821,6 +828,14 @@ namespace CodeImp.DoomBuilder
 		private static void RegisterToasts()
 		{
 			toastmanager.RegisterToast("resourcewarningsanderrors", "Resource warnings and errors", "When there are errors or warning while (re)loading the resources");
+		}
+
+		private static void InitializeAutosaveTimer()
+		{
+			lastautosavetime = Clock.CurrentTime;
+			autosavetimer = new System.Windows.Forms.Timer() { Interval = 1000 };
+			autosavetimer.Tick += TryAutosave;
+			autosavetimer.Enabled = true;
 		}
 
 		// This parses the command line arguments
@@ -1160,7 +1175,10 @@ namespace CodeImp.DoomBuilder
 
 					//mxd. Also reset the clock...
 					MainWindow.ResetClock();
-					
+
+					// Get ready for autosaving
+					InitializeAutosaveTimer();
+
 					Cursor.Current = Cursors.Default;
 				}
 			}
@@ -1407,6 +1425,9 @@ namespace CodeImp.DoomBuilder
 					else
 						mode.CenterInScreen();
 				}
+
+				// Get ready for autosaving
+				InitializeAutosaveTimer();
 
 				mainwindow.RedrawDisplay();
 			}
@@ -1722,6 +1743,24 @@ namespace CodeImp.DoomBuilder
 			else
 			{
 				return true;
+			}
+		}
+
+		private static void TryAutosave(object sender, EventArgs args)
+		{
+			if(Clock.CurrentTime > lastautosavetime + 10 * 1000)
+			{
+				lastautosavetime = Clock.CurrentTime;
+				if(map != null && map.Map != null)
+				{
+					Stopwatch sw = Stopwatch.StartNew();
+					bool success = map.AutoSave();
+					sw.Stop();
+					if (success)
+						toastmanager.ShowToast(ToastType.INFO, "Autosave", $"Autosave completed successfully in {sw.ElapsedMilliseconds} ms.");
+					else
+						toastmanager.ShowToast(ToastType.ERROR, "Autosave", "Autosave failed.");
+				}
 			}
 		}
 		
