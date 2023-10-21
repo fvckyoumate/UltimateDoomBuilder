@@ -667,9 +667,10 @@ namespace CodeImp.DoomBuilder
 
 		public bool AutoSave()
 		{
-			General.Plugins.OnMapSaveBegin(SavePurpose.Testing);
-			bool result = SaveMap(@"c:\users\boris\desktop\test.wad", SavePurpose.Testing);
-			General.Plugins.OnMapSaveEnd(SavePurpose.Testing);
+			string autosavefilename = filepathname + "." + options.CurrentName;
+			General.Plugins.OnMapSaveBegin(SavePurpose.Autosave);
+			bool result = SaveMap(autosavefilename, SavePurpose.Autosave);
+			General.Plugins.OnMapSaveEnd(SavePurpose.Autosave);
 			return result;
 		}
 
@@ -763,6 +764,9 @@ namespace CodeImp.DoomBuilder
 		// Initializes for an existing map
 		internal bool SaveMap(string newfilepathname, SavePurpose purpose) 
 		{
+			if (purpose == SavePurpose.Autosave)
+				newfilepathname += ".autosave1";
+
 			string settingsfile;
 			WAD targetwad = null;
 			bool includenodes;
@@ -813,14 +817,22 @@ namespace CodeImp.DoomBuilder
 				// Write the current map structures to the temp file
 				if(!WriteMapToTempFile()) return false;
 
-				// Get the corresponding nodebuilder
-				string nodebuildername = (purpose == SavePurpose.Testing) ? configinfo.NodebuilderTest : configinfo.NodebuilderSave;
+				// Only build nodes when not autosaving
+				if (purpose != SavePurpose.Autosave)
+				{
+					// Get the corresponding nodebuilder
+					string nodebuildername = (purpose == SavePurpose.Testing) ? configinfo.NodebuilderTest : configinfo.NodebuilderSave;
 
-				// Build the nodes
-				StatusInfo oldstatus = General.MainWindow.Status;
-				General.MainWindow.DisplayStatus(StatusType.Busy, "Building map nodes...");
-				includenodes = (!string.IsNullOrEmpty(nodebuildername) && BuildNodes(nodebuildername, true));
-				General.MainWindow.DisplayStatus(oldstatus);
+					// Build the nodes
+					StatusInfo oldstatus = General.MainWindow.Status;
+					General.MainWindow.DisplayStatus(StatusType.Busy, "Building map nodes...");
+					includenodes = (!string.IsNullOrEmpty(nodebuildername) && BuildNodes(nodebuildername, true));
+					General.MainWindow.DisplayStatus(oldstatus);
+				}
+				else
+				{
+					includenodes = false;
+				}
 
 				//mxd. Compress temp file...
 				tempwadreader.WadFile.Compress();
@@ -936,16 +948,34 @@ namespace CodeImp.DoomBuilder
 						}
 					}
 
-					// Backup existing file, if any
-					if(File.Exists(newfilepathname + ".backup3")) File.Delete(newfilepathname + ".backup3");
-					if(File.Exists(newfilepathname + ".backup2")) File.Move(newfilepathname + ".backup2", newfilepathname + ".backup3");
-					if(File.Exists(newfilepathname + ".backup1")) File.Move(newfilepathname + ".backup1", newfilepathname + ".backup2");
-					File.Copy(newfilepathname, newfilepathname + ".backup1");
+					if (purpose == SavePurpose.Autosave)
+					{
+						string autosavefilepathname = Path.Combine(Path.GetDirectoryName(newfilepathname), Path.GetFileNameWithoutExtension(newfilepathname));
+
+						// Delete the last autosave if it exists
+						if (File.Exists($"{autosavefilepathname}.autosave{General.Settings.AutosaveCount}"))
+							File.Delete($"{autosavefilepathname}.autosave{General.Settings.AutosaveCount}");
+
+						// Move all other autosaves up by one
+						for (int i = General.Settings.AutosaveCount-1; i > 0; i--)
+						{
+							if (File.Exists($"{autosavefilepathname}.autosave{i}"))
+								File.Move($"{autosavefilepathname}.autosave{i}", $"{autosavefilepathname}.autosave{i + 1}");
+						}
+					}
+					else
+					{
+						// Backup existing file, if any
+						if (File.Exists(newfilepathname + ".backup3")) File.Delete(newfilepathname + ".backup3");
+						if (File.Exists(newfilepathname + ".backup2")) File.Move(newfilepathname + ".backup2", newfilepathname + ".backup3");
+						if (File.Exists(newfilepathname + ".backup1")) File.Move(newfilepathname + ".backup1", newfilepathname + ".backup2");
+						File.Copy(newfilepathname, newfilepathname + ".backup1");
+					}
 				}
 
 				// Except when saving INTO another file,
 				// kill the target file if it is different from source file
-				if((purpose != SavePurpose.IntoFile) && (newfilepathname != filepathname)) 
+				if ((purpose != SavePurpose.IntoFile) && (newfilepathname != filepathname))
 				{
 					// Kill target file
 					if(File.Exists(newfilepathname)) File.Delete(newfilepathname);
@@ -1051,8 +1081,8 @@ namespace CodeImp.DoomBuilder
 			// Resume data resources
 			data.Resume();
 
-			// Not saved for testing purpose?
-			if(purpose != SavePurpose.Testing) 
+			// Not saved for testing or autosave purpose?
+			if(purpose != SavePurpose.Testing && purpose != SavePurpose.Autosave) 
 			{
 				// Saved in a different file?
 				if(newfilepathname != filepathname) 
