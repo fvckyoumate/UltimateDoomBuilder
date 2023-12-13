@@ -839,6 +839,12 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			}
 		}
 
+		public override bool OnAutoSaveBegin()
+		{
+			return allowautosave;
+		}
+
+
 		//mxd. Check if any selected thing is outside of map boundary
 		private static bool CanDrag(ICollection<Thing> dragthings) 
 		{

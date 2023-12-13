@@ -1260,6 +1260,11 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			CreateBlockmap();
 		}
 
+		public override bool OnAutoSaveBegin()
+		{
+			return allowautosave;
+		}
+
 		//mxd
 		private void RenderComment(Linedef l)
 		{

@@ -1631,6 +1631,11 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			base.ToggleHighlight();
 		}
 
+		public override bool OnAutoSaveBegin()
+		{
+			return allowautosave;
+		}
+
 		//mxd
 		private void RenderComment(Sector s)
 		{
