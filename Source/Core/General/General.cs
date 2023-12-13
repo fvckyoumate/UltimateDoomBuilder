@@ -240,8 +240,7 @@ namespace CodeImp.DoomBuilder
 		private static ToastManager toastmanager;
 
 		// Autosaving
-		private static long lastautosavetime;
-		private static System.Windows.Forms.Timer autosavetimer;
+		private static AutoSaver autosaver;
 
 		#endregion
 
@@ -288,6 +287,7 @@ namespace CodeImp.DoomBuilder
 		public static ErrorLogger ErrorLogger { get { return errorlogger; } }
 		public static string CommitHash { get { return commithash; } } //mxd
 		public static ToastManager ToastManager { get => toastmanager; }
+		internal static AutoSaver AutoSaver { get => autosaver; }
 
 		#endregion
 
@@ -813,7 +813,7 @@ namespace CodeImp.DoomBuilder
 #endif
 
 				// Prepare autosaving
-				InitializeAutosaveTimer();
+				autosaver = new AutoSaver();
 
 				// Run application from the main window
 				Application.Run(mainwindow);
@@ -828,14 +828,6 @@ namespace CodeImp.DoomBuilder
 		private static void RegisterToasts()
 		{
 			toastmanager.RegisterToast("resourcewarningsanderrors", "Resource warnings and errors", "When there are errors or warning while (re)loading the resources");
-		}
-
-		private static void InitializeAutosaveTimer()
-		{
-			lastautosavetime = Clock.CurrentTime;
-			autosavetimer = new System.Windows.Forms.Timer() { Interval = 1000 };
-			autosavetimer.Tick += TryAutosave;
-			autosavetimer.Enabled = true;
 		}
 
 		// This parses the command line arguments
@@ -1176,9 +1168,6 @@ namespace CodeImp.DoomBuilder
 					//mxd. Also reset the clock...
 					MainWindow.ResetClock();
 
-					// Get ready for autosaving
-					InitializeAutosaveTimer();
-
 					Cursor.Current = Cursors.Default;
 				}
 			}
@@ -1425,9 +1414,6 @@ namespace CodeImp.DoomBuilder
 					else
 						mode.CenterInScreen();
 				}
-
-				// Get ready for autosaving
-				InitializeAutosaveTimer();
 
 				mainwindow.RedrawDisplay();
 			}
@@ -1743,24 +1729,6 @@ namespace CodeImp.DoomBuilder
 			else
 			{
 				return true;
-			}
-		}
-
-		private static void TryAutosave(object sender, EventArgs args)
-		{
-			if(Clock.CurrentTime > lastautosavetime + 10 * 1000)
-			{
-				lastautosavetime = Clock.CurrentTime;
-				if(map != null && map.Map != null)
-				{
-					Stopwatch sw = Stopwatch.StartNew();
-					bool success = map.AutoSave();
-					sw.Stop();
-					if (success)
-						toastmanager.ShowToast(ToastType.INFO, "Autosave", $"Autosave completed successfully in {sw.ElapsedMilliseconds} ms.");
-					else
-						toastmanager.ShowToast(ToastType.ERROR, "Autosave", "Autosave failed.");
-				}
 			}
 		}
 		

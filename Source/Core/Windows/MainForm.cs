@@ -4646,6 +4646,9 @@ namespace CodeImp.DoomBuilder.Windows
 		//mxd
 		internal void ResetClock()
 		{
+			// Let the autosaver know that the clock is about to be reset
+			General.AutoSaver.BeforeClockReset();
+
 			Clock.Reset();
 			lastupdatetime = 0;
 			

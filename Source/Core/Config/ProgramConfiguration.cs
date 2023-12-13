@@ -164,7 +164,7 @@ namespace CodeImp.DoomBuilder.Config
 		// Autosave
 		private bool autosave;
 		private int autosavecount;
-		private int autosaveminutes;
+		private int autosaveinterval;
 		
 		#endregion
 
@@ -306,7 +306,7 @@ namespace CodeImp.DoomBuilder.Config
 		// Autosave
 		public bool Autosave { get { return autosave; } internal set { autosave = value; } }
 		public int AutosaveCount { get { return autosavecount; } internal set { autosavecount = value; } }
-		public int AutosaveMinutes { get { return autosaveminutes; } internal set { autosaveminutes = value; } }
+		public int AutosaveInterval { get { return autosaveinterval; } internal set { autosaveinterval = value; } }
 
 		#endregion
 
@@ -468,7 +468,7 @@ namespace CodeImp.DoomBuilder.Config
 				// Autosave
 				autosave = cfg.ReadSetting("autosave", true);
 				autosavecount = cfg.ReadSetting("autosavecount", 5);
-				autosaveminutes = cfg.ReadSetting("autosaveminutes", 5);
+				autosaveinterval = cfg.ReadSetting("autosaveinterval", 5);
 
 				// Success
 				return true;
@@ -602,7 +602,7 @@ namespace CodeImp.DoomBuilder.Config
 			// Autosave
 			cfg.WriteSetting("autosave", autosave);
 			cfg.WriteSetting("autosavecount", autosavecount);
-			cfg.WriteSetting("autosaveminutes", autosaveminutes);
+			cfg.WriteSetting("autosaveinterval", autosaveinterval);
 
 			// Save settings configuration
 			General.WriteLogLine("Saving program configuration to \"" + filepathname + "\"...");

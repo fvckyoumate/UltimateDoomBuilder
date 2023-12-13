@@ -343,6 +343,9 @@ namespace CodeImp.DoomBuilder
 			renderer2d.SetViewMode((ViewMode)General.Settings.DefaultViewMode);
 			General.Settings.SetDefaultThingFlags(config.DefaultThingFlags);
 
+			// Autosaver
+			General.AutoSaver.InitializeTimer();
+
 			// Success
 			this.changed = false;
 			this.maploading = false; //mxd
@@ -462,6 +465,9 @@ namespace CodeImp.DoomBuilder
 			// Center map in screen
 			//if(General.Editing.Mode is ClassicMode) (General.Editing.Mode as ClassicMode).CenterInScreen();
 
+			// Autosaver
+			General.AutoSaver.InitializeTimer();
+
 			// Success
 			this.changed = maprestored; //mxd
 			this.maploading = false; //mxd
@@ -575,6 +581,9 @@ namespace CodeImp.DoomBuilder
 				}
 			}
 
+			// Autosaver
+			General.AutoSaver.InitializeTimer();
+
 			// Success
 			this.changed = maprestored;
 			this.maploading = false;
@@ -665,13 +674,20 @@ namespace CodeImp.DoomBuilder
 			return result;
 		}
 
-		public bool AutoSave()
+		internal AutosaveResult AutoSave()
 		{
+			// If the map doesn't exist on a medium we can't make autosaves
+			if (string.IsNullOrWhiteSpace(filepathname))
+				return AutosaveResult.NoFileName;
+
+			// Generat the file name. This is the current file name, a dot, and the map slot, for example
+			// cacowardwinner.wad.MAP01
+			// the SaveMap method will add an ".autosaveX" due to the save purpose being Autosave
 			string autosavefilename = filepathname + "." + options.CurrentName;
 			General.Plugins.OnMapSaveBegin(SavePurpose.Autosave);
 			bool result = SaveMap(autosavefilename, SavePurpose.Autosave);
 			General.Plugins.OnMapSaveEnd(SavePurpose.Autosave);
-			return result;
+			return result ? AutosaveResult.Success : AutosaveResult.Error;
 		}
 
 		/// <summary>
@@ -764,6 +780,7 @@ namespace CodeImp.DoomBuilder
 		// Initializes for an existing map
 		internal bool SaveMap(string newfilepathname, SavePurpose purpose) 
 		{
+			// Add the autosave suffix. As all existing autosave will be shifted up this is static
 			if (purpose == SavePurpose.Autosave)
 				newfilepathname += ".autosave1";
 
@@ -1106,6 +1123,9 @@ namespace CodeImp.DoomBuilder
 					// Warning only
 					General.ErrorLogger.Add(ErrorType.Warning, "Could not write the map settings configuration file. " + e.GetType().Name + ": " + e.Message);
 				}
+
+				// Autosaver
+				General.AutoSaver.InitializeTimer();
 
 				// Changes saved
 				changed = false;
