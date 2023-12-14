@@ -177,6 +177,9 @@ namespace CodeImp.DoomBuilder
 				// Let the plugins know
 				General.Plugins.OnMapCloseBegin();
 
+				// Stop autosaving
+				General.AutoSaver.StopTimer();
+
 				// Stop processing
 				General.MainWindow.StopProcessing();
 

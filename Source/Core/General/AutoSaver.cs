@@ -77,8 +77,8 @@ namespace CodeImp.DoomBuilder
 
 		private static void TryAutosave(object sender, EventArgs args)
 		{
-			Console.WriteLine($"Trying to save in {(lasttime + 10000) - Clock.CurrentTime}");
-			if (Clock.CurrentTime > lasttime + /*General.Settings.AutosaveInterval * 60 */ 10 * 1000)
+			Console.WriteLine($"Trying to save in {(lasttime + General.Settings.AutosaveInterval * 60 * 1000) - Clock.CurrentTime}");
+			if (Clock.CurrentTime > lasttime + General.Settings.AutosaveInterval * 60 * 1000 && General.Map != null && General.Map.Map != null && General.Map.Map.IsSafeToAccess && General.Map.IsChanged)
 			{
 				if (!General.Editing.Mode.OnAutoSaveBegin())
 				{
@@ -93,11 +93,11 @@ namespace CodeImp.DoomBuilder
 					AutosaveResult success = General.Map.AutoSave();
 					sw.Stop();
 					if (success == AutosaveResult.Success)
-						General.ToastManager.ShowToast(ToastType.INFO, "Autosave", $"Autosave completed successfully in {sw.ElapsedMilliseconds} ms.");
+						General.ToastManager.ShowToast("autosave", ToastType.INFO, "Autosave", $"Autosave completed successfully in {sw.ElapsedMilliseconds} ms.");
 					else if (success == AutosaveResult.Error)
-						General.ToastManager.ShowToast(ToastType.ERROR, "Autosave", "Autosave failed.");
+						General.ToastManager.ShowToast("autosave", ToastType.ERROR, "Autosave", "Autosave failed.");
 					else if (success == AutosaveResult.NoFileName)
-						General.ToastManager.ShowToast(ToastType.WARNING, "Autosave", "Could not autosave because this is a new WAD that wasn't saved yet.");
+						General.ToastManager.ShowToast("autosave", ToastType.WARNING, "Autosave", "Could not autosave because this is a new WAD that wasn't saved yet.");
 				}
 			}
 		}
