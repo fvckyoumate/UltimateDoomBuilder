@@ -677,6 +677,10 @@ namespace CodeImp.DoomBuilder
 			return result;
 		}
 
+		/// <summary>
+		/// Autosaves the map.
+		/// </summary>
+		/// <returns>The result of the autosave</returns>
 		internal AutosaveResult AutoSave()
 		{
 			// If the map doesn't exist on a medium we can't make autosaves

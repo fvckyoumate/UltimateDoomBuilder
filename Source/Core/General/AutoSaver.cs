@@ -42,6 +42,9 @@ namespace CodeImp.DoomBuilder
 		private static long lasttime;
 		private static System.Windows.Forms.Timer timer;
 
+		/// <summary>
+		/// Initialized and starts the autosave timer.
+		/// </summary>
 		internal void InitializeTimer()
 		{
 			if(timer != null)
@@ -60,45 +63,57 @@ namespace CodeImp.DoomBuilder
 			}
 		}
 
+		/// <summary>
+		/// Stops the autosave timer.
+		/// </summary>
 		internal void StopTimer()
 		{
 			if (timer != null) timer.Enabled = false;
 		}
 
+		/// <summary>
+		/// Resets the autosave timer to the current time.
+		/// </summary>
 		internal void ResetTimer()
 		{
 			lasttime = Clock.CurrentTime;
 		}
 
+		/// <summary>
+		/// Makes the autosave timer aware of a clock reset, so that the interval until the next autosave is unaffected.
+		/// </summary>
 		internal void BeforeClockReset()
 		{
 			lasttime = -(Clock.CurrentTime - lasttime);
 		}
 
+		/// <summary>
+		/// Tries to perform the autosave.
+		/// </summary>
+		/// <param name="sender">The sender</param>
+		/// <param name="args">The event arguments</param>
 		private static void TryAutosave(object sender, EventArgs args)
 		{
-			Console.WriteLine($"Trying to save in {(lasttime + General.Settings.AutosaveInterval * 60 * 1000) - Clock.CurrentTime}");
 			if (Clock.CurrentTime > lasttime + General.Settings.AutosaveInterval * 60 * 1000 && General.Map != null && General.Map.Map != null && General.Map.Map.IsSafeToAccess && General.Map.IsChanged)
 			{
+				// Check if the current editing mode prevents autosaving. If it does return without setting the time,
+				// so that autosaving will be retried ASAP
 				if (!General.Editing.Mode.OnAutoSaveBegin())
-				{
-					Console.WriteLine("Current editing mode prevented autosave!");
 					return;
-				}
 
 				lasttime = Clock.CurrentTime;
-				if (General.Map != null && General.Map.Map != null && General.Map.IsChanged)
-				{
-					Stopwatch sw = Stopwatch.StartNew();
-					AutosaveResult success = General.Map.AutoSave();
-					sw.Stop();
-					if (success == AutosaveResult.Success)
-						General.ToastManager.ShowToast("autosave", ToastType.INFO, "Autosave", $"Autosave completed successfully in {sw.ElapsedMilliseconds} ms.");
-					else if (success == AutosaveResult.Error)
-						General.ToastManager.ShowToast("autosave", ToastType.ERROR, "Autosave", "Autosave failed.");
-					else if (success == AutosaveResult.NoFileName)
-						General.ToastManager.ShowToast("autosave", ToastType.WARNING, "Autosave", "Could not autosave because this is a new WAD that wasn't saved yet.");
-				}
+
+				long start = Clock.CurrentTime;
+				AutosaveResult success = General.Map.AutoSave();
+				long duration = Clock.CurrentTime - start;
+
+				// Show a toast appropriate for the result of the autosave
+				if (success == AutosaveResult.Success)
+					General.ToastManager.ShowToast("autosave", ToastType.INFO, "Autosave", $"Autosave completed successfully in {duration} ms.");
+				else if (success == AutosaveResult.Error)
+					General.ToastManager.ShowToast("autosave", ToastType.ERROR, "Autosave", "Autosave failed.");
+				else if (success == AutosaveResult.NoFileName)
+					General.ToastManager.ShowToast("autosave", ToastType.WARNING, "Autosave", "Could not autosave because this is a new WAD that wasn't saved yet.");
 			}
 		}
 	}
