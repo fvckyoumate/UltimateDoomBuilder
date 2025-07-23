@@ -1,4 +1,4 @@
-# Ultimate Doom Builder
+# Ultimate Doom Builder (dofBuilder fork)
 
 ## System requirements
 - 2.4 GHz CPU or faster (multi-core recommended)
