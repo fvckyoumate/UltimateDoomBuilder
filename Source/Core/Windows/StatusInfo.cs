@@ -24,9 +24,9 @@ namespace CodeImp.DoomBuilder.Windows
 {
 	public struct StatusInfo
 	{
-		public const string NO_SELECTION = "Nothing selected."; //mxd
-		public const string LOADING_TEXT = "Loading resources...";
-		public const string READY_TEXT = "Ready.";
+		public const string NO_SELECTION = "Nothing selected, but dofhouse loves you anyways <3"; //mxd
+		public const string LOADING_TEXT = "Loading resources... ugh I hate waiting //a dof";
+		public const string READY_TEXT = "Ready, yippie!";
 		
 		public readonly StatusType type;
 		public readonly string message;
@@ -105,7 +105,7 @@ namespace CodeImp.DoomBuilder.Windows
 	//mxd. StatusInfo used by Script Editor
 	public struct ScriptStatusInfo
 	{
-		public const string READY_TEXT = "Ready.";
+		public const string READY_TEXT = "Ready, yippie!";
 
 		public readonly ScriptStatusType type;
 		public readonly string message;
@@ -128,7 +128,7 @@ namespace CodeImp.DoomBuilder.Windows
 					break;
 
 				default:
-					throw new NotImplementedException("Unsupported Script Status Type!");
+					throw new NotImplementedException("Unsupported Script Status Type! Maybe like, think again or something?");
 			}
 
 			this.displayed = false;

@@ -64,7 +64,7 @@ namespace CodeImp.DoomBuilder.Windows
 			this.apply.Name = "apply";
 			this.apply.Size = new System.Drawing.Size(112, 27);
 			this.apply.TabIndex = 1;
-			this.apply.Text = "OK";
+			this.apply.Text = "OK, dof time!";
 			this.apply.UseVisualStyleBackColor = true;
 			this.apply.Click += new System.EventHandler(this.apply_Click);
 			// 
