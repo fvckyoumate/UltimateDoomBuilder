@@ -1,5 +1,5 @@
 # Ultimate Doom Builder (dofBuilder fork)
-
+<img width="1000" height="1000" alt="dofBuilderLogo" src="https://github.com/user-attachments/assets/c9686485-ff09-4484-ae21-aeb1e6d2a9c5" />
 ## System requirements
 - 2.4 GHz CPU or faster (multi-core recommended)
 - Windows 7, 8, 10, or 11
