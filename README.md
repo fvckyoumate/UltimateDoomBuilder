@@ -34,3 +34,9 @@ __Note:__ this is experimental. None of the main developers are using Linux as a
 
 More detailed info can be found in the **editor documentation** (Refmanual.chm)
 
+## About dofBuilder
+dofBuilder is a visual overhaul of UltimateDoomBuilder. It essentially works just as UltimateDoomBuilder but with updated icons and UI.
+
+We use dofBuilder for Project: AMICA.
+
+
